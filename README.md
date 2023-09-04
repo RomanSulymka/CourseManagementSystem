@@ -14,10 +14,10 @@ stateDiagram
     FunctionaltityImplementation --> RoleManagement
     FunctionaltityImplementation --> CourseManagement
     FunctionaltityImplementation --> APIDesign
-    ProjectStart --> InfrastructureSetup
-        InfrastructureSetup --> CI/CD
-        InfrastructureSetup --> Docker
-        InfrastructureSetup --> AWS
+    ProjectStart --> Deployment
+        Deployment --> CI/CD
+        Deployment --> Docker
+        Deployment --> AWS
     ProjectStart --> Testing
         Testing --> Unit
         Testing --> APIUnit
@@ -25,5 +25,5 @@ stateDiagram
         Testing --> IntegrationTests
         Testing --> Manual
     ProjectStart --> Unplanned
-    
+
 ```
