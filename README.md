@@ -13,6 +13,10 @@ stateDiagram
     FunctionaltityImplementation --> Registration
     FunctionaltityImplementation --> AuthenticationAndAuthorization
     FunctionaltityImplementation --> JWT
+    FunctionaltityImplementation --> RoleManagement
+    FunctionaltityImplementation --> CourseManagement
+    FunctionaltityImplementation --> HomeworkAndGrading
+    FunctionaltityImplementation --> APIDesign
     ProjectStart --> InfrastructureSetup
         InfrastructureSetup --> CI/CD
         InfrastructureSetup --> Docker
@@ -21,7 +25,7 @@ stateDiagram
         Testing --> Unit
         Testing --> APIUnit
         Testing --> e2e
-        Testing --> DAOTesting
+        Testing --> IntegrationTests
         Testing --> Manual
     ProjectStart --> Unplanned
     
