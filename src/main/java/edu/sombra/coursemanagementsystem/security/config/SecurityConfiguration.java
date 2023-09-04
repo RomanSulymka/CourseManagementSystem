@@ -29,8 +29,8 @@ public class SecurityConfiguration {
                         authorizeHttpRequests
                                 .requestMatchers("/api/v1/auth/**")
                                 .permitAll()
-                                .requestMatchers("/api/v1/demo-controller/**") // Додайте цей рядок
-                                .authenticated() // Забороніть доступ до /api/v1/demo-controller без авторизації
+                                .requestMatchers("/api/v1/demo-controller/**")
+                                .authenticated()
                                 .anyRequest()
                                 .authenticated()
                 )

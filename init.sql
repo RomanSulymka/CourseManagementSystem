@@ -68,7 +68,7 @@ CREATE TABLE tokens
 
 INSERT INTO users (first_name, last_name, password, email, role)
 VALUES ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT'),
-       ('user2', 'user2 last name', 'password2', 'user2@example.com', 'ADMIN'),
+       ('admin', 'admin', 'adminpass', 'user2@example.com', 'ADMIN'),
        ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
        ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
 
