@@ -7,17 +7,12 @@ Work breakdown structure:
 stateDiagram
     ProjectStart --> FunctionaltityImplementation
     FunctionaltityImplementation --> DatabaseSetup
-        DatabaseSetup --> CreateDatabaseSchema
-        DatabaseSetup --> ConfigureJPA/Hibernate
-        DatabaseSetup --> DatabaseMigration
     FunctionaltityImplementation --> Security
         Security --> Registration
         Security --> AuthenticationAndAuthorization
         Security --> JWT
     FunctionaltityImplementation --> RoleManagement
-    FunctionaltityImplementation --> ContentManagement
-            ContentManagement --> CourseManagement
-            ContentManagement --> HomeworkAndGrading
+    FunctionaltityImplementation --> CourseManagement
     FunctionaltityImplementation --> APIDesign
     ProjectStart --> InfrastructureSetup
         InfrastructureSetup --> CI/CD
