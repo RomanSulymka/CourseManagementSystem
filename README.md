@@ -10,12 +10,14 @@ stateDiagram
         DatabaseSetup --> CreateDatabaseSchema
         DatabaseSetup --> ConfigureJPA/Hibernate
         DatabaseSetup --> DatabaseMigration
-    FunctionaltityImplementation --> Registration
-    FunctionaltityImplementation --> AuthenticationAndAuthorization
-    FunctionaltityImplementation --> JWT
+    FunctionaltityImplementation --> Security
+        Security --> Registration
+        Security --> AuthenticationAndAuthorization
+        Security --> JWT
     FunctionaltityImplementation --> RoleManagement
-    FunctionaltityImplementation --> CourseManagement
-    FunctionaltityImplementation --> HomeworkAndGrading
+    FunctionaltityImplementation --> ContentManagement
+            ContentManagement --> CourseManagement
+            ContentManagement --> HomeworkAndGrading
     FunctionaltityImplementation --> APIDesign
     ProjectStart --> InfrastructureSetup
         InfrastructureSetup --> CI/CD
