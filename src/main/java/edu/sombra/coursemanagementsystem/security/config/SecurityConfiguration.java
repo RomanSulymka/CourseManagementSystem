@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,25 +25,29 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .httpBasic(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeHttpRequests ->
                         authorizeHttpRequests
-                                .requestMatchers("/api/v1/auth/**")
-                                .permitAll()
-                                .requestMatchers("/api/v1/demo-controller/**")
-                                .authenticated()
-                                .anyRequest()
-                                .authenticated()
+                                .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers("/api/v1/user/**").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/course/**").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/enrollment/**").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/demo-controller").authenticated()
+                                .anyRequest().authenticated()
                 )
                 .sessionManagement(authorizeRequests ->
-                        authorizeRequests.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                        authorizeRequests.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling
+                                .accessDeniedPage("/errors/access-denied"))
                 .logout(logout ->
                         logout.deleteCookies("remove")
-                                .invalidateHttpSession(false)
                                 .logoutUrl("/api/v1/auth/logout")
+                                .permitAll()
                                 .addLogoutHandler(logoutHandler)
                                 .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
                 );

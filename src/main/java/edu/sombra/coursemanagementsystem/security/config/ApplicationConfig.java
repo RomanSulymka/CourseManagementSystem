@@ -1,7 +1,10 @@
 package edu.sombra.coursemanagementsystem.security.config;
 
+import edu.sombra.coursemanagementsystem.entity.User;
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,5 +41,43 @@ public class ApplicationConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public CommandLineRunner defaultUsers() {
+        return args -> {
+            if (userRepository.findUserByEmail("admin@gmail.com") == null) {
+                User admin = User.builder()
+                        .firstName("admin")
+                        .lastName("admin")
+                        .email("admin@gmail.com")
+                        .password(passwordEncoder().encode("adminPass"))
+                        .role(RoleEnum.ADMIN)
+                        .build();
+                userRepository.save(admin);
+            }
+
+            if (userRepository.findUserByEmail("instructor@gmail.com") == null) {
+                User instructor = User.builder()
+                        .firstName("instructor")
+                        .lastName("instructor")
+                        .email("instructor@gmail.com")
+                        .password(passwordEncoder().encode("instructorPass"))
+                        .role(RoleEnum.INSTRUCTOR)
+                        .build();
+                userRepository.save(instructor);
+            }
+
+            if (userRepository.findUserByEmail("student@gmail.com") == null) {
+                User student = User.builder()
+                        .firstName("student")
+                        .lastName("student")
+                        .email("student@gmail.com")
+                        .password(passwordEncoder().encode("studentPass"))
+                        .role(RoleEnum.STUDENT)
+                        .build();
+                userRepository.save(student);
+            }
+        };
     }
 }

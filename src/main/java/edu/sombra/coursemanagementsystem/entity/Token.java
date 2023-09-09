@@ -33,6 +33,7 @@ public class Token {
     @Column(unique = true)
     private String token;
 
+    @Column(name = "token_type")
     @Enumerated(EnumType.STRING)
     private TokenType tokenType = TokenType.BEARER;
 

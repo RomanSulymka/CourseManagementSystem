@@ -37,5 +37,7 @@ jobs:
       - name: Build with Maven
         run: ./mvnw clean install
         env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
