@@ -15,6 +15,7 @@ import edu.sombra.coursemanagementsystem.service.auth.AuthenticateService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticateServiceImpl implements AuthenticateService {

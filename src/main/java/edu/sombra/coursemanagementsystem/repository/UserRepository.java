@@ -13,4 +13,5 @@ public interface UserRepository {
     void updateRoleByEmail(String email, RoleEnum role);
     Optional<List<User>> findUsersByEmails(List<String> emails);
     Optional<User> findById(Long id);
+    Optional<User> updateUser(User user);
 }

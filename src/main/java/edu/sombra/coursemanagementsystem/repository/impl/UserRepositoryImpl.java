@@ -6,7 +6,10 @@ import edu.sombra.coursemanagementsystem.query.SqlQueryConstants;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +18,12 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
+@AllArgsConstructor
 @Transactional
 public class UserRepositoryImpl implements UserRepository {
     @PersistenceContext
     private EntityManager entityManager;
+
 
     @Override
     public User save(User user) {
@@ -28,11 +33,10 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean existsUserByEmail(String email) {
-        Long count = entityManager.createQuery(
-                        SqlQueryConstants.EXIST_USER_BY_EMAIL_QUERY, Long.class)
+        Long count = entityManager.createQuery(SqlQueryConstants.EXIST_USER_BY_EMAIL_QUERY, Long.class)
                 .setParameter("email", email)
                 .getSingleResult();
-        return count > 0;
+        return count != null && count > 0;
     }
 
     @Override
@@ -63,5 +67,19 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findById(Long id) {
         return Optional.ofNullable(entityManager.find(User.class, id));
+    }
+
+    @Override
+    public Optional<User> updateUser(User user) {
+        User existingUser = entityManager.find(User.class, user.getId());
+        if (existingUser != null) {
+            existingUser.setFirstName(user.getFirstName());
+            existingUser.setLastName(user.getLastName());
+            existingUser.setEmail(user.getEmail());
+            existingUser.setPassword(user.getPassword());
+            existingUser.setRole(user.getRole());
+            entityManager.merge(existingUser);
+        }
+        return findById(user.getId());
     }
 }
