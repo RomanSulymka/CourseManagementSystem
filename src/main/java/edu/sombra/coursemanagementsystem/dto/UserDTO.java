@@ -1,11 +1,10 @@
 package edu.sombra.coursemanagementsystem.dto;
 
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import lombok.Data;
 
 @Data
 public class UserDTO {
-    private String firstName;
-    private String lastName;
-    private String password;
     private String email;
+    private RoleEnum role;
 }

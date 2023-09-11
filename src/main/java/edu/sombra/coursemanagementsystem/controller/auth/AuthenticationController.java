@@ -3,7 +3,6 @@ package edu.sombra.coursemanagementsystem.controller.auth;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
 import edu.sombra.coursemanagementsystem.dto.auth.RegisterDTO;
-import edu.sombra.coursemanagementsystem.service.UserService;
 import edu.sombra.coursemanagementsystem.service.auth.AuthenticateService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

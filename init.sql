@@ -11,7 +11,8 @@ CREATE TABLE users
 CREATE TABLE courses
 (
     id   BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    UNIQUE (name)
 );
 
 CREATE TABLE enrollments
@@ -20,7 +21,8 @@ CREATE TABLE enrollments
     user_id   BIGINT NOT NULL,
     course_id BIGINT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (course_id) REFERENCES courses (id)
+    FOREIGN KEY (course_id) REFERENCES courses (id),
+    CONSTRAINT unique_user_course UNIQUE (user_id, course_id)
 );
 
 CREATE TABLE lessons
