@@ -35,7 +35,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course findById(Long courseId) {
-        Course course = (courseRepository.findById(courseId));
+        Course course = courseRepository.findById(courseId);
         if (course == null) {
             log.error("Course not found with id: " + courseId);
             throw new CourseNotFoundException("Course not found with id: " + courseId);
@@ -44,26 +44,20 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Optional<Course> update(Course course) {
-        if (Objects.nonNull(findById(course.getId()))) {
-            if (!isCourseExist(course.getName())) {
-                return Optional.ofNullable(courseRepository.update(course));
-            } else {
-                throw new CourseAlreadyExistsException(course.getName());
-            }
-        } else {
-            log.error("Not found course with id: " + course.getId());
-            throw new CourseNotFoundException(course.getName());
-        }
-    }
+    public Course update(Course course) {
+        Course existingCourse = findById(course.getId());
 
-    private boolean isCourseExist(String name) {
-        return courseRepository.exist(name);
+        if (!course.getName().equals(existingCourse.getName()) && courseRepository.exist(course.getName())) {
+            throw new CourseAlreadyExistsException(String.format("Course with name '%s' already exists.", course.getName()));
+        }
+
+        return courseRepository.update(course);
     }
 
     @Override
     public boolean delete(Long id) {
-        if (Objects.nonNull(findById(id))) {
+        Course course = findById(id);
+        if (course != null) {
             return courseRepository.delete(id);
         }
         return false;

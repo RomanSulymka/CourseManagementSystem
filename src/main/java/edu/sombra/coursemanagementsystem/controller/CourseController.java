@@ -28,7 +28,7 @@ public class CourseController {
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<Optional<Course>> editCourse(@RequestBody Course course) {
+    public ResponseEntity<Course> editCourse(@RequestBody Course course) {
         return ResponseEntity.ok(courseService.update(course));
     }
 
