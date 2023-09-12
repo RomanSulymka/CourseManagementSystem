@@ -2,17 +2,19 @@ package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
-import edu.sombra.coursemanagementsystem.exception.CourseNotFoundException;
+import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
+import edu.sombra.coursemanagementsystem.exception.CourseDeletionException;
+import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Transactional
@@ -23,14 +25,19 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public String create(Course course) {
-        courseRepository.create(course);
-        return course.getName();
+        try {
+            Course createdCourse = courseRepository.create(course);
+            return createdCourse.getName();
+        } catch (DataAccessException ex) {
+            log.error("Error creating course: {}", ex.getMessage(), ex);
+            throw new CourseCreationException("Failed to create course", ex);
+        }
     }
 
     @Override
     public Course findByName(String courseName) {
         return courseRepository.findByName(courseName)
-                .orElseThrow(() -> new CourseNotFoundException(courseName));
+                .orElseThrow(() -> new EntityNotFoundException(courseName));
     }
 
     @Override
@@ -38,7 +45,7 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(courseId);
         if (course == null) {
             log.error("Course not found with id: " + courseId);
-            throw new CourseNotFoundException("Course not found with id: " + courseId);
+            throw new EntityNotFoundException("Course not found with id: " + courseId);
         }
         return course;
     }
@@ -46,21 +53,25 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public Course update(Course course) {
         Course existingCourse = findById(course.getId());
-
-        if (!course.getName().equals(existingCourse.getName()) && courseRepository.exist(course.getName())) {
-            throw new CourseAlreadyExistsException(String.format("Course with name '%s' already exists.", course.getName()));
+        if (!course.getName().equals(existingCourse.getName()) && (courseRepository.exist(course.getName()))) {
+            throw new CourseAlreadyExistsException(course.getName());
         }
-
-        return courseRepository.update(course);
+        try {
+            return courseRepository.update(course);
+        } catch (DataAccessException ex) {
+            log.error("Error updating course with id: {}", course.getId(), ex);
+            throw new CourseUpdateException("Failed to update course", ex);
+        }
     }
 
     @Override
     public boolean delete(Long id) {
-        Course course = findById(id);
-        if (course != null) {
+        try {
             return courseRepository.delete(id);
+        } catch (DataAccessException ex) {
+            log.error("Error deleting course with id: {}", id, ex);
+            throw new CourseDeletionException("Failed to delete course", ex);
         }
-        return false;
     }
 
     @Override

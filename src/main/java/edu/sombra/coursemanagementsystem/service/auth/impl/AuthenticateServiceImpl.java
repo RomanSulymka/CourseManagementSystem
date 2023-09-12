@@ -49,7 +49,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
                     .role(registerDTO.getRole())
                     .build();
 
-            var savedUser = userRepository.save(user);
+            var savedUser = userRepository.create(user);
             var jwtToken = jwtService.generateToken(user);
             var refreshedToken = jwtService.generateToken(user);
             saveUserToken(savedUser, jwtToken);

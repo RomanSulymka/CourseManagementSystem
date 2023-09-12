@@ -4,15 +4,18 @@ import edu.sombra.coursemanagementsystem.dto.ResetPasswordDTO;
 import edu.sombra.coursemanagementsystem.dto.UserDTO;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.exception.UserAlreadyExistsException;
-import edu.sombra.coursemanagementsystem.exception.UserNotFoundException;
+import edu.sombra.coursemanagementsystem.exception.UserCreationException;
+import edu.sombra.coursemanagementsystem.exception.UserDeletionException;
+import edu.sombra.coursemanagementsystem.exception.UserUpdateException;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,7 +36,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        User user = userRepository.findById(id);
+        if (user == null) {
+            log.error("User not found with id: " + id);
+            throw new EntityNotFoundException("User not found with id: " + id);
+        }
+        return user;
     }
 
     @Override
@@ -45,7 +53,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findUsersByEmails(List<String> usersEmails) {
         return userRepository.findUsersByEmails(usersEmails)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     @Override
@@ -65,23 +73,30 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(User user) {
-        if (userRepository.existsUserByEmail(user.getEmail())) {
-            throw new UserAlreadyExistsException(user.getEmail());
+        try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            return userRepository.create(user);
+        } catch (DataAccessException ex) {
+            log.error("Error creating user: {}", ex.getMessage(), ex);
+            throw new UserCreationException("Failed to create user", ex);
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
     }
 
     @Validated
     @Override
     public User updateUser(User user) {
-        User existingUser = findUserById(user.getId());
-        if (user.getRole() == null) {
-            user.setRole(existingUser.getRole());
+        try {
+            User existingUser = findUserById(user.getId());
+            if (user.getRole() == null) {
+                user.setRole(existingUser.getRole());
+            }
+            BeanUtils.copyProperties(user, existingUser, getNullPropertyNames(user));
+            userRepository.update(existingUser);
+            return existingUser;
+        } catch (DataAccessException ex) {
+            log.error("Error updating user with id: {}", user.getId(), ex);
+            throw new UserUpdateException("Failed to update user", ex);
         }
-        BeanUtils.copyProperties(user, existingUser, getNullPropertyNames(user));
-        userRepository.updateUser(existingUser);
-        return existingUser;
     }
 
     @Override
@@ -93,15 +108,17 @@ public class UserServiceImpl implements UserService {
             log.info("Password has been changed successfully");
             return "Password changed!";
         }
-        throw new UserNotFoundException("User not found: " + resetPasswordDTO.getEmail());
+        throw new EntityNotFoundException("User not found: " + resetPasswordDTO.getEmail());
     }
 
     @Override
-    public String deleteUser(Long id) {
-        User user = findUserById(id);
-        userRepository.deleteUserById(user);
-        log.info("User deleted successfully, userId: " + id);
-        return "User deleted!";
+    public boolean deleteUser(Long id) {
+        try {
+            return userRepository.delete(id);
+        } catch (DataAccessException ex) {
+            log.error("Error deleting user with id: {}", id, ex);
+            throw new UserDeletionException("Failed to delete user", ex);
+        }
     }
 
     @Override

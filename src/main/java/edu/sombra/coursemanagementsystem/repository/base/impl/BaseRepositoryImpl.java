@@ -35,6 +35,7 @@ public class BaseRepositoryImpl<T, ID> implements BaseRepository<T, ID> {
         T entity = entityManager.find(entityClass, id);
         if (entity != null) {
             entityManager.remove(entity);
+            return true;
         }
         return false;
     }

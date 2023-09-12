@@ -64,7 +64,7 @@ CREATE TABLE tokens
     revoked    BOOLEAN     NOT NULL,
     expired    BOOLEAN     NOT NULL,
     user_id    BIGINT,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
