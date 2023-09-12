@@ -17,4 +17,5 @@ public interface UserService {
     User updateUser(User user);
     String resetPassword(ResetPasswordDTO resetPasswordDTO);
     String deleteUser(Long id);
+    List<User> findAllUsers();
 }

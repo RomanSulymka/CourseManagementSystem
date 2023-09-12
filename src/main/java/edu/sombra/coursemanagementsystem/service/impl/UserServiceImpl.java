@@ -104,6 +104,11 @@ public class UserServiceImpl implements UserService {
         return "User deleted!";
     }
 
+    @Override
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
+    }
+
     private static String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
         PropertyDescriptor[] pds = src.getPropertyDescriptors();

@@ -1,16 +1,16 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
-import edu.sombra.coursemanagementsystem.dto.CourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseNotFoundException;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -23,7 +23,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public String create(Course course) {
-        courseRepository.save(course);
+        courseRepository.create(course);
         return course.getName();
     }
 
@@ -35,7 +35,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course findById(Long courseId) {
-        Course course = courseRepository.findById(courseId);
+        Course course = (courseRepository.findById(courseId));
         if (course == null) {
             log.error("Course not found with id: " + courseId);
             throw new CourseNotFoundException("Course not found with id: " + courseId);
@@ -44,20 +44,33 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Optional<Course> update(CourseDTO courseDTO) {
-        if (Objects.nonNull(findById(courseDTO.getCourseId()))) {
-            return courseRepository.updateCourse(courseDTO.getCourseId(), courseDTO.getName());
+    public Optional<Course> update(Course course) {
+        if (Objects.nonNull(findById(course.getId()))) {
+            if (!isCourseExist(course.getName())) {
+                return Optional.ofNullable(courseRepository.update(course));
+            } else {
+                throw new CourseAlreadyExistsException(course.getName());
+            }
         } else {
-            log.error("Not found course with id: " + courseDTO.getCourseId());
-            throw new CourseNotFoundException(courseDTO.getName());
+            log.error("Not found course with id: " + course.getId());
+            throw new CourseNotFoundException(course.getName());
         }
+    }
+
+    private boolean isCourseExist(String name) {
+        return courseRepository.exist(name);
     }
 
     @Override
     public boolean delete(Long id) {
         if (Objects.nonNull(findById(id))) {
-            return courseRepository.deleteCourseById(id);
+            return courseRepository.delete(id);
         }
         return false;
+    }
+
+    @Override
+    public List<Course> findAllCourses() {
+        return courseRepository.findAll();
     }
 }

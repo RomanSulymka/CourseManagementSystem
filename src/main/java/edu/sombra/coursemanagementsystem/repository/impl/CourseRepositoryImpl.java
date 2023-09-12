@@ -3,6 +3,7 @@ package edu.sombra.coursemanagementsystem.repository.impl;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.query.SqlQueryConstants;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.base.impl.BaseRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
@@ -10,9 +11,13 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public class CourseRepositoryImpl implements CourseRepository {
+public class CourseRepositoryImpl extends BaseRepositoryImpl<Course, Long> implements CourseRepository{
     @PersistenceContext
     private EntityManager entityManager;
+
+    public CourseRepositoryImpl() {
+        super(Course.class);
+    }
 
     @Override
     public Optional<Course> findByName(String name) {
@@ -22,31 +27,10 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     @Override
-    public Course save(Course course) {
-        entityManager.persist(course);
-        return course;
-    }
-
-    @Override
-    public Course findById(Long courseId) {
-        return entityManager.find(Course.class, courseId);
-    }
-
-    @Override
-    public Optional<Course> updateCourse(Long courseId, String name) {
-        Course course = findById(courseId);
-        course.setName(name);
-        entityManager.persist(course);
-        return findByName(name);
-    }
-
-    @Override
-    public boolean deleteCourseById(Long id) {
-        Course course = findById(id);
-        if (course != null) {
-            entityManager.remove(course);
-            return true;
-        }
-        return false;
+    public boolean exist(String name) {
+        Long count = entityManager.createQuery(SqlQueryConstants.EXIST_COURSE_BY_NAME_QUERY, Long.class)
+                .setParameter("name", name)
+                .getSingleResult();
+        return count != null && count > 0;
     }
 }

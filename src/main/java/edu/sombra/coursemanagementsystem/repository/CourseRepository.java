@@ -1,15 +1,12 @@
 package edu.sombra.coursemanagementsystem.repository;
 
 import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.repository.base.BaseRepository;
 
 import java.util.Optional;
 
-public interface CourseRepository {
+public interface CourseRepository extends BaseRepository<Course, Long> {
     Optional<Course> findByName(String name);
-    Course save(Course course);
-    Course findById(Long courseId);
 
-    Optional<Course> updateCourse(Long courseId, String name);
-
-    boolean deleteCourseById(Long id);
+    boolean exist(String name);
 }

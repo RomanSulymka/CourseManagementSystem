@@ -1,9 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller;
 
-import edu.sombra.coursemanagementsystem.dto.CourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.service.CourseService;
-import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -29,13 +28,18 @@ public class CourseController {
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<Optional<Course>> editCourse(@RequestBody CourseDTO courseDTO) {
-        return ResponseEntity.ok(courseService.update(courseDTO));
+    public ResponseEntity<Optional<Course>> editCourse(@RequestBody Course course) {
+        return ResponseEntity.ok(courseService.update(course));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.findById(id));
+    }
+
+    @GetMapping("/find-all")
+    public ResponseEntity<List<Course>> findAll() {
+        return ResponseEntity.ok(courseService.findAllCourses());
     }
 
     @DeleteMapping("/{id}")

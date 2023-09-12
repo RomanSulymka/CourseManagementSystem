@@ -76,4 +76,9 @@ public class UserRepositoryImpl implements UserRepository {
     public void deleteUserById(User user) {
         entityManager.remove(user);
     }
+
+    @Override
+    public List<User> findAll() {
+        return null;
+    }
 }
