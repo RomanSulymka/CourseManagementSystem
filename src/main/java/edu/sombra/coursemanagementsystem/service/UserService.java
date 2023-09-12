@@ -6,7 +6,6 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserService {
     User findUserById(Long id);
@@ -15,7 +14,7 @@ public interface UserService {
     User findUsersByEmail(String email);
     void validateInstructors(List<User> instructors, RoleEnum role);
     User createUser(User user);
-    Optional<User> updateUser(User user);
+    User updateUser(User user);
     String resetPassword(ResetPasswordDTO resetPasswordDTO);
-
+    String deleteUser(Long id);
 }

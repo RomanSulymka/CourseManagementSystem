@@ -10,13 +10,18 @@ import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
+import java.beans.PropertyDescriptor;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -33,8 +38,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String assignNewRole(UserDTO userDTO) {
-         userRepository.updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
-         return userDTO.getRole().name();
+        userRepository.updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
+        return userDTO.getRole().name();
     }
 
     @Override
@@ -67,12 +72,16 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Validated
     @Override
-    public Optional<User> updateUser(User user) {
-        if (Objects.nonNull(findUserById(user.getId()))) {
-            return userRepository.updateUser(user);
+    public User updateUser(User user) {
+        User existingUser = findUserById(user.getId());
+        if (user.getRole() == null) {
+            user.setRole(existingUser.getRole());
         }
-        return Optional.empty();
+        BeanUtils.copyProperties(user, existingUser, getNullPropertyNames(user));
+        userRepository.updateUser(existingUser);
+        return existingUser;
     }
 
     @Override
@@ -85,5 +94,23 @@ public class UserServiceImpl implements UserService {
             return "Password changed!";
         }
         throw new UserNotFoundException("User not found: " + resetPasswordDTO.getEmail());
+    }
+
+    @Override
+    public String deleteUser(Long id) {
+        User user = findUserById(id);
+        userRepository.deleteUserById(user);
+        log.info("User deleted successfully, userId: " + id);
+        return "User deleted!";
+    }
+
+    private static String[] getNullPropertyNames(Object source) {
+        final BeanWrapper src = new BeanWrapperImpl(source);
+        PropertyDescriptor[] pds = src.getPropertyDescriptors();
+
+        return Arrays.stream(pds)
+                .map(PropertyDescriptor::getName)
+                .filter(name -> src.getPropertyValue(name) == null)
+                .toArray(String[]::new);
     }
 }
