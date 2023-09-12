@@ -6,10 +6,8 @@ import edu.sombra.coursemanagementsystem.query.SqlQueryConstants;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,16 +68,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> updateUser(User user) {
-        User existingUser = entityManager.find(User.class, user.getId());
-        if (existingUser != null) {
-            existingUser.setFirstName(user.getFirstName());
-            existingUser.setLastName(user.getLastName());
-            existingUser.setEmail(user.getEmail());
-            existingUser.setPassword(user.getPassword());
-            existingUser.setRole(user.getRole());
-            entityManager.merge(existingUser);
-        }
-        return findById(user.getId());
+    public User updateUser(User user) {
+       return entityManager.merge(user);
+    }
+
+    @Override
+    public void deleteUserById(User user) {
+        entityManager.remove(user);
     }
 }
