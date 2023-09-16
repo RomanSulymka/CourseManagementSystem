@@ -2,7 +2,7 @@ package edu.sombra.coursemanagementsystem.controller.exception;
 
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.ErrorResponse;
-import edu.sombra.coursemanagementsystem.exception.InstructorsAlreadyAssignedException;
+import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyExistsException;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,10 +20,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({ InstructorsAlreadyAssignedException.class, AccessDeniedException.class })
+    @ExceptionHandler({ UserAlreadyAssignedException.class, AccessDeniedException.class })
     public ResponseEntity<String> handleException(Exception e) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        if (e instanceof InstructorsAlreadyAssignedException) {
+        if (e instanceof UserAlreadyAssignedException) {
             status = HttpStatus.CONFLICT;
         } else if (e instanceof AccessDeniedException) {
             status = HttpStatus.FORBIDDEN;

@@ -18,17 +18,13 @@ import java.util.Optional;
 @Slf4j
 @Repository
 @Transactional
-public class UserRepositoryImpl extends BaseRepositoryImpl<User, Long> implements UserRepository {
+public class UserRepositoryImpl implements UserRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public UserRepositoryImpl() {
-        super(User.class);
-    }
-
     @Override
     public boolean existsUserByEmail(String email) {
-        Long count = entityManager.createQuery(SqlQueryConstants.EXIST_USER_BY_EMAIL_QUERY, Long.class)
+        Long count = entityManager().createQuery(SqlQueryConstants.EXIST_USER_BY_EMAIL_QUERY, Long.class)
                 .setParameter("email", email)
                 .getSingleResult();
         return count != null && count > 0;
@@ -36,7 +32,7 @@ public class UserRepositoryImpl extends BaseRepositoryImpl<User, Long> implement
 
     @Override
     public User findUserByEmail(String email) {
-        return entityManager.createQuery(
+        return entityManager().createQuery(
                         SqlQueryConstants.FIND_USER_BY_EMAIL_QUERY, User.class)
                 .setParameter("email", email)
                 .getSingleResult();
@@ -44,7 +40,7 @@ public class UserRepositoryImpl extends BaseRepositoryImpl<User, Long> implement
 
     @Override
     public void updateRoleByEmail(String email, RoleEnum role) {
-        entityManager.createQuery(SqlQueryConstants.UPDATE_ROLE_BY_EMAIL_QUERY)
+        entityManager().createQuery(SqlQueryConstants.UPDATE_ROLE_BY_EMAIL_QUERY)
                 .setParameter("role", role)
                 .setParameter("email", email)
                 .executeUpdate();
@@ -52,10 +48,20 @@ public class UserRepositoryImpl extends BaseRepositoryImpl<User, Long> implement
 
     @Override
     public Optional<List<User>> findUsersByEmails(List<String> emails) {
-        List<User> users = entityManager.createQuery(SqlQueryConstants.FIND_USERS_BY_EMAIL_QUERY, User.class)
+        List<User> users = entityManager().createQuery(SqlQueryConstants.FIND_USERS_BY_EMAIL_QUERY, User.class)
                 .setParameter("emails", emails)
                 .getResultList();
 
         return Optional.ofNullable(users);
+    }
+
+    @Override
+    public EntityManager entityManager() {
+        return entityManager;
+    }
+
+    @Override
+    public Class<User> getEntityClass() {
+        return User.class;
     }
 }

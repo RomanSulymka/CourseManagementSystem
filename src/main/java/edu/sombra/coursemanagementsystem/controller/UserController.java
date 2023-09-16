@@ -5,7 +5,6 @@ import edu.sombra.coursemanagementsystem.dto.UserDTO;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,7 +50,7 @@ public class UserController {
 
     @GetMapping("/{email}")
     public ResponseEntity<User> findUserByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.findUsersByEmail(email));
+        return ResponseEntity.ok(userService.findUserByEmail(email));
     }
 
     @GetMapping("/find-all")

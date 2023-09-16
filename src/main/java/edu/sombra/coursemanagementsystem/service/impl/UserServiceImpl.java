@@ -4,8 +4,8 @@ import edu.sombra.coursemanagementsystem.dto.ResetPasswordDTO;
 import edu.sombra.coursemanagementsystem.dto.UserDTO;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
+import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.UserCreationException;
-import edu.sombra.coursemanagementsystem.exception.UserDeletionException;
 import edu.sombra.coursemanagementsystem.exception.UserUpdateException;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -36,12 +36,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserById(Long id) {
-        User user = userRepository.findById(id);
-        if (user == null) {
-            log.error("User not found with id: " + id);
-            throw new EntityNotFoundException("User not found with id: " + id);
-        }
-        return user;
+        return userRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("User not found with id: " + id);
+                    return new EntityNotFoundException("User not found with id: " + id);
+                });
     }
 
     @Override
@@ -57,17 +56,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findUsersByEmail(String email) {
+    public User findUserByEmail(String email) {
         return userRepository.findUserByEmail(email);
     }
 
     @Override
-    public void validateInstructors(List<User> instructors, RoleEnum role) {
-        boolean allInstructors = instructors.stream()
-                .allMatch(instructor -> instructor.getRole() == role);
-
-        if (!allInstructors) {
-            throw new AccessDeniedException("Users should have the role: " + role.name());
+    public void validateInstructor(User instructor, RoleEnum role) {
+        if (instructor.getRole() != role) {
+            throw new AccessDeniedException("User should have the role: " + role.name());
         }
     }
 
@@ -75,7 +71,7 @@ public class UserServiceImpl implements UserService {
     public User createUser(User user) {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-            return userRepository.create(user);
+            return userRepository.save(user);
         } catch (DataAccessException ex) {
             log.error("Error creating user: {}", ex.getMessage(), ex);
             throw new UserCreationException("Failed to create user", ex);
@@ -101,8 +97,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
-        if (Objects.nonNull(findUsersByEmail(resetPasswordDTO.getEmail()))) {
-            User user = findUsersByEmail(resetPasswordDTO.getEmail());
+        if (Objects.nonNull(findUserByEmail(resetPasswordDTO.getEmail()))) {
+            User user = findUserByEmail(resetPasswordDTO.getEmail());
             user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
             updateUser(user);
             log.info("Password has been changed successfully");
@@ -114,10 +110,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean deleteUser(Long id) {
         try {
-            return userRepository.delete(id);
+            User user = findUserById(id);
+            userRepository.delete(user);
+            //fixme: fix this code
+            return true;
         } catch (DataAccessException ex) {
             log.error("Error deleting user with id: {}", id, ex);
-            throw new UserDeletionException("Failed to delete user", ex);
+            throw new EntityDeletionException("Failed to delete user", ex);
         }
     }
 
