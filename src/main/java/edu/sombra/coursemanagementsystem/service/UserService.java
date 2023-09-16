@@ -18,4 +18,5 @@ public interface UserService {
     String resetPassword(ResetPasswordDTO resetPasswordDTO);
     boolean deleteUser(Long id);
     List<User> findAllUsers();
+    boolean existsUserByEmail(String email);
 }

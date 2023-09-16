@@ -33,7 +33,7 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(user));
     }
 
-    @PostMapping("/assign")
+    @PostMapping("/assign-role")
     public ResponseEntity<String> assignNewRole(@RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.assignNewRole(userDTO));
     }

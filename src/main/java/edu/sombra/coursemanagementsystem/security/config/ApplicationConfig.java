@@ -2,7 +2,7 @@ package edu.sombra.coursemanagementsystem.security.config;
 
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.repository.UserRepository;
+import edu.sombra.coursemanagementsystem.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -18,11 +18,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return userRepository::findUserByEmail;
+        return userService::findUserByEmail;
     }
 
     @Bean
@@ -46,7 +46,7 @@ public class ApplicationConfig {
     @Bean
     public CommandLineRunner defaultUsers() {
         return args -> {
-            if (userRepository.findUserByEmail("admin@gmail.com") == null) {
+            if (userService.findUserByEmail("admin@gmail.com") == null) {
                 User admin = User.builder()
                         .firstName("admin")
                         .lastName("admin")
@@ -54,10 +54,10 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("adminPass"))
                         .role(RoleEnum.ADMIN)
                         .build();
-                userRepository.save(admin);
+                userService.createUser(admin);
             }
 
-            if (userRepository.findUserByEmail("instructor@gmail.com") == null) {
+            if (userService.findUserByEmail("instructor@gmail.com") == null) {
                 User instructor = User.builder()
                         .firstName("instructor")
                         .lastName("instructor")
@@ -65,10 +65,10 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("instructorPass"))
                         .role(RoleEnum.INSTRUCTOR)
                         .build();
-                userRepository.save(instructor);
+                userService.createUser(instructor);
             }
 
-            if (userRepository.findUserByEmail("student@gmail.com") == null) {
+            if (userService.findUserByEmail("student@gmail.com") == null) {
                 User student = User.builder()
                         .firstName("student")
                         .lastName("student")
@@ -76,7 +76,7 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("studentPass"))
                         .role(RoleEnum.STUDENT)
                         .build();
-                userRepository.save(student);
+                userService.createUser(student);
             }
         };
     }

@@ -6,6 +6,7 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.UserCreationException;
+import edu.sombra.coursemanagementsystem.exception.UserException;
 import edu.sombra.coursemanagementsystem.exception.UserUpdateException;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -45,8 +46,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String assignNewRole(UserDTO userDTO) {
-        userRepository.updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
-        return userDTO.getRole().name();
+        try {
+            findUserByEmail(userDTO.getEmail());
+            userRepository.updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
+            return userDTO.getRole().name();
+        } catch (DataAccessException ex) {
+            log.error("Error assigning new role for user with email: " + userDTO.getEmail());
+            throw new UserException("Failed assign new role for user", ex);
+        }
     }
 
     @Override
@@ -57,7 +64,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserByEmail(String email) {
-        return userRepository.findUserByEmail(email);
+        return userRepository.findUserByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     @Override
@@ -123,6 +130,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Override
+    public boolean existsUserByEmail(String email) {
+        return userRepository.existsUserByEmail(email);
     }
 
     private static String[] getNullPropertyNames(Object source) {
