@@ -3,8 +3,8 @@ package edu.sombra.coursemanagementsystem.service.impl;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
-import edu.sombra.coursemanagementsystem.exception.CourseDeletionException;
 import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
+import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,7 +26,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public String create(Course course) {
         try {
-            Course createdCourse = courseRepository.create(course);
+            Course createdCourse = courseRepository.save(course);
             return createdCourse.getName();
         } catch (DataAccessException ex) {
             log.error("Error creating course: {}", ex.getMessage(), ex);
@@ -35,20 +35,20 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course findByName(String courseName) {
+    public Course findByName(String courseName) throws EntityNotFoundException {
         return courseRepository.findByName(courseName)
-                .orElseThrow(() -> new EntityNotFoundException(courseName));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found with name: " + courseName));
     }
 
     @Override
     public Course findById(Long courseId) {
-        Course course = courseRepository.findById(courseId);
-        if (course == null) {
-            log.error("Course not found with id: " + courseId);
-            throw new EntityNotFoundException("Course not found with id: " + courseId);
-        }
-        return course;
+        return courseRepository.findById(courseId)
+                .orElseThrow(() -> {
+                    log.error("Course not found with id: " + courseId);
+                    return new EntityNotFoundException("Course not found with id: " + courseId);
+                });
     }
+
 
     @Override
     public Course update(Course course) {
@@ -67,10 +67,12 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public boolean delete(Long id) {
         try {
-            return courseRepository.delete(id);
+            Course course = findById(id);
+            courseRepository.delete(course);
+            return true;
         } catch (DataAccessException ex) {
             log.error("Error deleting course with id: {}", id, ex);
-            throw new CourseDeletionException("Failed to delete course", ex);
+            throw new EntityDeletionException("Failed to delete course", ex);
         }
     }
 

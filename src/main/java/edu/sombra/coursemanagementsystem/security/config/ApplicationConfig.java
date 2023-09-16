@@ -54,7 +54,7 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("adminPass"))
                         .role(RoleEnum.ADMIN)
                         .build();
-                userRepository.create(admin);
+                userRepository.save(admin);
             }
 
             if (userRepository.findUserByEmail("instructor@gmail.com") == null) {
@@ -65,7 +65,7 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("instructorPass"))
                         .role(RoleEnum.INSTRUCTOR)
                         .build();
-                userRepository.create(instructor);
+                userRepository.save(instructor);
             }
 
             if (userRepository.findUserByEmail("student@gmail.com") == null) {
@@ -76,7 +76,7 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("studentPass"))
                         .role(RoleEnum.STUDENT)
                         .build();
-                userRepository.create(student);
+                userRepository.save(student);
             }
         };
     }

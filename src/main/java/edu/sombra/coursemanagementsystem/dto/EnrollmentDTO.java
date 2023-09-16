@@ -3,12 +3,10 @@ package edu.sombra.coursemanagementsystem.dto;
 import lombok.Data;
 import lombok.NonNull;
 
-import java.util.List;
-
 @Data
 public class EnrollmentDTO {
     @NonNull
-    private List<String> instructorsEmail;
+    private String instructorEmail;
     @NonNull
     private String courseName;
 }
