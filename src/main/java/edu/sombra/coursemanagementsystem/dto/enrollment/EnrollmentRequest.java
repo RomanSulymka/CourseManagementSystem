@@ -1,4 +1,4 @@
-package edu.sombra.coursemanagementsystem.dto;
+package edu.sombra.coursemanagementsystem.dto.enrollment;
 
 import lombok.Data;
 

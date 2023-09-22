@@ -1,7 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller;
 
-import edu.sombra.coursemanagementsystem.dto.ResetPasswordDTO;
-import edu.sombra.coursemanagementsystem.dto.UserDTO;
+import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import lombok.AllArgsConstructor;

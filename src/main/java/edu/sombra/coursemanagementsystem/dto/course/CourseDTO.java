@@ -1,4 +1,4 @@
-package edu.sombra.coursemanagementsystem.dto;
+package edu.sombra.coursemanagementsystem.dto.course;
 
 import edu.sombra.coursemanagementsystem.entity.Course;
 import lombok.Data;

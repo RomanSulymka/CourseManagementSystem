@@ -1,4 +1,4 @@
-package edu.sombra.coursemanagementsystem.dto;
+package edu.sombra.coursemanagementsystem.dto.user;
 
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import lombok.Data;

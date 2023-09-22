@@ -1,22 +1,18 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
-import edu.sombra.coursemanagementsystem.dto.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
-import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
-import edu.sombra.coursemanagementsystem.exception.CourseStartDateExpired;
 import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
-import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.UserService;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +80,7 @@ public class CourseServiceImpl implements CourseService {
     @Scheduled(cron = "0 0 0 * * ?")
     public void startCoursesOnSchedule() {
         LocalDate currentDate = LocalDate.now();
+        //FIXME: add checking if course has at least 5 lessons
         List<Course> coursesToStart = courseRepository.findByStartDate(currentDate);
         coursesToStart.forEach(course -> {
             course.setStatus(CourseStatus.STARTED);

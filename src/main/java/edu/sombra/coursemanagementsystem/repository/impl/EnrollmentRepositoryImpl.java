@@ -1,6 +1,6 @@
 package edu.sombra.coursemanagementsystem.repository.impl;
 
-import edu.sombra.coursemanagementsystem.dto.RemoveInstructorDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.RemoveInstructorDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.User;

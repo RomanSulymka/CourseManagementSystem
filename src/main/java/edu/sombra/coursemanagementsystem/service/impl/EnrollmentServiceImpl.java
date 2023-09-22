@@ -1,10 +1,10 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
-import edu.sombra.coursemanagementsystem.dto.EnrollmentApplyForCourseDTO;
-import edu.sombra.coursemanagementsystem.dto.EnrollmentDTO;
-import edu.sombra.coursemanagementsystem.dto.EnrollmentGetByNameDTO;
-import edu.sombra.coursemanagementsystem.dto.EnrollmentGetDTO;
-import edu.sombra.coursemanagementsystem.dto.EnrollmentUpdateDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.User;

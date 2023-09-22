@@ -6,6 +6,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class LessonRepositoryImpl implements LessonRepository {
     @PersistenceContext
@@ -19,5 +21,12 @@ public class LessonRepositoryImpl implements LessonRepository {
     @Override
     public Class<Lesson> getEntityClass() {
         return Lesson.class;
+    }
+
+    @Override
+    public List<Lesson> findAllByCourseId(Long courseId) {
+        return entityManager().createQuery("SELECT l FROM lessons l WHERE l.course.id =: courseId", Lesson.class)
+                .setParameter("courseId", courseId)
+                .getResultList();
     }
 }
