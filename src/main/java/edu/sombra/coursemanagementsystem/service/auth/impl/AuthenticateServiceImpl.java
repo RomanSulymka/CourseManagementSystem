@@ -8,9 +8,9 @@ import edu.sombra.coursemanagementsystem.entity.Token;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.TokenType;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyExistsException;
-import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.repository.token.TokenRepository;
 import edu.sombra.coursemanagementsystem.security.jwt.JwtService;
+import edu.sombra.coursemanagementsystem.service.UserService;
 import edu.sombra.coursemanagementsystem.service.auth.AuthenticateService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +30,7 @@ import java.io.IOException;
 public class AuthenticateServiceImpl implements AuthenticateService {
     private static final String JWT_HEADER = "Bearer ";
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -38,7 +38,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
 
     @Override
     public AuthenticationResponse register(RegisterDTO registerDTO) {
-        if (userRepository.existsUserByEmail(registerDTO.getEmail())) {
+        if (userService.existsUserByEmail(registerDTO.getEmail())) {
             throw new UserAlreadyExistsException(registerDTO.getEmail());
         } else {
             var user = User.builder()
@@ -49,7 +49,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
                     .role(registerDTO.getRole())
                     .build();
 
-            var savedUser = userRepository.save(user);
+            var savedUser = userService.createUser(user);
             var jwtToken = jwtService.generateToken(user);
             var refreshedToken = jwtService.generateToken(user);
             saveUserToken(savedUser, jwtToken);
@@ -69,7 +69,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
                 )
         );
 
-        var user = userRepository.findUserByEmail(authenticationDTO.getEmail());
+        var user = userService.findUserByEmail(authenticationDTO.getEmail());
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
@@ -91,7 +91,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
         refreshToken = authHeader.substring(7);
         userEmail = jwtService.extractUsername(refreshToken);
         if (userEmail != null) {
-            var user = this.userRepository.findUserByEmail(userEmail);
+            var user = this.userService.findUserByEmail(userEmail);
             if (jwtService.isTokenValid(refreshToken, user)) {
                 var accessToken = jwtService.generateToken(user);
                 revokeAllUserTokens(user);

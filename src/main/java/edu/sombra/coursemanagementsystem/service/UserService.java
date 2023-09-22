@@ -11,10 +11,12 @@ public interface UserService {
     User findUserById(Long id);
     String assignNewRole(UserDTO userDTO);
     List<User> findUsersByEmails(List<String> usersEmails);
-    User findUsersByEmail(String email);
-    void validateInstructors(List<User> instructors, RoleEnum role);
+    User findUserByEmail(String email);
+    void validateInstructor(User instructor, RoleEnum role);
     User createUser(User user);
     User updateUser(User user);
     String resetPassword(ResetPasswordDTO resetPasswordDTO);
-    String deleteUser(Long id);
+    boolean deleteUser(Long id);
+    List<User> findAllUsers();
+    boolean existsUserByEmail(String email);
 }

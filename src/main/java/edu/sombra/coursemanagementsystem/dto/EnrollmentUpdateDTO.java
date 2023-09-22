@@ -1,14 +1,10 @@
 package edu.sombra.coursemanagementsystem.dto;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 
-@Builder
 @Data
-public class EnrollmentDTO {
-    @NonNull
+public class EnrollmentUpdateDTO {
+    private Long id;
     private String userEmail;
-    @NonNull
     private String courseName;
 }

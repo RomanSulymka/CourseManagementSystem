@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.query.SqlQueryConstants;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
+import edu.sombra.coursemanagementsystem.repository.base.impl.BaseRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
@@ -16,22 +17,14 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
-@AllArgsConstructor
 @Transactional
 public class UserRepositoryImpl implements UserRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-
-    @Override
-    public User save(User user) {
-        entityManager.persist(user);
-        return user;
-    }
-
     @Override
     public boolean existsUserByEmail(String email) {
-        Long count = entityManager.createQuery(SqlQueryConstants.EXIST_USER_BY_EMAIL_QUERY, Long.class)
+        Long count = entityManager().createQuery(SqlQueryConstants.EXIST_USER_BY_EMAIL_QUERY, Long.class)
                 .setParameter("email", email)
                 .getSingleResult();
         return count != null && count > 0;
@@ -39,7 +32,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User findUserByEmail(String email) {
-        return entityManager.createQuery(
+        return entityManager().createQuery(
                         SqlQueryConstants.FIND_USER_BY_EMAIL_QUERY, User.class)
                 .setParameter("email", email)
                 .getSingleResult();
@@ -47,7 +40,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void updateRoleByEmail(String email, RoleEnum role) {
-        entityManager.createQuery(SqlQueryConstants.UPDATE_ROLE_BY_EMAIL_QUERY)
+        entityManager().createQuery(SqlQueryConstants.UPDATE_ROLE_BY_EMAIL_QUERY)
                 .setParameter("role", role)
                 .setParameter("email", email)
                 .executeUpdate();
@@ -55,7 +48,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<List<User>> findUsersByEmails(List<String> emails) {
-        List<User> users = entityManager.createQuery(SqlQueryConstants.FIND_USERS_BY_EMAIL_QUERY, User.class)
+        List<User> users = entityManager().createQuery(SqlQueryConstants.FIND_USERS_BY_EMAIL_QUERY, User.class)
                 .setParameter("emails", emails)
                 .getResultList();
 
@@ -63,17 +56,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
-        return Optional.ofNullable(entityManager.find(User.class, id));
+    public EntityManager entityManager() {
+        return entityManager;
     }
 
     @Override
-    public User updateUser(User user) {
-       return entityManager.merge(user);
-    }
-
-    @Override
-    public void deleteUserById(User user) {
-        entityManager.remove(user);
+    public Class<User> getEntityClass() {
+        return User.class;
     }
 }

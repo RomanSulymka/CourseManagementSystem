@@ -12,6 +12,9 @@ CREATE TABLE courses
 (
     id   BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    status VARCHAR(255),
+    startDate DATE NOT NULL ,
+    started BOOLEAN,
     UNIQUE (name)
 );
 
@@ -30,6 +33,7 @@ CREATE TABLE lessons
     id        BIGSERIAL PRIMARY KEY,
     name      VARCHAR(255) NOT NULL,
     course_id BIGINT       NOT NULL,
+    UNIQUE (name),
     FOREIGN KEY (course_id) REFERENCES courses (id)
 );
 
@@ -64,20 +68,20 @@ CREATE TABLE tokens
     revoked    BOOLEAN     NOT NULL,
     expired    BOOLEAN     NOT NULL,
     user_id    BIGINT,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
 INSERT INTO users (first_name, last_name, password, email, role)
 VALUES ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT'),
-       ('admin', 'admin', 'adminpass', 'user2@example.com', 'ADMIN'),
+       ('admin', 'admin', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'admin@gmail.com', 'ADMIN'),
        ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
        ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
 
 INSERT INTO courses (name)
-VALUES ('Course A'),
-       ('Course B'),
-       ('Course C');
+VALUES ('Course A', 'RUNNING'),
+       ('Course B', 'RUNNING'),
+       ('Course C', 'RUNNING');
 
 INSERT INTO enrollments (user_id, course_id)
 VALUES (1, 1),
