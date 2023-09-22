@@ -1,6 +1,5 @@
 package edu.sombra.coursemanagementsystem.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

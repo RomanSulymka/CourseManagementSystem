@@ -2,11 +2,12 @@ package edu.sombra.coursemanagementsystem.security.config;
 
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.service.UserService;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -15,14 +16,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+//FIXME: rebase to global config package
+
+@EnableScheduling
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return userService::findUserByEmail;
+        return userRepository::findUserByEmail;
     }
 
     @Bean
@@ -46,7 +50,7 @@ public class ApplicationConfig {
     @Bean
     public CommandLineRunner defaultUsers() {
         return args -> {
-            if (userService.findUserByEmail("admin@gmail.com") == null) {
+            if (userRepository.findUserByEmail("admin@gmail.com") == null) {
                 User admin = User.builder()
                         .firstName("admin")
                         .lastName("admin")
@@ -54,10 +58,10 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("adminPass"))
                         .role(RoleEnum.ADMIN)
                         .build();
-                userService.createUser(admin);
+                userRepository.save(admin);
             }
 
-            if (userService.findUserByEmail("instructor@gmail.com") == null) {
+            if (userRepository.findUserByEmail("instructor@gmail.com") == null) {
                 User instructor = User.builder()
                         .firstName("instructor")
                         .lastName("instructor")
@@ -65,10 +69,10 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("instructorPass"))
                         .role(RoleEnum.INSTRUCTOR)
                         .build();
-                userService.createUser(instructor);
+                userRepository.save(instructor);
             }
 
-            if (userService.findUserByEmail("student@gmail.com") == null) {
+            if (userRepository.findUserByEmail("student@gmail.com") == null) {
                 User student = User.builder()
                         .firstName("student")
                         .lastName("student")
@@ -76,7 +80,7 @@ public class ApplicationConfig {
                         .password(passwordEncoder().encode("studentPass"))
                         .role(RoleEnum.STUDENT)
                         .build();
-                userService.createUser(student);
+                userRepository.save(student);
             }
         };
     }

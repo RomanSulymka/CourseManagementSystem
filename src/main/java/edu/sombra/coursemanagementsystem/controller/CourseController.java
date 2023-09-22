@@ -1,6 +1,9 @@
 package edu.sombra.coursemanagementsystem.controller;
 
+import edu.sombra.coursemanagementsystem.dto.CourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.entity.Lesson;
+import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,8 +25,8 @@ public class CourseController {
     private final CourseService courseService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> createCourse(@RequestBody Course course) {
-        return ResponseEntity.ok(courseService.create(course));
+    public ResponseEntity<Course> createCourse(@RequestBody CourseDTO courseDTO) {
+        return ResponseEntity.ok(courseService.create(courseDTO));
     }
 
     @PutMapping("/edit")
@@ -45,5 +47,10 @@ public class CourseController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> deleteCourse(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.delete(id));
+    }
+
+    @GetMapping("/find-all-lessons/{id}")
+    public ResponseEntity<List<Lesson>> findAllLessonsByCourse(@PathVariable Long id) {
+        return ResponseEntity.ok(courseService.findAllLessonsByCourse(id));
     }
 }

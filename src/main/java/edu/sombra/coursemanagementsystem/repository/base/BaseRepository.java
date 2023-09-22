@@ -1,10 +1,13 @@
 package edu.sombra.coursemanagementsystem.repository.base;
 
 import jakarta.persistence.EntityManager;
+import org.springframework.data.repository.NoRepositoryBean;
 
 import java.util.List;
 import java.util.Optional;
 
+
+@NoRepositoryBean
 public interface BaseRepository<T, ID> {
 
     EntityManager entityManager();
@@ -14,6 +17,13 @@ public interface BaseRepository<T, ID> {
     default T save(T entity) {
         entityManager().persist(entity);
         return entity;
+    }
+
+    default List<T> saveAll(List<T> entities) {
+        for (T entity : entities) {
+            entityManager().persist(entity);
+        }
+        return entities;
     }
 
     default T update(T entity) {

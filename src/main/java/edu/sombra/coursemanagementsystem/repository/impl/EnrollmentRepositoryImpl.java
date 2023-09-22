@@ -74,6 +74,34 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
     }
 
     @Override
+    public List<String> findCoursesByUserId(Long id) {
+        return entityManager().createQuery("SELECT c.name FROM enrollments e INNER JOIN courses c on c.id = e.course.id WHERE e.user.id =:id", String.class)
+                .setParameter("id", id)
+                .getResultList();
+    }
+
+    @Override
+    public Course findCourseByEnrollmentId(Long id) {
+        return entityManager().createQuery("SELECT e.course FROM enrollments e INNER JOIN users u on u.id = e.user.id where e.id =: id", Course.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+
+    @Override
+    public List<User> findAssignedInstructorsForCourse(Long id) {
+        return entityManager().createQuery("SELECT u FROM enrollments e INNER JOIN users u on u.id = e.user.id WHERE e.course.id =: id AND u.role = 'INSTRUCTOR'", User.class)
+                .setParameter("id", id)
+                .getResultList();
+    }
+
+    @Override
+    public User findUserByEnrollmentId(Long id) {
+        return entityManager().createQuery("SELECT u FROM enrollments e INNER JOIN users u on u.id = e.user.id WHERE e.id =: id", User.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+
+    @Override
     public EntityManager entityManager() {
         return entityManager;
     }

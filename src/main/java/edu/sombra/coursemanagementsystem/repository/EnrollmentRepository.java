@@ -24,4 +24,11 @@ public interface EnrollmentRepository extends BaseRepository<Enrollment, Long> {
 
     Long getUserRegisteredCourseCount(Long userId);
 
+    List<String> findCoursesByUserId(Long id);
+
+    Course findCourseByEnrollmentId(Long id);
+
+    List<User> findAssignedInstructorsForCourse(Long id);
+
+    User findUserByEnrollmentId(Long id);
 }

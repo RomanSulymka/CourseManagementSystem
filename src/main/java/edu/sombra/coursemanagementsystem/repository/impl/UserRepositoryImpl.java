@@ -31,11 +31,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findUserByEmail(String email) {
-        return Optional.ofNullable(entityManager().createQuery(
+    public User findUserByEmail(String email) {
+        return entityManager().createQuery(
                         SqlQueryConstants.FIND_USER_BY_EMAIL_QUERY, User.class)
                 .setParameter("email", email)
-                .getSingleResult());
+                .getSingleResult();
     }
 
     @Override

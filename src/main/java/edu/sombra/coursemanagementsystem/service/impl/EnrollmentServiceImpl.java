@@ -9,6 +9,7 @@ import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
+import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
@@ -16,8 +17,9 @@ import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Tuple;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 @Transactional
 @Service
@@ -37,10 +39,20 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private static final Long COURSE_LIMIT = 5L;
 
     @Override
+    public void save(Enrollment enrollment) {
+        try {
+            enrollmentRepository.save(enrollment);
+        } catch (DataAccessException ex) {
+            log.error("Error creating course: {}", ex.getMessage(), ex);
+            throw new CourseCreationException("Failed to create course", ex);
+        }
+    }
+
+    @Override
     public void assignInstructor(EnrollmentDTO enrollmentDTO) {
         try {
             Course course = courseService.findByName(enrollmentDTO.getCourseName());
-            User instructor = userService.findUserByEmail(enrollmentDTO.getInstructorEmail());
+            User instructor = userService.findUserByEmail(enrollmentDTO.getUserEmail());
             userService.validateInstructor(instructor, RoleEnum.INSTRUCTOR);
 
             isUserAlreadyAssigned(course, instructor);
@@ -48,17 +60,47 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             Enrollment enrollment = buildEnrollment(course, instructor);
             enrollmentRepository.save(enrollment);
         } catch (DataAccessException ex) {
-            log.error("Error saving instructor to the course with email: {}", enrollmentDTO.getInstructorEmail());
+            log.error("Error saving instructor to the course with email: {}", enrollmentDTO.getUserEmail());
             throw new EnrollmentException("Failed to assign instructor" + ex);
         }
     }
 
     @Override
     public void removeUserFromCourse(Long id) {
+        try {
+            User user = findUserByEnrollment(id);
+            if (user.getRole().equals(RoleEnum.INSTRUCTOR)) {
+                if (!getListOfInstructorsForCourse(id).isEmpty() && getListOfInstructorsForCourse(id).size() > 1) {
+                    removeEnrollment(id);
+                } else {
+                    throw new EnrollmentException("Course should have at least one instructor assigned on the course");
+                }
+            } else {
+                removeEnrollment(id);
+            }
+        } catch (DataAccessException ex) {
+            throw new EntityNotFoundException("Entity not found with ID: " + id);
+        }
+    }
+
+    private User findUserByEnrollment(Long id) {
+        try {
+            return enrollmentRepository.findUserByEnrollmentId(id);
+        } catch (NoResultException ex) {
+            throw new EnrollmentException("Enrollment not found for id: " + id, ex);
+        }
+    }
+
+    private void removeEnrollment(Long id) {
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found with id: " + id));
 
         enrollmentRepository.delete(enrollment);
+    }
+
+    private List<User> getListOfInstructorsForCourse(Long id) {
+        Course course = enrollmentRepository.findCourseByEnrollmentId(id);
+        return enrollmentRepository.findAssignedInstructorsForCourse(course.getId());
     }
 
     @Override
@@ -92,6 +134,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO) {
         try {
             User user = userService.findUserByEmail(updateDTO.getUserEmail());
+            //FIXME: check is new user has instructor role
             Course course = courseService.findByName(updateDTO.getCourseName());
             Enrollment enrollment = enrollmentRepository.update(Enrollment.builder()
                     .id(updateDTO.getId())
@@ -131,6 +174,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
     }
 
+    @Override
+    public void isUserAlreadyAssigned(Course course, User user) {
+        boolean userAssigned = enrollmentRepository.isUserAssignedToCourse(course, user);
+        if (userAssigned) {
+            log.error("User is already assigned to this course");
+            throw new UserAlreadyAssignedException("User is already assigned to this course");
+        }
+    }
+
     private EnrollmentGetByNameDTO mapTupleToEnrollmentGetByNameDTO(Tuple tuple) {
         String courseName = tuple.get(0, String.class);
         String firstName = tuple.get(1, String.class);
@@ -141,19 +193,21 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         return new EnrollmentGetByNameDTO(courseName, firstName, lastName, email, role);
     }
 
-    private Enrollment buildEnrollment(Course course, User instructor) {
+    @Override
+    public Enrollment buildEnrollment(Course course, User instructor) {
         return Enrollment.builder()
                 .course(course)
                 .user(instructor)
                 .build();
     }
 
-    private void isUserAlreadyAssigned(Course course, User user) {
-        boolean userAssigned = enrollmentRepository.isUserAssignedToCourse(course, user);
-        if (userAssigned) {
-            log.error("User is already assigned to this course");
-            throw new UserAlreadyAssignedException("User is already assigned to this course");
+    @Override
+    public List<String> findAllCoursesByUser(Long id) {
+        try {
+            return enrollmentRepository.findCoursesByUserId(id);
+        } catch (DataAccessException ex) {
+            log.error("Error finding courses for user with id: {}", id, ex);
+            throw new EntityNotFoundException("Failed to find courses for user", ex);
         }
     }
-
 }

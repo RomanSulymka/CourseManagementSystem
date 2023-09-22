@@ -5,10 +5,14 @@ import edu.sombra.coursemanagementsystem.dto.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.EnrollmentGetDTO;
 import edu.sombra.coursemanagementsystem.dto.EnrollmentUpdateDTO;
+import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.entity.Enrollment;
+import edu.sombra.coursemanagementsystem.entity.User;
 
 import java.util.List;
 
 public interface EnrollmentService {
+    void save(Enrollment enrollment);
 
     void assignInstructor(EnrollmentDTO enrollmentDTO);
 
@@ -20,5 +24,12 @@ public interface EnrollmentService {
 
     EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO);
 
+    //FIXME: rename
     void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO);
+
+    void isUserAlreadyAssigned(Course course, User user);
+
+    Enrollment buildEnrollment(Course course, User user);
+
+    List<String> findAllCoursesByUser(Long id);
 }

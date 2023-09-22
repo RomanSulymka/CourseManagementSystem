@@ -3,7 +3,6 @@ package edu.sombra.coursemanagementsystem.repository.base.impl;
 import edu.sombra.coursemanagementsystem.repository.base.BaseRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
