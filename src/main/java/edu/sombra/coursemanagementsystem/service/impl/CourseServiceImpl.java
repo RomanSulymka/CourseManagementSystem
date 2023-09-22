@@ -8,10 +8,12 @@ import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
+import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
+import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,9 @@ import java.util.Objects;
 public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
+    private final LessonService lessonService;
+
+    private static final Long MIN_LESSONS = 5L;
 
     @Override
     public Course create(CourseDTO courseDTO) {
@@ -41,6 +46,7 @@ public class CourseServiceImpl implements CourseService {
 
         Course createdCourse = saveCourse(course);
         assignInstructor(createdCourse, courseDTO.getInstructorEmail());
+        lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), course);
 
         return findById(createdCourse.getId());
     }
@@ -80,15 +86,26 @@ public class CourseServiceImpl implements CourseService {
     @Scheduled(cron = "0 0 0 * * ?")
     public void startCoursesOnSchedule() {
         LocalDate currentDate = LocalDate.now();
-        //FIXME: add checking if course has at least 5 lessons
         List<Course> coursesToStart = courseRepository.findByStartDate(currentDate);
         coursesToStart.forEach(course -> {
-            course.setStatus(CourseStatus.STARTED);
-            course.setStarted(true);
+            List<Lesson> lessons = lessonService.findAllLessonsByCourse(course.getId());
+            if (isCourseHasMoreLessons(lessons.size())) {
+                course.setStatus(CourseStatus.STARTED);
+                course.setStarted(true);
+            }
         });
 
         courseRepository.saveAll(coursesToStart);
         log.info("Scheduler successfully started");
+    }
+
+    private boolean isCourseHasMoreLessons(int size) {
+        if (CourseServiceImpl.MIN_LESSONS > size) {
+            log.error("Failed start course, course has not enough lessons");
+            throw new CourseException("Course has not enough lessons");
+        } else {
+            return true;
+        }
     }
 
     @Override

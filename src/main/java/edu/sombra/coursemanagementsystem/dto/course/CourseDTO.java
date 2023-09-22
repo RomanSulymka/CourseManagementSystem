@@ -10,4 +10,5 @@ public class CourseDTO {
     private Course course;
     @NonNull
     private String instructorEmail;
+    private Long numberOfLessons;
 }

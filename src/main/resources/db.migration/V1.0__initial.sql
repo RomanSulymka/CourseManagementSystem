@@ -33,7 +33,6 @@ CREATE TABLE lessons
     id        BIGSERIAL PRIMARY KEY,
     name      VARCHAR(255) NOT NULL,
     course_id BIGINT       NOT NULL,
-    UNIQUE (name),
     FOREIGN KEY (course_id) REFERENCES courses (id)
 );
 
