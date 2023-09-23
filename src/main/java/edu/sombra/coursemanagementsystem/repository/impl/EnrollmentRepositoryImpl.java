@@ -14,11 +14,11 @@ import java.util.List;
 
 @Repository
 public class EnrollmentRepositoryImpl implements EnrollmentRepository {
-    public static final String GET_ENROLLMENT_BY_COURSE_NAME = "select c.name, u.firstName, u.lastName, u.role, u.email from enrollments e inner join courses c on c.id = e.course.id INNER JOIN users u on u.id = e.user.id where c.name = :name";
-    public static final String GET_NUMBER_OF_USER_COURSES = "SELECT count(e.course.id) FROM enrollments e WHERE e.user.id =: userId";
     @PersistenceContext
     private EntityManager entityManager;
 
+    public static final String GET_ENROLLMENT_BY_COURSE_NAME = "select c.name, u.firstName, u.lastName, u.role, u.email from enrollments e inner join courses c on c.id = e.course.id INNER JOIN users u on u.id = e.user.id where c.name = :name";
+    public static final String GET_NUMBER_OF_USER_COURSES = "SELECT count(e.course.id) FROM enrollments e WHERE e.user.id =: userId";
     public static final String IS_USERS_ALREADY_ASSIGNED_FOR_COURSE_QUERY = "SELECT COUNT(e) FROM enrollments e WHERE e.course = :course AND e.user IN :users";
     public static final String IS_USER_ALREADY_ASSIGNED_FOR_COURSE_QUERY = "SELECT COUNT(e) FROM enrollments e WHERE e.course = :course AND e.user = :user";
 
