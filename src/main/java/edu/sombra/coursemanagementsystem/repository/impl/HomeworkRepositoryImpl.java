@@ -16,6 +16,15 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
     private EntityManager entityManager;
 
     @Override
+    public void setMark(Long homeworkId, Long mark) {
+        entityManager()
+                .createNativeQuery("UPDATE homework SET mark =:mark WHERE id =:id")
+                .setParameter("id", homeworkId)
+                .setParameter("mark", mark)
+                .executeUpdate();
+    }
+
+    @Override
     public EntityManager entityManager() {
         return entityManager;
     }
