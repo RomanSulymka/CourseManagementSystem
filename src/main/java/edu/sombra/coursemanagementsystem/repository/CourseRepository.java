@@ -29,4 +29,6 @@ public interface CourseRepository extends BaseRepository<Course, Long> {
     void assignInstructor(Long courseId, Long instructorId);
 
     Optional<Course> findCourseByHomeworkId(Long homeworkId);
+
+    List<Course> findCoursesByInstructorId(Long instructorId);
 }

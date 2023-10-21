@@ -25,4 +25,6 @@ public interface CourseService {
     List<Lesson> findAllLessonsByCourse(Long id);
 
     Course findCourseByHomeworkId(Long userId, Long homeworkId);
+
+    List<Course> findCoursesByInstructorId(Long instructorId);
 }

@@ -9,14 +9,26 @@ import java.util.List;
 
 public interface UserService {
     User findUserById(Long id);
+
     String assignNewRole(UserDTO userDTO);
+
     List<User> findUsersByEmails(List<String> usersEmails);
+
     User findUserByEmail(String email);
+
     void validateInstructor(User instructor, RoleEnum role);
+
     User createUser(User user);
+
     User updateUser(User user);
+
     String resetPassword(ResetPasswordDTO resetPasswordDTO);
+
     boolean deleteUser(Long id);
+
     List<User> findAllUsers();
+
     boolean existsUserByEmail(String email);
+
+    boolean isUserInstructor(Long instructorId);
 }

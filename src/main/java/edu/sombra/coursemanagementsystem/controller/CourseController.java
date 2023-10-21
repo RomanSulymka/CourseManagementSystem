@@ -52,4 +52,9 @@ public class CourseController {
     public ResponseEntity<List<Lesson>> findAllLessonsByCourse(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.findAllLessonsByCourse(id));
     }
+
+    @GetMapping("/instructor/{instructorId}")
+    public ResponseEntity<List<Course>> findCoursesByInstructorId(@PathVariable Long instructorId) {
+        return ResponseEntity.ok(courseService.findCoursesByInstructorId(instructorId));
+    }
 }

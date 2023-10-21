@@ -74,7 +74,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateInstructor(User instructor, RoleEnum role) {
         if (instructor.getRole() != role) {
-            throw new AccessDeniedException("User should have the role: " + role.name());
+            log.error("User should has the role: " + role.name());
+            throw new AccessDeniedException("User should has the role: " + role.name());
         }
     }
 
@@ -139,6 +140,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsUserByEmail(String email) {
         return userRepository.existsUserByEmail(email);
+    }
+
+    @Override
+    public boolean isUserInstructor(Long instructorId) {
+        User instructor = findUserById(instructorId);
+        validateInstructor(instructor, RoleEnum.INSTRUCTOR);
+        return true;
     }
 
     private static String[] getNullPropertyNames(Object source) {

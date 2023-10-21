@@ -21,7 +21,10 @@ public class CourseRepositoryImpl implements CourseRepository {
     @PersistenceContext
     @Getter
     private EntityManager entityManager;
-    private static final String GET_COURSE_BY_HOMEWORK_ID = "SELECT c FROM courses c INNER JOIN lessons l on c.id = l.course.id INNER JOIN homework h on l.id = h.lesson.id WHERE h.id =: id";
+    private static final String GET_COURSE_BY_HOMEWORK_ID = "SELECT c FROM courses c INNER JOIN lessons l on c.id = l.course.id " +
+            "INNER JOIN homework h on l.id = h.lesson.id WHERE h.id =: id";
+    private static final String GET_ALL_COURSES_BY_INSTRUCTOR_ID = "SELECT c FROM courses c " +
+            "INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE u.id =: instructorId";
 
 
     @Override
@@ -84,6 +87,13 @@ public class CourseRepositoryImpl implements CourseRepository {
         return Optional.ofNullable(getEntityManager().createQuery(GET_COURSE_BY_HOMEWORK_ID, Course.class)
                 .setParameter("id", homeworkId)
                 .getSingleResult());
+    }
+
+    @Override
+    public List<Course> findCoursesByInstructorId(Long instructorId) {
+        return getEntityManager().createQuery(GET_ALL_COURSES_BY_INSTRUCTOR_ID, Course.class)
+                .setParameter("instructorId", instructorId)
+                .getResultList();
     }
 
     @Override

@@ -2,7 +2,6 @@ package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
-import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
@@ -14,7 +13,6 @@ import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
-import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -170,6 +168,12 @@ public class CourseServiceImpl implements CourseService {
     public Course findCourseByHomeworkId(Long userId, Long homeworkId) {
         return courseRepository.findCourseByHomeworkId(homeworkId)
                 .orElseThrow(EntityNotFoundException::new);
+    }
+
+    @Override
+    public List<Course> findCoursesByInstructorId(Long instructorId) {
+        userService.isUserInstructor(instructorId);
+        return courseRepository.findCoursesByInstructorId(instructorId);
     }
 
     @Override
