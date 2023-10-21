@@ -97,6 +97,13 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     @Override
+    public List<User> findUsersInCourse(String courseId) {
+        return getEntityManager().createQuery("SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE c.id =: courseId", User.class)
+                .setParameter("courseId", courseId)
+                .getResultList();
+    }
+
+    @Override
     public Class<Course> getEntityClass() {
         return Course.class;
     }

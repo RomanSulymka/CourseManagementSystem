@@ -149,6 +149,17 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
+    @Override
+    public boolean isInstructorAssignedToCourse(Long instructorId, String courseId) {
+        boolean isAssigned = userRepository.isInstructorAssignedToCourse(instructorId, courseId);
+        if (isAssigned) {
+            return true;
+        } else {
+            log.error("Instructor with id {}, is not assigned to this course {}", instructorId, courseId);
+            throw new EntityNotFoundException("Instructor is not assigned to this course");
+        }
+    }
+
     private static String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
         PropertyDescriptor[] pds = src.getPropertyDescriptors();

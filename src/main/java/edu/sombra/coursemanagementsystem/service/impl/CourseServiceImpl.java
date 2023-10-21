@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
@@ -11,6 +12,7 @@ import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
+import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
@@ -35,6 +37,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
     private final LessonService lessonService;
+    private final UserMapper userMapper;
 
     private static final Long MIN_LESSONS = 5L;
 
@@ -179,6 +182,14 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<Lesson> findAllLessonsByCourse(Long id) {
         return courseRepository.findAllLessonsInCourse(id).orElseThrow(EntityNotFoundException::new);
+    }
+
+    @Override
+    public List<UserAssignedToCourseDTO> findUsersAssignedToCourseByInstructorId(Long instructorId, String courseId) {
+        userService.isUserInstructor(instructorId);
+        //userService.isInstructorAssignedToCourse(instructorId, courseId);
+        List<User> user = courseRepository.findUsersInCourse(courseId);
+        return userMapper.mapUsersToDTO(user);
     }
 
     public Course startCourse(Long id, CourseStatus status) {

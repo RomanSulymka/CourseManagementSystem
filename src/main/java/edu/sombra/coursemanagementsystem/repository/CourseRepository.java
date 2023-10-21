@@ -31,4 +31,6 @@ public interface CourseRepository extends BaseRepository<Course, Long> {
     Optional<Course> findCourseByHomeworkId(Long homeworkId);
 
     List<Course> findCoursesByInstructorId(Long instructorId);
+
+    List<User> findUsersInCourse(String courseId);
 }
