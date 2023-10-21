@@ -17,7 +17,7 @@ public class BaseRepositoryImpl<T, ID> implements BaseRepository<T, ID> {
     }
 
     @Override
-    public EntityManager entityManager() {
+    public EntityManager getEntityManager() {
         return entityManager;
     }
 

@@ -8,6 +8,7 @@ import edu.sombra.coursemanagementsystem.repository.base.BaseRepository;
 import jakarta.persistence.Tuple;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EnrollmentRepository extends BaseRepository<Enrollment, Long> {
     void assignUserToCourse(Enrollment enrollment);
@@ -31,4 +32,5 @@ public interface EnrollmentRepository extends BaseRepository<Enrollment, Long> {
     List<User> findAssignedInstructorsForCourse(Long id);
 
     User findUserByEnrollmentId(Long id);
+
 }

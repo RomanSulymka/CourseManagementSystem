@@ -7,5 +7,5 @@ public interface HomeworkService {
 
     void save(Homework homework);
 
-    void setMark(Long homeworkId, Long mark);
+    void setMark(Long userId, Long homeworkId, Long mark);
 }

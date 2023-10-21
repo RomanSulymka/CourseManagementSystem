@@ -15,27 +15,27 @@ public class FileRepositoryImpl implements FileRepository {
 
     @Override
     public byte[] findDataById(Long fileId) {
-        return entityManager().createQuery("SELECT f.fileData FROM files f WHERE id =: id", byte[].class)
+        return getEntityManager().createQuery("SELECT f.fileData FROM files f WHERE id =: id", byte[].class)
                 .setParameter("id", fileId)
                 .getSingleResult();
     }
 
     @Override
     public String findFileNameById(Long fileId) {
-        return entityManager().createQuery("SELECT f.fileName FROM files f WHERE id =: id", String.class)
+        return getEntityManager().createQuery("SELECT f.fileName FROM files f WHERE id =: id", String.class)
                 .setParameter("id", fileId)
                 .getSingleResult();
     }
 
     @Override
     public File findFileByName(String fileName) {
-        return entityManager().createQuery("SELECT f FROM files f WHERE f.fileName =: fileName", File.class)
+        return getEntityManager().createQuery("SELECT f FROM files f WHERE f.fileName =: fileName", File.class)
                 .setParameter("fileName", fileName)
                 .getSingleResult();
     }
 
     @Override
-    public EntityManager entityManager() {
+    public EntityManager getEntityManager() {
         return entityManager;
     }
 

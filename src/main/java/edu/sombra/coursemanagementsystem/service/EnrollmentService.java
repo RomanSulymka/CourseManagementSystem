@@ -32,4 +32,6 @@ public interface EnrollmentService {
     Enrollment buildEnrollment(Course course, User user);
 
     List<String> findAllCoursesByUser(Long id);
+
+    boolean isUserAssignedToCourse(Long userId, Long homeworkId);
 }

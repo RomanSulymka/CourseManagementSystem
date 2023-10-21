@@ -92,4 +92,10 @@ public class LessonServiceImpl implements LessonService {
     public Lesson editLesson(Lesson lesson) {
         return lessonRepository.update(lesson);
     }
+
+    @Override
+    public Lesson findLessonByHomeworkId(Long homeworkId) {
+        return lessonRepository.findLessonByHomeworkId(homeworkId)
+                .orElseThrow(EntityNotFoundException::new);
+    }
 }

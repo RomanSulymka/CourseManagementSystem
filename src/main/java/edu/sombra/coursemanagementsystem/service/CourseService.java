@@ -23,4 +23,6 @@ public interface CourseService {
     Course updateStatus(Long id, CourseStatus status);
 
     List<Lesson> findAllLessonsByCourse(Long id);
+
+    Course findCourseByHomeworkId(Long userId, Long homeworkId);
 }

@@ -19,7 +19,7 @@ public class HomeworkController {
 
     @PutMapping("/mark")
     public ResponseEntity<String> setMark(@RequestBody HomeworkDTO homeworkDTO) {
-        homeworkService.setMark(homeworkDTO.getHomeworkId(), homeworkDTO.getMark());
+        homeworkService.setMark(homeworkDTO.getUserId(), homeworkDTO.getHomeworkId(), homeworkDTO.getMark());
         return ResponseEntity.ok("Mark saved successfully");
     }
 }

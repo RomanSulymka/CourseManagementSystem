@@ -20,4 +20,6 @@ public interface LessonService {
     void deleteLesson(Long id);
 
     Lesson editLesson(Lesson lesson);
+
+    Lesson findLessonByHomeworkId(Long homeworkId);
 }

@@ -210,4 +210,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new EntityNotFoundException("Failed to find courses for user", ex);
         }
     }
+
+    @Override
+    public boolean isUserAssignedToCourse(Long userId, Long homeworkId) {
+        Course course = courseService.findCourseByHomeworkId(userId, homeworkId);
+        User user = userService.findUserById(userId);
+        return enrollmentRepository.isUserAssignedToCourse(course, user);
+    }
 }
