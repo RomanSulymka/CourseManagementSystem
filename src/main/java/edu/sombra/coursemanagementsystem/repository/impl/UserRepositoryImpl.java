@@ -60,7 +60,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public boolean isInstructorAssignedToCourse(Long instructorId, String courseId) {
+    public boolean isUserAssignedToCourse(Long instructorId, Long courseId) {
         try {
             Course course = getEntityManager().createQuery(GET_COURSE_BY_USER_ID_AND_COURSE_ID, Course.class)
                     .setParameter("userId", instructorId)

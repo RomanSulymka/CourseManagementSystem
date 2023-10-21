@@ -12,5 +12,5 @@ public interface UserRepository extends BaseRepository<User, Long> {
     User findUserByEmail(String email);
     void updateRoleByEmail(String email, RoleEnum role);
     Optional<List<User>> findUsersByEmails(List<String> emails);
-    boolean isInstructorAssignedToCourse(Long instructorId, String courseId);
+    boolean isUserAssignedToCourse(Long instructorId, Long courseId);
 }

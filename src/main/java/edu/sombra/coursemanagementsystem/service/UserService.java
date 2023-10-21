@@ -32,5 +32,7 @@ public interface UserService {
 
     boolean isUserInstructor(Long instructorId);
 
-    boolean isInstructorAssignedToCourse(Long instructorId, String courseId);
+    boolean isInstructorAssignedToCourse(Long instructorId, Long courseId);
+
+    boolean isStudentAssignedToCourse(Long studentId, Long courseId);
 }
