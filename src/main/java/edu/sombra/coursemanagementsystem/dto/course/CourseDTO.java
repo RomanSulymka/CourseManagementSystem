@@ -1,4 +1,4 @@
-package edu.sombra.coursemanagementsystem.dto;
+package edu.sombra.coursemanagementsystem.dto.course;
 
 import edu.sombra.coursemanagementsystem.entity.Course;
 import lombok.Data;
@@ -10,4 +10,5 @@ public class CourseDTO {
     private Course course;
     @NonNull
     private String instructorEmail;
+    private Long numberOfLessons;
 }

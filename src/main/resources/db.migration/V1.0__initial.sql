@@ -10,11 +10,11 @@ CREATE TABLE users
 
 CREATE TABLE courses
 (
-    id   BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    status VARCHAR(255),
-    startDate DATE NOT NULL ,
-    started BOOLEAN,
+    id        BIGSERIAL PRIMARY KEY,
+    name      VARCHAR(255) NOT NULL,
+    status    VARCHAR(255),
+    startDate DATE         NOT NULL,
+    started   BOOLEAN,
     UNIQUE (name)
 );
 
@@ -33,19 +33,26 @@ CREATE TABLE lessons
     id        BIGSERIAL PRIMARY KEY,
     name      VARCHAR(255) NOT NULL,
     course_id BIGINT       NOT NULL,
-    UNIQUE (name),
     FOREIGN KEY (course_id) REFERENCES courses (id)
+);
+
+CREATE TABLE files
+(
+    id        BIGSERIAL PRIMARY KEY,
+    file_name VARCHAR(255),
+    file_data BYTEA NOT NULL
 );
 
 CREATE TABLE homework
 (
     id        BIGSERIAL PRIMARY KEY,
-    mark      BIGINT       NOT NULL,
-    user_id   BIGINT       NOT NULL,
-    lesson_id BIGINT       NOT NULL,
-    file_url  VARCHAR(255) NOT NULL,
+    mark      BIGINT,
+    user_id   BIGINT NOT NULL,
+    lesson_id BIGINT NOT NULL,
+    file_id   BIGINT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (lesson_id) REFERENCES lessons (id)
+    FOREIGN KEY (lesson_id) REFERENCES lessons (id),
+    FOREIGN KEY (file_id) REFERENCES files (id)
 );
 
 CREATE TABLE course_feedback
@@ -96,12 +103,19 @@ VALUES ('Lesson 1', 1),
        ('Lesson 1', 2),
        ('Lesson 1', 3);
 
-INSERT INTO homework (mark, user_id, lesson_id, file_url)
-VALUES (95, 1, 1, 'https://example.com/homework1.pdf'),
-       (88, 2, 1, 'https://example.com/homework2.pdf'),
-       (92, 1, 2, 'https://example.com/homework3.pdf'),
-       (87, 2, 2, 'https://example.com/homework4.pdf'),
-       (94, 1, 3, 'https://example.com/homework5.pdf');
+INSERT INTO files (file_name, file_data)
+VALUES ('file1.txt', E'\\x5465737420746578742066696C65'),
+       ('file2.txt', E'\\x5465737420746578742066696C6532'),
+       ('file3.txt', E'\\x5465737420746578742066696C6533'),
+       ('file4.txt', E'\\x5465737420746578742066696C6534'),
+       ('file5.txt', E'\\x5465737420746578742066696C6535');
+
+INSERT INTO homework (mark, user_id, lesson_id, file_id)
+VALUES (95, 1, 1, 1),
+       (88, 2, 1, 2),
+       (92, 1, 2, 3),
+       (87, 2, 2, 4),
+       (94, 1, 3, 5);
 
 INSERT INTO course_feedback (feedback_text, course_id, instructor_id, student_id)
 VALUES ('Great course!', 1, 3, 1),

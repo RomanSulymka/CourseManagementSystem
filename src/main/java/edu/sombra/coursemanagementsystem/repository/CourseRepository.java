@@ -27,4 +27,10 @@ public interface CourseRepository extends BaseRepository<Course, Long> {
     List<Course> findByStartDate(LocalDate currentDate);
 
     void assignInstructor(Long courseId, Long instructorId);
+
+    Optional<Course> findCourseByHomeworkId(Long homeworkId);
+
+    List<Course> findCoursesByInstructorId(Long instructorId);
+
+    List<User> findUsersInCourse(String courseId);
 }

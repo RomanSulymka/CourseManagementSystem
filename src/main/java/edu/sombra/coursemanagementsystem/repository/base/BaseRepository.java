@@ -10,37 +10,37 @@ import java.util.Optional;
 @NoRepositoryBean
 public interface BaseRepository<T, ID> {
 
-    EntityManager entityManager();
+    EntityManager getEntityManager();
 
     Class<T> getEntityClass();
 
     default T save(T entity) {
-        entityManager().persist(entity);
+        getEntityManager().persist(entity);
         return entity;
     }
 
     default List<T> saveAll(List<T> entities) {
         for (T entity : entities) {
-            entityManager().persist(entity);
+            getEntityManager().persist(entity);
         }
         return entities;
     }
 
     default T update(T entity) {
-        return entityManager().merge(entity);
+        return getEntityManager().merge(entity);
     }
 
     default void delete(T entity) {
-        entityManager().remove(entity);
+        getEntityManager().remove(entity);
     }
 
     default Optional<T> findById(ID id) {
-        T entity = entityManager().find(getEntityClass(), id);
+        T entity = getEntityManager().find(getEntityClass(), id);
         return Optional.ofNullable(entity);
     }
 
     default List<T> findAll() {
-        return entityManager()
+        return getEntityManager()
                 .createQuery("SELECT e FROM " + getEntityClass().getName() + " e", getEntityClass())
                 .getResultList();
     }

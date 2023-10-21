@@ -1,7 +1,7 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
-import edu.sombra.coursemanagementsystem.dto.ResetPasswordDTO;
-import edu.sombra.coursemanagementsystem.dto.UserDTO;
+import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
@@ -74,7 +74,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateInstructor(User instructor, RoleEnum role) {
         if (instructor.getRole() != role) {
-            throw new AccessDeniedException("User should have the role: " + role.name());
+            log.error("User should has the role: " + role.name());
+            throw new AccessDeniedException("User should has the role: " + role.name());
         }
     }
 
@@ -139,6 +140,35 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsUserByEmail(String email) {
         return userRepository.existsUserByEmail(email);
+    }
+
+    @Override
+    public boolean isUserInstructor(Long instructorId) {
+        User instructor = findUserById(instructorId);
+        validateInstructor(instructor, RoleEnum.INSTRUCTOR);
+        return true;
+    }
+
+    @Override
+    public boolean isInstructorAssignedToCourse(Long instructorId, Long courseId) {
+        isUserInstructor(instructorId);
+        return isUserAssignedToCourse(instructorId, courseId);
+    }
+
+    //FIXME
+    @Override
+    public boolean isStudentAssignedToCourse(Long studentId, Long courseId) {
+        return isUserAssignedToCourse(studentId, courseId);
+    }
+
+    private boolean isUserAssignedToCourse(Long studentId, Long courseId) {
+        boolean isAssigned = userRepository.isUserAssignedToCourse(studentId, courseId);
+        if (isAssigned) {
+            return true;
+        } else {
+            log.error("Instructor with id {}, is not assigned to this course {}", studentId, courseId);
+            throw new EntityNotFoundException("Instructor is not assigned to this course");
+        }
     }
 
     private static String[] getNullPropertyNames(Object source) {

@@ -1,6 +1,5 @@
 package edu.sombra.coursemanagementsystem.service.auth;
 
-import edu.sombra.coursemanagementsystem.dto.ResetPasswordDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
 import edu.sombra.coursemanagementsystem.dto.auth.RegisterDTO;

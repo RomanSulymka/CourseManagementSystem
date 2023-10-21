@@ -1,9 +1,9 @@
 package edu.sombra.coursemanagementsystem.controller;
 
-import edu.sombra.coursemanagementsystem.dto.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
-import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -52,5 +52,15 @@ public class CourseController {
     @GetMapping("/find-all-lessons/{id}")
     public ResponseEntity<List<Lesson>> findAllLessonsByCourse(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.findAllLessonsByCourse(id));
+    }
+
+    @GetMapping("/instructor/{instructorId}")
+    public ResponseEntity<List<Course>> findCoursesByInstructorId(@PathVariable Long instructorId) {
+        return ResponseEntity.ok(courseService.findCoursesByInstructorId(instructorId));
+    }
+
+    @GetMapping("/instructor/{instructorId}/{courseId}")
+    public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@PathVariable Long instructorId, @PathVariable String courseId) {
+        return ResponseEntity.ok(courseService.findUsersAssignedToCourseByInstructorId(instructorId, courseId));
     }
 }

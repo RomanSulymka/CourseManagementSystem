@@ -1,22 +1,22 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
-import edu.sombra.coursemanagementsystem.dto.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
-import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
-import edu.sombra.coursemanagementsystem.exception.CourseStartDateExpired;
+import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
+import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
-import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
+import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +36,10 @@ import java.util.Objects;
 public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
+    private final LessonService lessonService;
+    private final UserMapper userMapper;
+
+    private static final Long MIN_LESSONS = 5L;
 
     @Override
     public Course create(CourseDTO courseDTO) {
@@ -45,6 +49,7 @@ public class CourseServiceImpl implements CourseService {
 
         Course createdCourse = saveCourse(course);
         assignInstructor(createdCourse, courseDTO.getInstructorEmail());
+        lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), course);
 
         return findById(createdCourse.getId());
     }
@@ -86,12 +91,24 @@ public class CourseServiceImpl implements CourseService {
         LocalDate currentDate = LocalDate.now();
         List<Course> coursesToStart = courseRepository.findByStartDate(currentDate);
         coursesToStart.forEach(course -> {
-            course.setStatus(CourseStatus.STARTED);
-            course.setStarted(true);
+            List<Lesson> lessons = lessonService.findAllLessonsByCourse(course.getId());
+            if (isCourseHasMoreLessons(lessons.size())) {
+                course.setStatus(CourseStatus.STARTED);
+                course.setStarted(true);
+            }
         });
 
         courseRepository.saveAll(coursesToStart);
         log.info("Scheduler successfully started");
+    }
+
+    private boolean isCourseHasMoreLessons(int size) {
+        if (CourseServiceImpl.MIN_LESSONS > size) {
+            log.error("Failed start course, course has not enough lessons");
+            throw new CourseException("Course has not enough lessons");
+        } else {
+            return true;
+        }
     }
 
     @Override
@@ -151,8 +168,28 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Course findCourseByHomeworkId(Long userId, Long homeworkId) {
+        return courseRepository.findCourseByHomeworkId(homeworkId)
+                .orElseThrow(EntityNotFoundException::new);
+    }
+
+    @Override
+    public List<Course> findCoursesByInstructorId(Long instructorId) {
+        userService.isUserInstructor(instructorId);
+        return courseRepository.findCoursesByInstructorId(instructorId);
+    }
+
+    @Override
     public List<Lesson> findAllLessonsByCourse(Long id) {
         return courseRepository.findAllLessonsInCourse(id).orElseThrow(EntityNotFoundException::new);
+    }
+
+    @Override
+    public List<UserAssignedToCourseDTO> findUsersAssignedToCourseByInstructorId(Long instructorId, String courseId) {
+        userService.isUserInstructor(instructorId);
+        //userService.isInstructorAssignedToCourse(instructorId, courseId);
+        List<User> user = courseRepository.findUsersInCourse(courseId);
+        return userMapper.mapUsersToDTO(user);
     }
 
     public Course startCourse(Long id, CourseStatus status) {

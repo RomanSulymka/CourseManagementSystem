@@ -1,6 +1,6 @@
 package edu.sombra.coursemanagementsystem.repository;
 
-import edu.sombra.coursemanagementsystem.dto.RemoveInstructorDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.RemoveInstructorDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.User;
@@ -8,6 +8,7 @@ import edu.sombra.coursemanagementsystem.repository.base.BaseRepository;
 import jakarta.persistence.Tuple;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EnrollmentRepository extends BaseRepository<Enrollment, Long> {
     void assignUserToCourse(Enrollment enrollment);
@@ -31,4 +32,5 @@ public interface EnrollmentRepository extends BaseRepository<Enrollment, Long> {
     List<User> findAssignedInstructorsForCourse(Long id);
 
     User findUserByEnrollmentId(Long id);
+
 }
