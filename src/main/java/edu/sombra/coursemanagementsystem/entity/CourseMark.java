@@ -26,7 +26,7 @@ public class CourseMark {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "total_score")
-    private Double totalScore;
+    private BigDecimal totalScore;
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;

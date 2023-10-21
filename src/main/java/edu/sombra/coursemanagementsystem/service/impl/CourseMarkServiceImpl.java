@@ -49,7 +49,7 @@ public class CourseMarkServiceImpl implements CourseMarkService {
             courseMarkRepository.save(CourseMark.builder()
                     .user(user)
                     .course(course)
-                    .totalScore(averageMark)
+                    .totalScore(BigDecimal.valueOf(averageMark))
                     .build());
             log.info("Total mark saved successfully");
         } else {
@@ -59,7 +59,7 @@ public class CourseMarkServiceImpl implements CourseMarkService {
                     .id(courseMark.getId())
                     .user(user)
                     .course(course)
-                    .totalScore(averageMark)
+                    .totalScore(BigDecimal.valueOf(averageMark))
                     .build());
             log.info("Total mark updated successfully");
         }
