@@ -7,14 +7,17 @@ import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
+import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
+import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
+import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
@@ -35,6 +38,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseService courseService;
     private final UserService userService;
+    private final LessonService lessonService;
+    private final HomeworkRepository homeworkRepository;
 
     private static final Long COURSE_LIMIT = 5L;
 
@@ -165,6 +170,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 isUserAlreadyAssigned(course, user);
                 Enrollment enrollment = buildEnrollment(course, user);
                 enrollmentRepository.save(enrollment);
+                List<Lesson> lessons = courseService.findAllLessonsByCourse(course.getId());
+                for (Lesson lesson: lessons) {
+                    homeworkRepository.assignUserForLesson(user.getId(), lesson.getId());
+                }
             } else {
                 throw new EnrollmentException("User has already assigned for 5 courses");
             }

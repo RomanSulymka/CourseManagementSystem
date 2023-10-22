@@ -49,6 +49,14 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
     }
 
     @Override
+    public void assignUserForLesson(Long userId, Long lessonId) {
+        getEntityManager().createNativeQuery("INSERT INTO homework (user_id, lesson_id) VALUES (:userId, :lessonId )")
+                .setParameter("userId", userId)
+                .setParameter("lessonId", lessonId)
+                .executeUpdate();
+    }
+
+    @Override
     public EntityManager getEntityManager() {
         return entityManager;
     }

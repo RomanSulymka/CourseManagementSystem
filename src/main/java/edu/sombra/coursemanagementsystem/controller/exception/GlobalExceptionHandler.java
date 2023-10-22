@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.controller.exception;
 
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.ErrorResponse;
+import edu.sombra.coursemanagementsystem.exception.LessonException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
@@ -53,6 +54,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {UserNotAssignedToCourseException.class})
     public ResponseEntity<ErrorResponse> handleUserNotAssignedToCourseException(UserNotAssignedToCourseException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {LessonException.class})
+    public ResponseEntity<ErrorResponse> handleLessonException(LessonException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

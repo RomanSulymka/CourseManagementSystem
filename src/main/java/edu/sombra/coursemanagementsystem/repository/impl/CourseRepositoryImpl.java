@@ -67,7 +67,7 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public Optional<List<Lesson>> findAllLessonsInCourse(Long id) {
-        return Optional.ofNullable(getEntityManager().createQuery("SELECT l.name FROM courses c INNER JOIN lessons l on c.id = l.course.id WHERE c.id = :id", Lesson.class)
+        return Optional.ofNullable(getEntityManager().createQuery("SELECT l FROM courses c INNER JOIN lessons l on c.id = l.course.id WHERE c.id = :id", Lesson.class)
                 .setParameter("id", id)
                 .getResultList());
     }

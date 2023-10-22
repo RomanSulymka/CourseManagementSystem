@@ -11,4 +11,6 @@ public interface HomeworkRepository extends BaseRepository<Homework, Long> {
     Double calculateAverageHomeworksMarkByUserId(Long userId, Long id);
 
     Optional<Homework> findByUserAndLessonId(Long userId, Long lessonId);
+
+    void assignUserForLesson(Long userId, Long lessonId);
 }
