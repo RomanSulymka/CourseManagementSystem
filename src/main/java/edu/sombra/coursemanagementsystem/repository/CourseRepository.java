@@ -8,8 +8,6 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.base.BaseRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +28,7 @@ public interface CourseRepository extends BaseRepository<Course, Long> {
 
     Optional<Course> findCourseByHomeworkId(Long homeworkId);
 
-    List<Course> findCoursesByInstructorId(Long instructorId);
+    Optional<List<Course>> findCoursesByUserId(Long instructorId);
 
     List<User> findUsersInCourse(String courseId);
 }

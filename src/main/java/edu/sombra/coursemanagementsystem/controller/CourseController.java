@@ -61,6 +61,11 @@ public class CourseController {
 
     @GetMapping("/instructor/{instructorId}/{courseId}")
     public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@PathVariable Long instructorId, @PathVariable String courseId) {
-        return ResponseEntity.ok(courseService.findUsersAssignedToCourseByInstructorId(instructorId, courseId));
+        return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(instructorId, courseId));
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<Course>> findUsersAssignedToCourseByInstructorId(@PathVariable Long studentId) {
+        return ResponseEntity.ok(courseService.findCoursesByUserId(studentId));
     }
 }

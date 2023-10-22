@@ -29,5 +29,7 @@ public interface CourseService {
 
     List<Course> findCoursesByInstructorId(Long instructorId);
 
-    List<UserAssignedToCourseDTO> findUsersAssignedToCourseByInstructorId(Long instructorId, String courseId);
+    List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, String courseId);
+
+    List<Course> findCoursesByUserId(Long userId);
 }

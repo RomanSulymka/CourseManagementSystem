@@ -176,7 +176,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<Course> findCoursesByInstructorId(Long instructorId) {
         userService.isUserInstructor(instructorId);
-        return courseRepository.findCoursesByInstructorId(instructorId);
+        return findCoursesByUserId(instructorId);
     }
 
     @Override
@@ -185,7 +185,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<UserAssignedToCourseDTO> findUsersAssignedToCourseByInstructorId(Long instructorId, String courseId) {
+    public List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, String courseId) {
         userService.isUserInstructor(instructorId);
         //userService.isInstructorAssignedToCourse(instructorId, courseId);
         List<User> user = courseRepository.findUsersInCourse(courseId);
@@ -215,4 +215,8 @@ public class CourseServiceImpl implements CourseService {
         return !currentDate.isAfter(startDate);
     }
 
+    public List<Course> findCoursesByUserId(Long userId) {
+        return courseRepository.findCoursesByUserId(userId)
+                .orElseThrow(EntityNotFoundException::new);
+    }
 }
