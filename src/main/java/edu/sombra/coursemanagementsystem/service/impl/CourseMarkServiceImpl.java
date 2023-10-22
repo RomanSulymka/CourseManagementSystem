@@ -53,7 +53,7 @@ public class CourseMarkServiceImpl implements CourseMarkService {
                     .build());
             log.info("Total mark saved successfully");
         } else {
-            CourseMark courseMark = findCourseByUserIdAndCourseId(userId, courseId)
+            CourseMark courseMark = findCourseMarkByUserIdAndCourseId(userId, courseId)
                     .orElseThrow(EntityNotFoundException::new);
             courseMarkRepository.update(CourseMark.builder()
                     .id(courseMark.getId())
@@ -66,10 +66,10 @@ public class CourseMarkServiceImpl implements CourseMarkService {
     }
 
     private boolean isTotalMarkExist(Long userId, Long courseId) {
-        return findCourseByUserIdAndCourseId(userId, courseId).isPresent();
+        return findCourseMarkByUserIdAndCourseId(userId, courseId).isPresent();
     }
 
-    private Optional<CourseMark> findCourseByUserIdAndCourseId(Long userId, Long courseId) {
+    private Optional<CourseMark> findCourseMarkByUserIdAndCourseId(Long userId, Long courseId) {
         return courseMarkRepository.findCourseMarkByUserIdAndCourseId(userId, courseId);
     }
 }

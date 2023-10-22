@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
+import java.util.Optional;
 
 @Slf4j
 @AllArgsConstructor
@@ -16,7 +16,12 @@ import java.math.BigDecimal;
 public class HomeworkRepositoryImpl implements HomeworkRepository {
     @PersistenceContext
     private EntityManager entityManager;
-    private final String GET_AVERAGE_MARK_BY_USER = "SELECT AVG(h.mark) FROM homework h INNER JOIN lessons l on l.id = h.lesson.id INNER JOIN courses c on c.id = l.course.id WHERE h.user.id = :userId AND l.course.id = :courseId";
+
+    private final String GET_AVERAGE_MARK_BY_USER = "SELECT AVG(h.mark) FROM homework h INNER JOIN lessons l on l.id = h.lesson.id " +
+            "INNER JOIN courses c on c.id = l.course.id WHERE h.user.id = :userId AND l.course.id = :courseId";
+
+    private final String GET_HOMEWORK_BY_USER_ID_AND_LESSON_ID = "SELECT h from homework h WHERE h.user.id =: userId AND h.lesson.id =: lessonId";
+
 
     @Override
     public void setMark(Long homeworkId, Long mark) {
@@ -33,6 +38,14 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
                 .setParameter("userId", userId)
                 .setParameter("courseId", courseId)
                 .getSingleResult();
+    }
+
+    @Override
+    public Optional<Homework> findByUserAndLessonId(Long userId, Long lessonId) {
+        return Optional.ofNullable(getEntityManager().createQuery(GET_HOMEWORK_BY_USER_ID_AND_LESSON_ID, Homework.class)
+                .setParameter("userId", userId)
+                .setParameter("lessonId", lessonId)
+                .getSingleResult());
     }
 
     @Override

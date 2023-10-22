@@ -13,7 +13,7 @@ public class CourseFeedbackMapper {
     private final UserService userService;
     private final CourseService courseService;
 
-    public CourseFeedback mapDTOToUser(CourseFeedbackDTO feedbackDTO) {
+    public CourseFeedback mapFromDTO(CourseFeedbackDTO feedbackDTO) {
         return CourseFeedback.builder()
                 .feedbackText(feedbackDTO.getFeedbackText())
                 .course(courseService.findById(feedbackDTO.getCourseId()))

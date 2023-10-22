@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
@@ -60,12 +61,19 @@ public class CourseController {
     }
 
     @GetMapping("/instructor/{instructorId}/{courseId}")
-    public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@PathVariable Long instructorId, @PathVariable String courseId) {
+    public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@PathVariable Long instructorId,
+                                                                                                 @PathVariable String courseId) {
         return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(instructorId, courseId));
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<Course>> findUsersAssignedToCourseByInstructorId(@PathVariable Long studentId) {
+    public ResponseEntity<List<Course>> findCoursesByStudentId(@PathVariable Long studentId) {
         return ResponseEntity.ok(courseService.findCoursesByUserId(studentId));
+    }
+
+    @GetMapping("/student/lessons/{studentId}/{courseId}")
+    public ResponseEntity<LessonsByCourseDTO> findLessonsByCourseIdAssignedToStudentId(@PathVariable Long studentId,
+                                                                                             @PathVariable Long courseId) {
+        return ResponseEntity.ok(courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId));
     }
 }

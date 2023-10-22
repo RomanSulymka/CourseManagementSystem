@@ -1,8 +1,10 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
@@ -12,7 +14,9 @@ import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
+import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
@@ -35,9 +39,11 @@ import java.util.Objects;
 @Service
 public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
+    private final CourseMarkRepository courseMarkRepository;
     private final UserService userService;
     private final LessonService lessonService;
     private final UserMapper userMapper;
+    private final CourseMapper courseMapper;
 
     private static final Long MIN_LESSONS = 5L;
 
@@ -218,5 +224,20 @@ public class CourseServiceImpl implements CourseService {
     public List<Course> findCoursesByUserId(Long userId) {
         return courseRepository.findCoursesByUserId(userId)
                 .orElseThrow(EntityNotFoundException::new);
+    }
+
+    @Override
+    public LessonsByCourseDTO findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId) {
+        userService.isStudentAssignedToCourse(studentId, courseId);
+        Course course = findById(courseId);
+        CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
+                .orElse(null);
+        List<Lesson> lessons = courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)
+                .orElseThrow(EntityNotFoundException::new);
+        if (courseMark != null) {
+            return courseMapper.toDTO(course, lessons, courseMark.getTotalScore(), studentId);
+        } else {
+            return courseMapper.toDTO(course, lessons, null, studentId);
+        }
     }
 }

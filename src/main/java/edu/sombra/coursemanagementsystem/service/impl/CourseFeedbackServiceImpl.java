@@ -24,7 +24,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     public String create(CourseFeedbackDTO courseFeedbackDTO) {
         try {
             validateUsers(courseFeedbackDTO);
-            CourseFeedback courseFeedback = courseFeedbackMapper.mapDTOToUser(courseFeedbackDTO);
+            CourseFeedback courseFeedback = courseFeedbackMapper.mapFromDTO(courseFeedbackDTO);
             courseFeedbackRepository.save(courseFeedback);
             log.info("Feedback saved successfully!");
             return "Feedback saved successfully!";
@@ -32,6 +32,12 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
             log.error("Failed to save the feedback for user {} and course {}", courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId());
             throw new IllegalArgumentException("Failed to save the feedback!");
         }
+    }
+
+    @Override
+    public CourseFeedback findFeedback(Long studentId, Long courseId) {
+        return courseFeedbackRepository.findFeedback(studentId, courseId)
+                .orElse(null);
     }
 
     private void validateUsers(CourseFeedbackDTO courseFeedbackDTO) {

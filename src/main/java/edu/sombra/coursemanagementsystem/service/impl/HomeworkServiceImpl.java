@@ -8,6 +8,7 @@ import edu.sombra.coursemanagementsystem.service.CourseMarkService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.HomeworkService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -50,5 +51,11 @@ public class HomeworkServiceImpl implements HomeworkService {
         } catch (DataAccessException e) {
             throw new IllegalArgumentException("Invalid mark value. Mark should be between 0 and 100.");
         }
+    }
+
+    @Override
+    public Homework findByUserAndLessonId(Long userId, Long lessonId) {
+        return homeworkRepository.findByUserAndLessonId(userId, lessonId)
+                .orElseThrow(EntityNotFoundException::new);
     }
 }

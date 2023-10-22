@@ -26,6 +26,12 @@ public class CourseRepositoryImpl implements CourseRepository {
     private static final String GET_ALL_COURSES_BY_INSTRUCTOR_ID = "SELECT c FROM courses c " +
             "INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE u.id =: userId";
 
+    private static final String GET_ALL_USERS_IN_COURSE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id " +
+            "INNER JOIN users u on u.id = e.user.id WHERE c.id =: courseId";
+
+    private static final String GET_LESSONS_BY_USER_ID_AND_COURSE_ID = "SELECT l FROM courses c " +
+            "INNER JOIN lessons l on c.id = l.course.id INNER JOIN enrollments e on c.id = e.course.id " +
+            "WHERE c.id = :courseId AND e.user.id =: userId";
 
     @Override
     public Optional<Course> findByName(String name) {
@@ -61,7 +67,7 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public Optional<List<Lesson>> findAllLessonsInCourse(Long id) {
-        return Optional.ofNullable(getEntityManager().createQuery("SELECT l.name FROM courses c INNER JOIN lessons l on c.id = l.course.id WHERE c.id = : id", Lesson.class)
+        return Optional.ofNullable(getEntityManager().createQuery("SELECT l.name FROM courses c INNER JOIN lessons l on c.id = l.course.id WHERE c.id = :id", Lesson.class)
                 .setParameter("id", id)
                 .getResultList());
     }
@@ -98,9 +104,17 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public List<User> findUsersInCourse(String courseId) {
-        return getEntityManager().createQuery("SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE c.id =: courseId", User.class)
+        return getEntityManager().createQuery(GET_ALL_USERS_IN_COURSE, User.class)
                 .setParameter("courseId", courseId)
                 .getResultList();
+    }
+
+    @Override
+    public Optional<List<Lesson>> findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId) {
+        return Optional.ofNullable(getEntityManager().createQuery(GET_LESSONS_BY_USER_ID_AND_COURSE_ID, Lesson.class)
+                .setParameter("courseId", courseId)
+                .setParameter("userId", studentId)
+                .getResultList());
     }
 
     @Override
