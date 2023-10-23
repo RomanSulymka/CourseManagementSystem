@@ -6,6 +6,7 @@ CREATE TABLE user_course_marks
     user_id    BIGINT NOT NULL,
     course_id  BIGINT NOT NULL,
     total_score NUMERIC(10, 2),
+    passed      BIT NOT NULL DEFAULT B'0',
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (course_id) REFERENCES courses (id)
 );
