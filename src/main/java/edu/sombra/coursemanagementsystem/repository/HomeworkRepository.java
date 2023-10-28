@@ -16,4 +16,6 @@ public interface HomeworkRepository extends BaseRepository<Homework, Long> {
     void assignUserForLesson(Long userId, Long lessonId);
 
     List<Homework> findHomeworksByCourse(Long courseId);
+
+    boolean isUserUploadedHomework(Long fileId, Long studentId);
 }

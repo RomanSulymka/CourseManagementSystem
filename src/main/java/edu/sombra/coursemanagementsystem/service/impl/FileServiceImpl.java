@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.entity.File;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
 import edu.sombra.coursemanagementsystem.service.FileService;
 import edu.sombra.coursemanagementsystem.service.HomeworkService;
@@ -25,13 +26,13 @@ import java.io.IOException;
 @Slf4j
 @AllArgsConstructor
 @Service
+@Transactional
 public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final HomeworkService homeworkService;
     private final UserService userService;
     private final LessonService lessonService;
 
-    @Transactional
     @Override
     public void saveFile(MultipartFile uploadedFile, Long lessonId, String userEmail) throws IOException {
         User user = userService.findUserByEmail(userEmail);
@@ -84,5 +85,26 @@ public class FileServiceImpl implements FileService {
         } catch (DataAccessException e) {
             throw new NoResultException("File not found.");
         }
+    }
+
+    @Override
+    public void delete(Long fileId, String userEmail) {
+        User user = userService.findUserByEmail(userEmail);
+        if (user.getRole().equals(RoleEnum.ADMIN)) {
+            File file = findFileById(fileId);
+            fileRepository.delete(file);
+            log.info("file deleted successfully by admin");
+        } else {
+            if (homeworkService.isUserUploadedThisHomework(fileId, user.getId())) {
+                File file = findFileById(fileId);
+                fileRepository.delete(file);
+                log.info("file deleted successfully");
+            }
+        }
+    }
+
+    private File findFileById(Long fileId) {
+        return fileRepository.findById(fileId)
+                .orElseThrow(EntityNotFoundException::new);
     }
 }

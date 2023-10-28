@@ -3,6 +3,7 @@ package edu.sombra.coursemanagementsystem.repository.impl;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,8 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
     private static final String GET_HOMEWORKS_BY_COURSE_ID = "SELECT h FROM homework h INNER JOIN lessons l on l.id = h.lesson.id " +
             "WHERE l.course.id =: courseId";
 
+    private static final String GET_HOMEWORK_BY_FILE_AND_USER_ID = "SELECT h FROM homework h " +
+            "WHERE h.user.id = :studentId AND h.file.id = :fileId";
 
     @Override
     public void setMark(Long homeworkId, Long mark) {
@@ -65,9 +68,23 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
 
     @Override
     public List<Homework> findHomeworksByCourse(Long courseId) {
-                return getEntityManager().createQuery(GET_HOMEWORKS_BY_COURSE_ID, Homework.class)
+        return getEntityManager().createQuery(GET_HOMEWORKS_BY_COURSE_ID, Homework.class)
                 .setParameter("courseId", courseId)
                 .getResultList();
+    }
+
+    @Override
+    public boolean isUserUploadedHomework(Long fileId, Long studentId) {
+        try {
+            Homework homework = getEntityManager()
+                    .createQuery(GET_HOMEWORK_BY_FILE_AND_USER_ID, Homework.class)
+                    .setParameter("studentId", studentId)
+                    .setParameter("fileId", fileId)
+                    .getSingleResult();
+            return homework != null;
+        } catch (NoResultException e) {
+            return false;
+        }
     }
 
     @Override

@@ -9,4 +9,6 @@ public interface HomeworkService {
     void setMark(Long userId, Long homeworkId, Long mark);
 
     Homework findByUserAndLessonId(Long userId, Long lessonId);
+
+    boolean isUserUploadedThisHomework(Long fileId, Long studentId);
 }

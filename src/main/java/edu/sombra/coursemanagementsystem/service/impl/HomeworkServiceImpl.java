@@ -71,4 +71,9 @@ public class HomeworkServiceImpl implements HomeworkService {
         return homeworkRepository.findByUserAndLessonId(userId, lessonId)
                 .orElseThrow(EntityNotFoundException::new);
     }
+
+    @Override
+    public boolean isUserUploadedThisHomework(Long fileId, Long studentId) {
+        return homeworkRepository.isUserUploadedHomework(fileId, studentId);
+    }
 }
