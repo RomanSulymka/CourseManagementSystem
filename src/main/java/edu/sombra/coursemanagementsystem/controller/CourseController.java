@@ -76,4 +76,9 @@ public class CourseController {
                                                                                              @PathVariable Long courseId) {
         return ResponseEntity.ok(courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId));
     }
+
+    @GetMapping("/finish/{studentId}/{courseId}")
+    public ResponseEntity<String> finishCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
+        return ResponseEntity.ok(courseService.finishCourse(studentId, courseId));
+    }
 }

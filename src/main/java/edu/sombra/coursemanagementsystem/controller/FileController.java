@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,8 +26,8 @@ public class FileController {
     @PostMapping("/upload/{userId}/{lessonId}")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,
                                              @PathVariable Long lessonId,
-                                             @PathVariable Long userId) throws IOException {
-        fileService.saveFile(file, lessonId, userId);
+                                             @AuthenticationPrincipal UserDetails userDetails) throws IOException {
+        fileService.saveFile(file, lessonId, userDetails.getUsername());
         return ResponseEntity.ok("File uploaded successfully");
     }
 

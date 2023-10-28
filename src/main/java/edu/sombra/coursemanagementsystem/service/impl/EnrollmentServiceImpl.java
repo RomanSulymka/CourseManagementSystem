@@ -161,21 +161,38 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO) {
+    public void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail) {
         try {
-            Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(applyForCourseDTO.getUserId());
-            if (numberOfUserCourses < COURSE_LIMIT) {
-                User user = userService.findUserById(applyForCourseDTO.getUserId());
-                Course course = courseService.findByName(applyForCourseDTO.getCourseName());
-                isUserAlreadyAssigned(course, user);
-                Enrollment enrollment = buildEnrollment(course, user);
-                enrollmentRepository.save(enrollment);
-                List<Lesson> lessons = courseService.findAllLessonsByCourse(course.getId());
-                for (Lesson lesson: lessons) {
-                    homeworkRepository.assignUserForLesson(user.getId(), lesson.getId());
+            User user = userService.findUserByEmail(userEmail);
+            if (!user.getRole().equals(RoleEnum.ADMIN)) {
+                Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(user.getId());
+                if (numberOfUserCourses < COURSE_LIMIT) {
+                    Course course = courseService.findByName(applyForCourseDTO.getCourseName());
+                    isUserAlreadyAssigned(course, user);
+                    Enrollment enrollment = buildEnrollment(course, user);
+                    enrollmentRepository.save(enrollment);
+                    List<Lesson> lessons = courseService.findAllLessonsByCourse(course.getId());
+                    for (Lesson lesson : lessons) {
+                        homeworkRepository.assignUserForLesson(user.getId(), lesson.getId());
+                    }
+                } else {
+                    throw new EnrollmentException("User has already assigned for 5 courses");
                 }
             } else {
-                throw new EnrollmentException("User has already assigned for 5 courses");
+                User student = userService.findUserByEmail(userEmail);
+                Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(applyForCourseDTO.getUserId());
+                if (numberOfUserCourses < COURSE_LIMIT) {
+                    Course course = courseService.findByName(applyForCourseDTO.getCourseName());
+                    isUserAlreadyAssigned(course, student);
+                    Enrollment enrollment = buildEnrollment(course, student);
+                    enrollmentRepository.save(enrollment);
+                    List<Lesson> lessons = courseService.findAllLessonsByCourse(course.getId());
+                    for (Lesson lesson : lessons) {
+                        homeworkRepository.assignUserForLesson(student.getId(), lesson.getId());
+                    }
+                } else {
+                    throw new EnrollmentException("User has already assigned for 5 courses");
+                }
             }
         } catch (DataAccessException ex) {
             log.error("Error applying for course with name: {}", applyForCourseDTO.getCourseName(), ex);

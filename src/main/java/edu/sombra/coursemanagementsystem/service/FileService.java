@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface FileService {
-    void saveFile(MultipartFile file, Long lessonId, Long userId) throws IOException;
+    void saveFile(MultipartFile file, Long lessonId, String userEmail) throws IOException;
 
     File getFileDataById(Long fileId);
 

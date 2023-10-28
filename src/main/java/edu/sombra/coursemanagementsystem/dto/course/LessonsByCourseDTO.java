@@ -16,4 +16,5 @@ public class LessonsByCourseDTO {
     private String feedback;
     private List<LessonDTO> lessonDTO;
     private BigDecimal totalScore;
+    private Boolean passed;
 }

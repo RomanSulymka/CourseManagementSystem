@@ -15,6 +15,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Transactional
 @AllArgsConstructor
 @Slf4j
@@ -40,7 +42,8 @@ public class HomeworkServiceImpl implements HomeworkService {
                     log.info("Mark saved successfully");
                     Lesson lesson = lessonService.findLessonByHomeworkId(homeworkId);
                     Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, lesson.getCourse().getId());
-                    courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark);
+                    Boolean isAllHomeworksGraded = isAllHomeworksGraded(userId, lesson.getCourse().getId());
+                    courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark, isAllHomeworksGraded);
                 } else {
                     log.error("Invalid mark value. Mark should be between 0 and 100. But now mark is {}", mark);
                     throw new IllegalArgumentException("Invalid mark value. Mark should be between 0 and 100.");
@@ -51,6 +54,16 @@ public class HomeworkServiceImpl implements HomeworkService {
         } catch (DataAccessException e) {
             throw new IllegalArgumentException("Invalid mark value. Mark should be between 0 and 100.");
         }
+    }
+
+    private boolean isAllHomeworksGraded(Long userId, Long courseId) {
+        List<Homework> homeworks = homeworkRepository.findHomeworksByCourse(courseId);
+        for (Homework homework : homeworks) {
+            if (homework.getUser().getId().equals(userId) && (homework.getMark() == null)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -17,10 +18,16 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private final String GET_AVERAGE_MARK_BY_USER = "SELECT AVG(h.mark) FROM homework h INNER JOIN lessons l on l.id = h.lesson.id " +
+    private static final String GET_AVERAGE_MARK_BY_USER = "SELECT AVG(h.mark) FROM homework h INNER JOIN lessons l on l.id = h.lesson.id " +
             "INNER JOIN courses c on c.id = l.course.id WHERE h.user.id = :userId AND l.course.id = :courseId";
 
-    private final String GET_HOMEWORK_BY_USER_ID_AND_LESSON_ID = "SELECT h from homework h WHERE h.user.id =: userId AND h.lesson.id =: lessonId";
+    private static final String GET_HOMEWORK_BY_USER_ID_AND_LESSON_ID = "SELECT h from homework h WHERE h.user.id =: userId " +
+            "AND h.lesson.id =: lessonId";
+
+    private static final String INSERT_USER_FOR_LESSON = "INSERT INTO homework (user_id, lesson_id) VALUES (:userId, :lessonId )";
+
+    private static final String GET_HOMEWORKS_BY_COURSE_ID = "SELECT h FROM homework h INNER JOIN lessons l on l.id = h.lesson.id " +
+            "WHERE l.course.id =: courseId";
 
 
     @Override
@@ -50,10 +57,17 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
 
     @Override
     public void assignUserForLesson(Long userId, Long lessonId) {
-        getEntityManager().createNativeQuery("INSERT INTO homework (user_id, lesson_id) VALUES (:userId, :lessonId )")
+        getEntityManager().createNativeQuery(INSERT_USER_FOR_LESSON)
                 .setParameter("userId", userId)
                 .setParameter("lessonId", lessonId)
                 .executeUpdate();
+    }
+
+    @Override
+    public List<Homework> findHomeworksByCourse(Long courseId) {
+                return getEntityManager().createQuery(GET_HOMEWORKS_BY_COURSE_ID, Homework.class)
+                .setParameter("courseId", courseId)
+                .getResultList();
     }
 
     @Override

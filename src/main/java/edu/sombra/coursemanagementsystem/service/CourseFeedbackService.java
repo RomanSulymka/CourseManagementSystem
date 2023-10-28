@@ -1,10 +1,21 @@
 package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.feedback.CourseFeedbackDTO;
+import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
 
+import java.util.List;
+
 public interface CourseFeedbackService {
-    String create(CourseFeedbackDTO courseFeedbackDTO);
+    String create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail);
 
     CourseFeedback findFeedback(Long studentId, Long courseId);
+
+    List<GetCourseFeedbackDTO> findAll();
+
+    GetCourseFeedbackDTO findCourseFeedbackById(Long id);
+
+    String delete(Long id);
+
+    GetCourseFeedbackDTO edit(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail);
 }

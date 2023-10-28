@@ -37,4 +37,18 @@ public class CourseMarkRepositoryImpl implements CourseMarkRepository {
         }
     }
 
+    @Override
+    public void upsert(CourseMark courseMark) {
+        getEntityManager().createNativeQuery("INSERT INTO user_course_marks (user_id, course_id, total_score, passed) " +
+                        "VALUES (?, ?, ?, ?)" +
+                        "ON CONFLICT (user_id, course_id) " +
+                        "DO UPDATE " +
+                        "   SET total_score = EXCLUDED.total_score, " +
+                        "       passed = EXCLUDED.passed; ")
+                .setParameter(1, courseMark.getUser().getId())
+                .setParameter(2, courseMark.getCourse().getId())
+                .setParameter(3, courseMark.getTotalScore())
+                .setParameter(4, courseMark.getPassed())
+                .executeUpdate();
+    }
 }

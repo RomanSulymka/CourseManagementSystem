@@ -58,8 +58,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> findUsersByEmails(List<String> usersEmails) {
-        return userRepository.findUsersByEmails(usersEmails)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return userRepository.findUsersByEmails(usersEmails);
     }
 
     @Override
@@ -147,28 +146,6 @@ public class UserServiceImpl implements UserService {
         User instructor = findUserById(instructorId);
         validateInstructor(instructor, RoleEnum.INSTRUCTOR);
         return true;
-    }
-
-    @Override
-    public boolean isInstructorAssignedToCourse(Long instructorId, Long courseId) {
-        isUserInstructor(instructorId);
-        return isUserAssignedToCourse(instructorId, courseId);
-    }
-
-    //FIXME
-    @Override
-    public boolean isStudentAssignedToCourse(Long studentId, Long courseId) {
-        return isUserAssignedToCourse(studentId, courseId);
-    }
-
-    private boolean isUserAssignedToCourse(Long studentId, Long courseId) {
-        boolean isAssigned = userRepository.isUserAssignedToCourse(studentId, courseId);
-        if (isAssigned) {
-            return true;
-        } else {
-            log.error("Instructor with id {}, is not assigned to this course {}", studentId, courseId);
-            throw new EntityNotFoundException("Instructor is not assigned to this course");
-        }
     }
 
     private static String[] getNullPropertyNames(Object source) {

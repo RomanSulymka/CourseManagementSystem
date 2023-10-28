@@ -33,8 +33,8 @@ public class FileServiceImpl implements FileService {
 
     @Transactional
     @Override
-    public void saveFile(MultipartFile uploadedFile, Long lessonId, Long userId) throws IOException {
-        User user = userService.findUserById(userId);
+    public void saveFile(MultipartFile uploadedFile, Long lessonId, String userEmail) throws IOException {
+        User user = userService.findUserByEmail(userEmail);
         Lesson lesson = lessonService.findById(lessonId);
 
         File file = fileRepository.save(File.builder()

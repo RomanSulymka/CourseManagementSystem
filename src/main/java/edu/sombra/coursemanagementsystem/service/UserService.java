@@ -31,8 +31,4 @@ public interface UserService {
     boolean existsUserByEmail(String email);
 
     boolean isUserInstructor(Long instructorId);
-
-    boolean isInstructorAssignedToCourse(Long instructorId, Long courseId);
-
-    boolean isStudentAssignedToCourse(Long studentId, Long courseId);
 }

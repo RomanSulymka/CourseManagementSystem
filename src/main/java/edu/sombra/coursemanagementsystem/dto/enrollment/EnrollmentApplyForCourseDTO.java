@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class EnrollmentApplyForCourseDTO {
     private String courseName;
+    //FIXME
     private Long userId;
 }

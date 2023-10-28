@@ -35,4 +35,6 @@ public interface CourseService {
     List<Course> findCoursesByUserId(Long userId);
 
     LessonsByCourseDTO findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId);
+
+    String finishCourse(Long studentId, Long courseId);
 }

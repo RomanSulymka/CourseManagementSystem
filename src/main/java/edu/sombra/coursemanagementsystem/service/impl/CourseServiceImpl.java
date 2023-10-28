@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
@@ -18,6 +19,7 @@ import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.service.CourseFeedbackService;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -29,6 +31,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -44,6 +47,7 @@ public class CourseServiceImpl implements CourseService {
     private final LessonService lessonService;
     private final UserMapper userMapper;
     private final CourseMapper courseMapper;
+    private final CourseFeedbackService courseFeedbackService;
 
     private static final Long MIN_LESSONS = 5L;
 
@@ -51,13 +55,16 @@ public class CourseServiceImpl implements CourseService {
     public Course create(CourseDTO courseDTO) {
         Course course = courseDTO.getCourse();
         validateCourseNotExists(course.getName());
-        validateCourseStartDateNotExpired(course.getStartDate());
+        if (validateCourseStartDateNotExpired(course.getStartDate())) {
 
-        Course createdCourse = saveCourse(course);
-        assignInstructor(createdCourse, courseDTO.getInstructorEmail());
-        lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), course);
+            Course createdCourse = saveCourse(course);
+            assignInstructor(createdCourse, courseDTO.getInstructorEmail());
+            lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), course);
 
-        return findById(createdCourse.getId());
+            return findById(createdCourse.getId());
+        } else {
+            throw new IllegalArgumentException("Course start date has already expired!");
+        }
     }
 
     private void validateCourseNotExists(String courseName) {
@@ -228,16 +235,44 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public LessonsByCourseDTO findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId) {
-        userService.isStudentAssignedToCourse(studentId, courseId);
+        isUserAssignedToCourse(studentId, courseId);
         Course course = findById(courseId);
         CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
                 .orElse(null);
         List<Lesson> lessons = courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)
                 .orElseThrow(EntityNotFoundException::new);
-        if (courseMark != null) {
-            return courseMapper.toDTO(course, lessons, courseMark.getTotalScore(), studentId);
+        CourseFeedback feedback = courseFeedbackService.findFeedback(studentId, courseId);
+        return courseMapper.toDTO(course, lessons, courseMark, studentId, feedback);
+    }
+
+    @Override
+    public String finishCourse(Long studentId, Long courseId) {
+        isUserAssignedToCourse(studentId, courseId);
+        CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
+                .orElseThrow(EntityNotFoundException::new);
+        if (courseMark.getPassed()) {
+            return "Course has already finished for user";
+        }
+
+        return null;
+    }
+
+    private boolean isUserAssignedToCourse(Long studentId, Long courseId) {
+        boolean isAssigned = courseRepository.isUserAssignedToCourse(studentId, courseId);
+        if (isAssigned) {
+            return true;
         } else {
-            return courseMapper.toDTO(course, lessons, null, studentId);
+            log.error("Instructor with id {}, is not assigned to this course {}", studentId, courseId);
+            throw new EntityNotFoundException("Instructor is not assigned to this course");
+        }
+    }
+
+    private Boolean isCoursePassed(CourseMark courseMark, Boolean isAllHomeworksGraded) {
+        if (Boolean.TRUE.equals(isAllHomeworksGraded)) {
+            BigDecimal requiredScore = new BigDecimal("80");
+            return courseMark.getTotalScore().compareTo(requiredScore) >= 0;
+        } else {
+            return false;
         }
     }
 }

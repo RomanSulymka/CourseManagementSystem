@@ -8,6 +8,7 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.query.SqlQueryConstants;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import lombok.Getter;
 import org.springframework.stereotype.Repository;
@@ -32,6 +33,10 @@ public class CourseRepositoryImpl implements CourseRepository {
     private static final String GET_LESSONS_BY_USER_ID_AND_COURSE_ID = "SELECT l FROM courses c " +
             "INNER JOIN lessons l on c.id = l.course.id INNER JOIN enrollments e on c.id = e.course.id " +
             "WHERE c.id = :courseId AND e.user.id =: userId";
+
+    private static final String GET_COURSE_BY_USER_ID_AND_COURSE_ID = "SELECT c FROM courses c " +
+            "INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id " +
+            "WHERE u.id =: userId AND c.id =: courseId";
 
     @Override
     public Optional<Course> findByName(String name) {
@@ -115,6 +120,20 @@ public class CourseRepositoryImpl implements CourseRepository {
                 .setParameter("courseId", courseId)
                 .setParameter("userId", studentId)
                 .getResultList());
+    }
+
+    @Override
+    public boolean isUserAssignedToCourse(Long userId, Long courseId) {
+        try {
+            Course course = getEntityManager().createQuery(GET_COURSE_BY_USER_ID_AND_COURSE_ID, Course.class)
+                    .setParameter("userId", userId)
+                    .setParameter("courseId", courseId)
+                    .getSingleResult();
+
+            return course != null;
+        } catch (NoResultException e) {
+            return false;
+        }
     }
 
     @Override
