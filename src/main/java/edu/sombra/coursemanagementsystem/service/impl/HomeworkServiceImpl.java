@@ -1,8 +1,11 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
+import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
+import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
+import edu.sombra.coursemanagementsystem.repository.FileRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.service.CourseMarkService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
@@ -26,6 +29,8 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final CourseMarkService courseMarkService;
     private final LessonService lessonService;
     private final EnrollmentService enrollmentService;
+    private final HomeworkMapper homeworkMapper;
+    private final FileRepository fileRepository;
 
     @Override
     public void save(Homework homework) {
@@ -75,5 +80,30 @@ public class HomeworkServiceImpl implements HomeworkService {
     @Override
     public boolean isUserUploadedThisHomework(Long fileId, Long studentId) {
         return homeworkRepository.isUserUploadedHomework(fileId, studentId);
+    }
+
+    @Override
+    public GetHomeworkDTO findHomeworkById(Long homeworkId) {
+        Homework homework = findHomework(homeworkId);
+        return homeworkMapper.mapToDTO(homework);
+    }
+
+    @Override
+    public String deleteHomework(Long homeworkId) {
+        Homework homework = findHomework(homeworkId);
+        homeworkRepository.delete(homework);
+        log.info("Homework deleted successfully!");
+        return "Homework deleted successfully!";
+    }
+
+    @Override
+    public List<GetHomeworkDTO> getAllHomeworks() {
+        List<Homework> homeworkList = homeworkRepository.findAll();
+        return homeworkMapper.mapToDTO(homeworkList);
+    }
+
+    private Homework findHomework(Long homeworkId) {
+        return homeworkRepository.findById(homeworkId)
+                .orElseThrow(EntityNotFoundException::new);
     }
 }

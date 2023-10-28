@@ -54,7 +54,8 @@ CREATE TABLE homework
     file_id   BIGINT,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (lesson_id) REFERENCES lessons (id),
-    FOREIGN KEY (file_id) REFERENCES files (id)
+    CONSTRAINT unique_file_id UNIQUE (file_id),
+    CONSTRAINT fk_file_id FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE
 );
 
 CREATE TABLE course_feedback

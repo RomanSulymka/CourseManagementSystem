@@ -14,3 +14,9 @@ CREATE TABLE user_course_marks
 ALTER TABLE user_course_marks
     ADD CONSTRAINT unique_mark_user_course
         UNIQUE (user_id, course_id);
+
+ALTER TABLE homework
+    DROP CONSTRAINT fk_file_id;
+
+ALTER TABLE homework
+    ADD CONSTRAINT fk_file_id FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE;
