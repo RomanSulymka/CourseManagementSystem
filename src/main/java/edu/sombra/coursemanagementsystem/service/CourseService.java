@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 
@@ -36,5 +37,7 @@ public interface CourseService {
 
     LessonsByCourseDTO findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId);
 
-    String finishCourse(Long studentId, Long courseId);
+    CourseMark finishCourse(Long studentId, Long courseId);
+
+    Course startOrStopCourse(Long courseId, String action);
 }

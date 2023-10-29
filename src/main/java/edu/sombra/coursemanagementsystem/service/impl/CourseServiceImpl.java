@@ -246,15 +246,27 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public String finishCourse(Long studentId, Long courseId) {
+    public CourseMark finishCourse(Long studentId, Long courseId) {
         isUserAssignedToCourse(studentId, courseId);
         CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
                 .orElseThrow(EntityNotFoundException::new);
-        if (courseMark.getPassed()) {
-            return "Course has already finished for user";
-        }
+        courseMark.setPassed(true);
+        return courseMarkRepository.update(courseMark);
+    }
 
-        return null;
+    @Override
+    public Course startOrStopCourse(Long courseId, String action) {
+        if (action.equals("start")) {
+            return startCourse(courseId, CourseStatus.STARTED);
+        } else if (action.equals("stop")) {
+            return stopCourse(courseId, CourseStatus.STOP);
+        } else {
+            throw new IllegalArgumentException("Incorrect action parameter!");
+        }
+    }
+
+    private Course stopCourse(Long courseId, CourseStatus courseStatus) {
+        return updateStatus(courseId, courseStatus);
     }
 
     private boolean isUserAssignedToCourse(Long studentId, Long courseId) {

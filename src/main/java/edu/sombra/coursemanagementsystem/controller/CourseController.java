@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,11 @@ public class CourseController {
         return ResponseEntity.ok(courseService.delete(id));
     }
 
+    @PutMapping("/{courseId}/{action}")
+    public ResponseEntity<Course> startOrStopCourse(@PathVariable Long courseId, @PathVariable String action) {
+        return ResponseEntity.ok(courseService.startOrStopCourse(courseId, action));
+    }
+
     @GetMapping("/find-all-lessons/{id}")
     public ResponseEntity<List<Lesson>> findAllLessonsByCourse(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.findAllLessonsByCourse(id));
@@ -73,12 +79,12 @@ public class CourseController {
 
     @GetMapping("/student/lessons/{studentId}/{courseId}")
     public ResponseEntity<LessonsByCourseDTO> findLessonsByCourseIdAssignedToStudentId(@PathVariable Long studentId,
-                                                                                             @PathVariable Long courseId) {
+                                                                                       @PathVariable Long courseId) {
         return ResponseEntity.ok(courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId));
     }
 
     @GetMapping("/finish/{studentId}/{courseId}")
-    public ResponseEntity<String> finishCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
+    public ResponseEntity<CourseMark> finishCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
         return ResponseEntity.ok(courseService.finishCourse(studentId, courseId));
     }
 }
