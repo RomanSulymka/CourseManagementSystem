@@ -11,8 +11,6 @@ public interface FileService {
 
     File getFileDataById(Long fileId);
 
-    String getFileNameById(Long fileId);
-
     Resource downloadFile(Long fileId);
 
     void delete(Long fileId, String userEmail);

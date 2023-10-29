@@ -2,7 +2,6 @@ package edu.sombra.coursemanagementsystem.repository.impl;
 
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.query.SqlQueryConstants;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -19,9 +18,17 @@ public class UserRepositoryImpl implements UserRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
+    private static final String EXIST_USER_BY_EMAIL_QUERY = "SELECT COUNT(u) FROM users u WHERE u.email = :email";
+
+    private static final String FIND_USER_BY_EMAIL_QUERY = "SELECT u FROM users u WHERE email =: email";
+
+    private static final String UPDATE_ROLE_BY_EMAIL_QUERY = "UPDATE users u SET u.role = :role WHERE u.email = :email";
+
+    private static final String FIND_USERS_BY_EMAIL_QUERY = "SELECT u FROM users u WHERE u.email IN :emails";
+
     @Override
     public boolean existsUserByEmail(String email) {
-        Long count = getEntityManager().createQuery(SqlQueryConstants.EXIST_USER_BY_EMAIL_QUERY, Long.class)
+        Long count = getEntityManager().createQuery(EXIST_USER_BY_EMAIL_QUERY, Long.class)
                 .setParameter("email", email)
                 .getSingleResult();
         return count != null && count > 0;
@@ -29,15 +36,14 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User findUserByEmail(String email) {
-        return getEntityManager().createQuery(
-                        SqlQueryConstants.FIND_USER_BY_EMAIL_QUERY, User.class)
+        return getEntityManager().createQuery(FIND_USER_BY_EMAIL_QUERY, User.class)
                 .setParameter("email", email)
                 .getSingleResult();
     }
 
     @Override
     public void updateRoleByEmail(String email, RoleEnum role) {
-        getEntityManager().createQuery(SqlQueryConstants.UPDATE_ROLE_BY_EMAIL_QUERY)
+        getEntityManager().createQuery(UPDATE_ROLE_BY_EMAIL_QUERY)
                 .setParameter("role", role)
                 .setParameter("email", email)
                 .executeUpdate();
@@ -45,7 +51,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> findUsersByEmails(List<String> emails) {
-        return getEntityManager().createQuery(SqlQueryConstants.FIND_USERS_BY_EMAIL_QUERY, User.class)
+        return getEntityManager().createQuery(FIND_USERS_BY_EMAIL_QUERY, User.class)
                 .setParameter("emails", emails)
                 .getResultList();
     }

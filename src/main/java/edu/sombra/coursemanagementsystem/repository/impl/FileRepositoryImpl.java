@@ -12,25 +12,12 @@ import org.springframework.stereotype.Repository;
 public class FileRepositoryImpl implements FileRepository {
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Override
-    public byte[] findDataById(Long fileId) {
-        return getEntityManager().createQuery("SELECT f.fileData FROM files f WHERE id =: id", byte[].class)
-                .setParameter("id", fileId)
-                .getSingleResult();
-    }
+    public static final String GET_FILE_NAME_BY_ID = "SELECT f.fileName FROM files f WHERE id =: id";
 
     @Override
     public String findFileNameById(Long fileId) {
-        return getEntityManager().createQuery("SELECT f.fileName FROM files f WHERE id =: id", String.class)
+        return getEntityManager().createQuery(GET_FILE_NAME_BY_ID, String.class)
                 .setParameter("id", fileId)
-                .getSingleResult();
-    }
-
-    @Override
-    public File findFileByName(String fileName) {
-        return getEntityManager().createQuery("SELECT f FROM files f WHERE f.fileName =: fileName", File.class)
-                .setParameter("fileName", fileName)
                 .getSingleResult();
     }
 

@@ -14,13 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @AllArgsConstructor
 @Service
 @Transactional
 public class CourseMarkServiceImpl implements CourseMarkService {
+    public static final String TOTAL_MARK_SAVED_SUCCESSFULLY = "Total mark saved successfully";
     private final CourseMarkRepository courseMarkRepository;
     private final CourseService courseService;
     private final UserService userService;
@@ -50,22 +50,10 @@ public class CourseMarkServiceImpl implements CourseMarkService {
                 .totalScore(BigDecimal.valueOf(averageMark))
                 .passed(isCoursePassed(averageMark, isAllHomeworksGraded))
                 .build());
-        log.info("Total mark saved successfully");
+        log.info(TOTAL_MARK_SAVED_SUCCESSFULLY);
     }
 
     private boolean isCoursePassed(Double averageMark, boolean isAllHomeworksGraded) {
-        if (isAllHomeworksGraded) {
-            return averageMark >= 80;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean isTotalMarkExist(Long userId, Long courseId) {
-        return findCourseMarkByUserIdAndCourseId(userId, courseId).isPresent();
-    }
-
-    private Optional<CourseMark> findCourseMarkByUserIdAndCourseId(Long userId, Long courseId) {
-        return courseMarkRepository.findCourseMarkByUserIdAndCourseId(userId, courseId);
+        return isAllHomeworksGraded && averageMark >= 80;
     }
 }

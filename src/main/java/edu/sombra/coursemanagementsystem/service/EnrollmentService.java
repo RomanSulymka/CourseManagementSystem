@@ -24,7 +24,6 @@ public interface EnrollmentService {
 
     EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO);
 
-    //FIXME: rename
     void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail);
 
     void isUserAlreadyAssigned(Course course, User user);

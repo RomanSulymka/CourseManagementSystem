@@ -12,8 +12,6 @@ public interface UserService {
 
     String assignNewRole(UserDTO userDTO);
 
-    List<User> findUsersByEmails(List<String> usersEmails);
-
     User findUserByEmail(String email);
 
     void validateInstructor(User instructor, RoleEnum role);
@@ -24,7 +22,7 @@ public interface UserService {
 
     String resetPassword(ResetPasswordDTO resetPasswordDTO);
 
-    boolean deleteUser(Long id);
+    String deleteUser(Long id);
 
     List<User> findAllUsers();
 

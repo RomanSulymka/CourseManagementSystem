@@ -51,19 +51,10 @@ public class FileServiceImpl implements FileService {
                 .build());
     }
 
-    private File findFileByName(String fileName) {
-        return fileRepository.findFileByName(fileName);
-    }
-
     @Override
     public File getFileDataById(Long fileId) {
         return fileRepository.findById(fileId)
                 .orElseThrow(EntityNotFoundException::new);
-    }
-
-    @Override
-    public String getFileNameById(Long fileId) {
-        return fileRepository.findFileNameById(fileId);
     }
 
     @Override

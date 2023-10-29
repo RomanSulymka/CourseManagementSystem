@@ -5,12 +5,12 @@ import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
-import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,19 +21,16 @@ import java.util.stream.LongStream;
 @Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class LessonServiceImpl implements LessonService {
     private final LessonRepository lessonRepository;
-    private final CourseService courseService;
-
-    public LessonServiceImpl(LessonRepository lessonRepository, @Lazy CourseService courseService) {
-        this.lessonRepository = lessonRepository;
-        this.courseService = courseService;
-    }
+    private final CourseRepository courseRepository;
 
     @Override
     public Lesson save(CreateLessonDTO lessonDTO) {
         try {
-            Course course = courseService.findById(lessonDTO.getCourseId());
+            Course course = courseRepository.findById(lessonDTO.getCourseId())
+                    .orElseThrow(EntityNotFoundException::new);
             return lessonRepository.save(Lesson.builder()
                     .name(lessonDTO.getLessonName())
                     .course(course)

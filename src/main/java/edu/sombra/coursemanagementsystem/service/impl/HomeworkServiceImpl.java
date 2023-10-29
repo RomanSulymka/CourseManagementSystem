@@ -5,7 +5,6 @@ import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
-import edu.sombra.coursemanagementsystem.repository.FileRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.service.CourseMarkService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
@@ -30,7 +29,6 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final LessonService lessonService;
     private final EnrollmentService enrollmentService;
     private final HomeworkMapper homeworkMapper;
-    private final FileRepository fileRepository;
 
     @Override
     public void save(Homework homework) {
@@ -69,12 +67,6 @@ public class HomeworkServiceImpl implements HomeworkService {
             }
         }
         return true;
-    }
-
-    @Override
-    public Homework findByUserAndLessonId(Long userId, Long lessonId) {
-        return homeworkRepository.findByUserAndLessonId(userId, lessonId)
-                .orElseThrow(EntityNotFoundException::new);
     }
 
     @Override

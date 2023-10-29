@@ -29,57 +29,33 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     private final CourseRepository courseRepository;
     private final CourseFeedbackMapper courseFeedbackMapper;
 
+    private static final String FEEDBACK_SAVED_SUCCESSFULLY = "Feedback saved successfully";
+    private static final String FAILED_TO_SAVE_FEEDBACK = "Failed to save the feedback";
+    private static final String COURSE_FEEDBACK_DELETED_SUCCESSFULLY = "Course Feedback deleted successfully";
+    private static final String INSTRUCTOR_NOT_ASSIGNED = "Instructor is not assigned for this course";
+
+
     @Override
     public String create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
         try {
-            Course course = courseRepository.findById(courseFeedbackDTO.getCourseId())
-                    .orElseThrow(EntityNotFoundException::new);
             User instructor = userService.findUserByEmail(instructorEmail);
-            User student = userService.findUserById(courseFeedbackDTO.getStudentId());
-            validateUsers(courseFeedbackDTO, instructor);
-            CourseFeedback courseFeedback = courseFeedbackMapper.mapFromDTO(courseFeedbackDTO, course,
-                    instructor, student);
-            courseFeedbackRepository.save(courseFeedback);
-            log.info("Feedback saved successfully!");
-            return "Feedback saved successfully!";
+            CourseFeedback feedback = createOrUpdateFeedback(courseFeedbackDTO, instructor);
+            courseFeedbackRepository.save(feedback);
+            log.info(FEEDBACK_SAVED_SUCCESSFULLY);
+            return FEEDBACK_SAVED_SUCCESSFULLY;
         } catch (Exception e) {
             log.error("Failed to save the feedback for user {} and course {}",
                     courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId());
-            throw new IllegalArgumentException("Failed to save the feedback!");
+            throw new IllegalArgumentException(FAILED_TO_SAVE_FEEDBACK);
         }
     }
 
     @Override
     public GetCourseFeedbackDTO edit(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
         User instructor = userService.findUserByEmail(instructorEmail);
-        CourseFeedback feedback = validateCourseFeedback(courseFeedbackDTO, instructor);
+        CourseFeedback feedback = createOrUpdateFeedback(courseFeedbackDTO, instructor);
         courseFeedbackRepository.update(feedback);
         return courseFeedbackMapper.mapToDTO(feedback);
-    }
-
-    private CourseFeedback validateCourseFeedback(CourseFeedbackDTO courseFeedbackDTO, User instructor) {
-        CourseFeedback existingFeedback = findById(courseFeedbackDTO.getId());
-
-        String feedbackText = courseFeedbackDTO.getFeedbackText() != null
-                ? courseFeedbackDTO.getFeedbackText()
-                : existingFeedback.getFeedbackText();
-
-        User student = courseFeedbackDTO.getStudentId() != null
-                ? userService.findUserById(courseFeedbackDTO.getStudentId())
-                : existingFeedback.getStudent();
-
-        Course course = courseFeedbackDTO.getCourseId() != null
-                ? courseRepository.findById(courseFeedbackDTO.getCourseId())
-                .orElseThrow(EntityNotFoundException::new)
-                : existingFeedback.getCourse();
-
-        return CourseFeedback.builder()
-                .id(existingFeedback.getId())
-                .feedbackText(feedbackText)
-                .student(student)
-                .instructor(instructor)
-                .course(course)
-                .build();
     }
 
     @Override
@@ -110,7 +86,33 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
         CourseFeedback feedback = courseFeedbackRepository.findById(id)
                 .orElseThrow(EntityNotFoundException::new);
         courseFeedbackRepository.delete(feedback);
-        return "Course Feedback deleted successfully";
+        return COURSE_FEEDBACK_DELETED_SUCCESSFULLY;
+    }
+
+    private CourseFeedback createOrUpdateFeedback(CourseFeedbackDTO courseFeedbackDTO, User instructor) {
+        validateUsers(courseFeedbackDTO, instructor);
+        CourseFeedback existingFeedback = findById(courseFeedbackDTO.getId());
+
+        String feedbackText = courseFeedbackDTO.getFeedbackText() != null
+                ? courseFeedbackDTO.getFeedbackText()
+                : existingFeedback.getFeedbackText();
+
+        User student = courseFeedbackDTO.getStudentId() != null
+                ? userService.findUserById(courseFeedbackDTO.getStudentId())
+                : existingFeedback.getStudent();
+
+        Course course = courseFeedbackDTO.getCourseId() != null
+                ? courseRepository.findById(courseFeedbackDTO.getCourseId())
+                .orElseThrow(EntityNotFoundException::new)
+                : existingFeedback.getCourse();
+
+        return CourseFeedback.builder()
+                .id(existingFeedback.getId())
+                .feedbackText(feedbackText)
+                .student(student)
+                .instructor(instructor)
+                .course(course)
+                .build();
     }
 
     private void validateUsers(CourseFeedbackDTO courseFeedbackDTO, User instructor) {
@@ -120,7 +122,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
             if (isInstructorAssignedToCourse(instructor.getId(), courseFeedbackDTO.getCourseId())) {
                 courseRepository.isUserAssignedToCourse(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId());
             } else {
-                throw new EntityNotFoundException("Instructor is not assigned fot this course!");
+                throw new EntityNotFoundException(INSTRUCTOR_NOT_ASSIGNED);
             }
         }
     }

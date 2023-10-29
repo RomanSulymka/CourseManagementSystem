@@ -5,7 +5,6 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.query.SqlQueryConstants;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -38,16 +37,30 @@ public class CourseRepositoryImpl implements CourseRepository {
             "INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id " +
             "WHERE u.id =: userId AND c.id =: courseId";
 
+    private static final String FIND_COURSE_BY_NAME_QUERY = "SELECT c FROM courses c WHERE c.name = :name";
+
+    private static final String EXIST_COURSE_BY_NAME_QUERY = "SELECT COUNT(c) FROM courses c WHERE c.name = :name";
+
+    private static final String ASSIGN_USER_TO_COURSE = "INSERT INTO enrollments (user_id, course_id) VALUES (:instructorId, :courseId )";
+
+    private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status WHERE id =:id";
+
+    private static final String GET_USERS_IN_COURSE_BY_ROLE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE c.id =: id AND u.role =: role";
+
+    private static final String GET_ALL_LESSONS_IN_COURSE = "SELECT l FROM courses c INNER JOIN lessons l on c.id = l.course.id WHERE c.id = :id";
+
+    private static final String GET_COURSES_BY_START_DATE = "SELECT c FROM courses c WHERE c.startDate = :startDate";
+
     @Override
     public Optional<Course> findByName(String name) {
-        return Optional.ofNullable(getEntityManager().createQuery(SqlQueryConstants.FIND_COURSE_BY_NAME_QUERY, Course.class)
+        return Optional.ofNullable(getEntityManager().createQuery(FIND_COURSE_BY_NAME_QUERY, Course.class)
                 .setParameter("name", name)
                 .getSingleResult());
     }
 
     @Override
     public boolean exist(String name) {
-        Long count = getEntityManager().createQuery(SqlQueryConstants.EXIST_COURSE_BY_NAME_QUERY, Long.class)
+        Long count = getEntityManager().createQuery(EXIST_COURSE_BY_NAME_QUERY, Long.class)
                 .setParameter("name", name)
                 .getSingleResult();
         return count != null && count > 0;
@@ -56,7 +69,7 @@ public class CourseRepositoryImpl implements CourseRepository {
     @Override
     public void updateStatus(Long id, CourseStatus status) {
         getEntityManager()
-                .createNativeQuery("UPDATE courses SET status =:status WHERE id =:id")
+                .createNativeQuery(UPDATE_COURSE_STATUS)
                 .setParameter("status", status)
                 .setParameter("id", id)
                 .executeUpdate();
@@ -64,7 +77,7 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public List<User> findUsersInCourseByRole(Long id, RoleEnum roleEnum) {
-        return getEntityManager().createQuery("SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE c.id =: id AND u.role =: role", User.class)
+        return getEntityManager().createQuery(GET_USERS_IN_COURSE_BY_ROLE, User.class)
                 .setParameter("id", id)
                 .setParameter("role", roleEnum)
                 .getResultList();
@@ -72,14 +85,14 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public Optional<List<Lesson>> findAllLessonsInCourse(Long id) {
-        return Optional.ofNullable(getEntityManager().createQuery("SELECT l FROM courses c INNER JOIN lessons l on c.id = l.course.id WHERE c.id = :id", Lesson.class)
+        return Optional.ofNullable(getEntityManager().createQuery(GET_ALL_LESSONS_IN_COURSE, Lesson.class)
                 .setParameter("id", id)
                 .getResultList());
     }
 
     @Override
     public List<Course> findByStartDate(LocalDate currentDate) {
-        return getEntityManager().createQuery("SELECT c FROM courses c WHERE c.startDate = :startDate", Course.class)
+        return getEntityManager().createQuery(GET_COURSES_BY_START_DATE, Course.class)
                 .setParameter("startDate", currentDate)
                 .getResultList();
     }
@@ -87,7 +100,7 @@ public class CourseRepositoryImpl implements CourseRepository {
     @Override
     public void assignInstructor(Long courseId, Long instructorId) {
         getEntityManager()
-                .createNativeQuery("INSERT INTO enrollments (user_id, course_id) VALUES (:instructorId, :courseId )")
+                .createNativeQuery(ASSIGN_USER_TO_COURSE)
                 .setParameter("courseId", courseId)
                 .setParameter("instructorId", instructorId)
                 .executeUpdate();

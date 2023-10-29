@@ -31,7 +31,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +40,21 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class CourseServiceImpl implements CourseService {
+    public static final String COURSE_START_DATE_HAS_ALREADY_EXPIRED = "Course start date has already expired!";
+    public static final String USER_SHOULD_HAVE_INSTRUCTOR_ROLE_BUT_NOW_USER_HAS_ROLE = "User should have instructor role, but now user has role {}";
+    public static final String INSTRUCTOR_SUCCESSFULLY_ASSIGNED = "Instructor successfully assigned!";
+    public static final String SCHEDULER_SUCCESSFULLY_STARTED = "Scheduler successfully started";
+    public static final String FAILED_START_COURSE_COURSE_HAS_NOT_ENOUGH_LESSONS = "Failed start course, course has not enough lessons";
+    public static final String COURSE_HAS_NOT_ENOUGH_LESSONS = "Course has not enough lessons";
+    public static final String COURSE_NOT_FOUND_WITH_ID = "Course not found with id: ";
+    public static final String COURSE_NOT_FOUND_WITH_NAME = "Course not found with name: ";
+    public static final String ERROR_UPDATING_COURSE_WITH_ID = "Error updating course with id: {}";
+    public static final String FAILED_TO_UPDATE_COURSE = "Failed to update course";
+    public static final String ERROR_DELETING_COURSE_WITH_ID = "Error deleting course with id: {}";
+    public static final String COURSE_SHOULD_HAVE_AT_LEAST_1_INSTRUCTOR = "Course {} should have at least 1 Instructor";
+    public static final String COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY = "Course with id: {} changed status to {} successfully";
+    public static final String INCORRECT_ACTION_PARAMETER = "Incorrect action parameter!";
+    public static final String INSTRUCTOR_IS_NOT_ASSIGNED_TO_THIS_COURSE = "Instructor is not assigned to this course";
     private final CourseRepository courseRepository;
     private final CourseMarkRepository courseMarkRepository;
     private final UserService userService;
@@ -54,28 +68,20 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public Course create(CourseDTO courseDTO) {
         Course course = courseDTO.getCourse();
-        validateCourseNotExists(course.getName());
-        if (validateCourseStartDateNotExpired(course.getStartDate())) {
-
-            Course createdCourse = saveCourse(course);
-            assignInstructor(createdCourse, courseDTO.getInstructorEmail());
-            lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), course);
-
-            return findById(createdCourse.getId());
-        } else {
-            throw new IllegalArgumentException("Course start date has already expired!");
-        }
+        validateCourseCreation(course.getName(), course.getStartDate());
+        Course createdCourse = saveCourse(course);
+        assignInstructor(createdCourse, courseDTO.getInstructorEmail());
+        lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), createdCourse);
+        return findById(createdCourse.getId());
     }
 
-    private void validateCourseNotExists(String courseName) {
+    private void validateCourseCreation(String courseName, LocalDate startDate) {
         if (courseRepository.exist(courseName)) {
-            logAndThrowError("Course with name {} already exists", courseName);
+            throw new CourseCreationException("Course with name " + courseName + " already exists");
         }
-    }
-
-    private void logAndThrowError(String message, Object... args) {
-        log.error(message, args);
-        throw new CourseCreationException(String.format(message, args));
+        if (startDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException(COURSE_START_DATE_HAS_ALREADY_EXPIRED);
+        }
     }
 
     private Course saveCourse(Course course) {
@@ -83,20 +89,20 @@ public class CourseServiceImpl implements CourseService {
             course.setStarted(false);
             return courseRepository.save(course);
         } catch (DataAccessException ex) {
-            logAndThrowError("Error creating course: {}", ex.getMessage());
+            throw new CourseCreationException("Error creating course: " + ex.getMessage(), ex);
         }
-        return course;
     }
 
     private void assignInstructor(Course createdCourse, String instructorEmail) {
         User user = userService.findUserByEmail(instructorEmail);
 
         if (user.getRole() != RoleEnum.INSTRUCTOR) {
-            logAndThrowError("User should have instructor role, but now user has role {}", user.getRole());
+            log.error(USER_SHOULD_HAVE_INSTRUCTOR_ROLE_BUT_NOW_USER_HAS_ROLE, user.getRole());
+            throw new CourseCreationException(String.format(USER_SHOULD_HAVE_INSTRUCTOR_ROLE_BUT_NOW_USER_HAS_ROLE, user.getRole()));
         }
 
         courseRepository.assignInstructor(createdCourse.getId(), user.getId());
-        log.info("Instructor successfully assigned!");
+        log.info(INSTRUCTOR_SUCCESSFULLY_ASSIGNED);
     }
 
     @Scheduled(cron = "0 0 0 * * ?")
@@ -112,13 +118,13 @@ public class CourseServiceImpl implements CourseService {
         });
 
         courseRepository.saveAll(coursesToStart);
-        log.info("Scheduler successfully started");
+        log.info(SCHEDULER_SUCCESSFULLY_STARTED);
     }
 
     private boolean isCourseHasMoreLessons(int size) {
         if (CourseServiceImpl.MIN_LESSONS > size) {
-            log.error("Failed start course, course has not enough lessons");
-            throw new CourseException("Course has not enough lessons");
+            log.error(FAILED_START_COURSE_COURSE_HAS_NOT_ENOUGH_LESSONS);
+            throw new CourseException(COURSE_HAS_NOT_ENOUGH_LESSONS);
         } else {
             return true;
         }
@@ -127,15 +133,15 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public Course findByName(String courseName) throws EntityNotFoundException {
         return courseRepository.findByName(courseName)
-                .orElseThrow(() -> new EntityNotFoundException("Course not found with name: " + courseName));
+                .orElseThrow(() -> new EntityNotFoundException(COURSE_NOT_FOUND_WITH_NAME + courseName));
     }
 
     @Override
     public Course findById(Long courseId) {
         return courseRepository.findById(courseId)
                 .orElseThrow(() -> {
-                    log.error("Course not found with id: " + courseId);
-                    return new EntityNotFoundException("Course not found with id: " + courseId);
+                    log.error(COURSE_NOT_FOUND_WITH_ID + courseId);
+                    return new EntityNotFoundException(COURSE_NOT_FOUND_WITH_ID + courseId);
                 });
     }
 
@@ -149,8 +155,8 @@ public class CourseServiceImpl implements CourseService {
         try {
             return courseRepository.update(course);
         } catch (DataAccessException ex) {
-            log.error("Error updating course with id: {}", course.getId(), ex);
-            throw new CourseUpdateException("Failed to update course", ex);
+            log.error(ERROR_UPDATING_COURSE_WITH_ID, course.getId(), ex);
+            throw new CourseUpdateException(FAILED_TO_UPDATE_COURSE, ex);
         }
     }
 
@@ -161,8 +167,8 @@ public class CourseServiceImpl implements CourseService {
             courseRepository.delete(course);
             return true;
         } catch (DataAccessException ex) {
-            log.error("Error deleting course with id: {}", id, ex);
-            throw new EntityDeletionException("Failed to delete course", ex);
+            log.error(ERROR_DELETING_COURSE_WITH_ID, id, ex);
+            throw new EntityDeletionException(ERROR_DELETING_COURSE_WITH_ID, ex);
         }
     }
 
@@ -209,8 +215,8 @@ public class CourseServiceImpl implements CourseService {
         findById(id);
         List<User> instructors = courseRepository.findUsersInCourseByRole(id, RoleEnum.INSTRUCTOR);
         if (instructors.isEmpty()) {
-            log.error("Course {} should have at least 1 Instructor", id);
-            throw new EntityNotFoundException("Course should have at least 1 Instructor");
+            log.error(COURSE_SHOULD_HAVE_AT_LEAST_1_INSTRUCTOR, id);
+            throw new EntityNotFoundException(COURSE_SHOULD_HAVE_AT_LEAST_1_INSTRUCTOR);
         } else {
             return updateCourseStatus(id, status);
         }
@@ -218,14 +224,8 @@ public class CourseServiceImpl implements CourseService {
 
     private Course updateCourseStatus(Long id, CourseStatus status) {
         courseRepository.updateStatus(id, status);
-        log.info("Course with id: {} changed status to {} successfully", id, status);
+        log.info(COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY, id, status);
         return findById(id);
-    }
-
-    public boolean validateCourseStartDateNotExpired(LocalDate startDate) {
-        LocalDate currentDate = LocalDate.now();
-
-        return !currentDate.isAfter(startDate);
     }
 
     public List<Course> findCoursesByUserId(Long userId) {
@@ -261,7 +261,7 @@ public class CourseServiceImpl implements CourseService {
         } else if (action.equals("stop")) {
             return stopCourse(courseId, CourseStatus.STOP);
         } else {
-            throw new IllegalArgumentException("Incorrect action parameter!");
+            throw new IllegalArgumentException(INCORRECT_ACTION_PARAMETER);
         }
     }
 
@@ -274,17 +274,8 @@ public class CourseServiceImpl implements CourseService {
         if (isAssigned) {
             return true;
         } else {
-            log.error("Instructor with id {}, is not assigned to this course {}", studentId, courseId);
-            throw new EntityNotFoundException("Instructor is not assigned to this course");
-        }
-    }
-
-    private Boolean isCoursePassed(CourseMark courseMark, Boolean isAllHomeworksGraded) {
-        if (Boolean.TRUE.equals(isAllHomeworksGraded)) {
-            BigDecimal requiredScore = new BigDecimal("80");
-            return courseMark.getTotalScore().compareTo(requiredScore) >= 0;
-        } else {
-            return false;
+            log.error(INSTRUCTOR_IS_NOT_ASSIGNED_TO_THIS_COURSE, studentId, courseId);
+            throw new EntityNotFoundException(INSTRUCTOR_IS_NOT_ASSIGNED_TO_THIS_COURSE);
         }
     }
 }

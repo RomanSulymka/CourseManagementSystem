@@ -57,11 +57,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> findUsersByEmails(List<String> usersEmails) {
-        return userRepository.findUsersByEmails(usersEmails);
-    }
-
-    @Override
     public User findUserByEmail(String email) {
         try {
             return userRepository.findUserByEmail(email);
@@ -119,12 +114,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean deleteUser(Long id) {
+    public String deleteUser(Long id) {
         try {
             User user = findUserById(id);
             userRepository.delete(user);
-            //fixme: fix this code
-            return true;
+            log.info("User deleted successfully");
+            return "User deleted successfully!";
         } catch (DataAccessException ex) {
             log.error("Error deleting user with id: {}", id, ex);
             throw new EntityDeletionException("Failed to delete user", ex);

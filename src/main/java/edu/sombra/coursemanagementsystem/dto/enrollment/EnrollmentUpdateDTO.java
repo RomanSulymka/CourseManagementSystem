@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class EnrollmentUpdateDTO {
     private Long id;
-    private String userEmail;
-    private String courseName;
+    private Long userId;
+    private Long courseId;
 }

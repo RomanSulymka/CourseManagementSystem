@@ -13,26 +13,15 @@ import java.util.Optional;
 
 public interface CourseRepository extends BaseRepository<Course, Long> {
     Optional<Course> findByName(String name);
-
     boolean exist(String name);
-
     void updateStatus(Long id, CourseStatus status);
-
     List<User> findUsersInCourseByRole(Long id, RoleEnum roleEnum);
-
     Optional<List<Lesson>> findAllLessonsInCourse(Long id);
-
     List<Course> findByStartDate(LocalDate currentDate);
-
     void assignInstructor(Long courseId, Long instructorId);
-
     Optional<Course> findCourseByHomeworkId(Long homeworkId);
-
     Optional<List<Course>> findCoursesByUserId(Long instructorId);
-
     List<User> findUsersInCourse(String courseId);
-
     Optional<List<Lesson>> findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId);
-
     boolean isUserAssignedToCourse(Long studentId, Long courseId);
 }

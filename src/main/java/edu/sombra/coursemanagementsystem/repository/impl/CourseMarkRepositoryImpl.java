@@ -17,6 +17,12 @@ public class CourseMarkRepositoryImpl implements CourseMarkRepository {
     @PersistenceContext
     @Getter
     private EntityManager entityManager;
+    public static final String SQL_UPSERT_USER_COURSE_MARK = "INSERT INTO user_course_marks (user_id, course_id, total_score, passed) " +
+            "VALUES (?, ?, ?, ?)" +
+            "ON CONFLICT (user_id, course_id) " +
+            "DO UPDATE " +
+            "   SET total_score = EXCLUDED.total_score, " +
+            "       passed = EXCLUDED.passed; ";
     private static final String GET_ELEMENTS_BY_USER_ID_AND_COURSE_ID = "SELECT u FROM user_course_marks u WHERE u.course.id = :courseId AND u.user.id = :userId";
 
     @Override
@@ -39,12 +45,7 @@ public class CourseMarkRepositoryImpl implements CourseMarkRepository {
 
     @Override
     public void upsert(CourseMark courseMark) {
-        getEntityManager().createNativeQuery("INSERT INTO user_course_marks (user_id, course_id, total_score, passed) " +
-                        "VALUES (?, ?, ?, ?)" +
-                        "ON CONFLICT (user_id, course_id) " +
-                        "DO UPDATE " +
-                        "   SET total_score = EXCLUDED.total_score, " +
-                        "       passed = EXCLUDED.passed; ")
+        getEntityManager().createNativeQuery(SQL_UPSERT_USER_COURSE_MARK)
                 .setParameter(1, courseMark.getUser().getId())
                 .setParameter(2, courseMark.getCourse().getId())
                 .setParameter(3, courseMark.getTotalScore())
