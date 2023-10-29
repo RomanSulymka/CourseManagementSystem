@@ -7,7 +7,6 @@ import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.service.CourseMarkService;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,13 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @AllArgsConstructor
 @Service
 @Transactional
 public class CourseMarkServiceImpl implements CourseMarkService {
+    public static final String TOTAL_MARK_SAVED_SUCCESSFULLY = "Total mark saved successfully";
     private final CourseMarkRepository courseMarkRepository;
     private final CourseService courseService;
     private final UserService userService;
@@ -42,34 +41,19 @@ public class CourseMarkServiceImpl implements CourseMarkService {
     }
 
     @Override
-    public void saveTotalMark(Long userId, Long courseId, Double averageMark) {
+    public void saveTotalMark(Long userId, Long courseId, Double averageMark, Boolean isAllHomeworksGraded) {
         User user = userService.findUserById(userId);
         Course course = courseService.findById(courseId);
-        if (!isTotalMarkExist(userId, courseId)) {
-            courseMarkRepository.save(CourseMark.builder()
-                    .user(user)
-                    .course(course)
-                    .totalScore(BigDecimal.valueOf(averageMark))
-                    .build());
-            log.info("Total mark saved successfully");
-        } else {
-            CourseMark courseMark = findCourseByUserIdAndCourseId(userId, courseId)
-                    .orElseThrow(EntityNotFoundException::new);
-            courseMarkRepository.update(CourseMark.builder()
-                    .id(courseMark.getId())
-                    .user(user)
-                    .course(course)
-                    .totalScore(BigDecimal.valueOf(averageMark))
-                    .build());
-            log.info("Total mark updated successfully");
-        }
+        courseMarkRepository.upsert(CourseMark.builder()
+                .user(user)
+                .course(course)
+                .totalScore(BigDecimal.valueOf(averageMark))
+                .passed(isCoursePassed(averageMark, isAllHomeworksGraded))
+                .build());
+        log.info(TOTAL_MARK_SAVED_SUCCESSFULLY);
     }
 
-    private boolean isTotalMarkExist(Long userId, Long courseId) {
-        return findCourseByUserIdAndCourseId(userId, courseId).isPresent();
-    }
-
-    private Optional<CourseMark> findCourseByUserIdAndCourseId(Long userId, Long courseId) {
-        return courseMarkRepository.findCourseMarkByUserIdAndCourseId(userId, courseId);
+    private boolean isCoursePassed(Double averageMark, boolean isAllHomeworksGraded) {
+        return isAllHomeworksGraded && averageMark >= 80;
     }
 }

@@ -7,12 +7,15 @@ import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
+import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
+import edu.sombra.coursemanagementsystem.mapper.EnrollmentMapper;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
+import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -35,6 +38,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseService courseService;
     private final UserService userService;
+    private final HomeworkRepository homeworkRepository;
+    private final EnrollmentMapper enrollmentMapper;
 
     private static final Long COURSE_LIMIT = 5L;
 
@@ -70,7 +75,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         try {
             User user = findUserByEnrollment(id);
             if (user.getRole().equals(RoleEnum.INSTRUCTOR)) {
-                if (!getListOfInstructorsForCourse(id).isEmpty() && getListOfInstructorsForCourse(id).size() > 1) {
+                if (getListOfInstructorsForCourse(id).size() > 1) {
                     removeEnrollment(id);
                 } else {
                     throw new EnrollmentException("Course should have at least one instructor assigned on the course");
@@ -133,22 +138,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO) {
         try {
-            User user = userService.findUserByEmail(updateDTO.getUserEmail());
-            //FIXME: check is new user has instructor role
-            Course course = courseService.findByName(updateDTO.getCourseName());
+            User user = userService.findUserById(updateDTO.getUserId());
+            Course course = courseService.findById(updateDTO.getCourseId());
             Enrollment enrollment = enrollmentRepository.update(Enrollment.builder()
                     .id(updateDTO.getId())
                     .course(course)
                     .user(user)
                     .build());
-
-            return EnrollmentGetByNameDTO.builder()
-                    .name(enrollment.getCourse().getName())
-                    .firstName(enrollment.getUser().getFirstName())
-                    .lastName(enrollment.getUser().getLastName())
-                    .email(enrollment.getUser().getEmail())
-                    .role(enrollment.getUser().getRole())
-                    .build();
+            return enrollmentMapper.mapToDTO(enrollment);
         } catch (DataAccessException ex) {
             log.error("Error updating enrollment with id: {}", updateDTO.getId(), ex);
             throw new EnrollmentException("Failed to update enrollment", ex);
@@ -156,21 +153,35 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO) {
+    public void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail) {
         try {
-            Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(applyForCourseDTO.getUserId());
-            if (numberOfUserCourses < COURSE_LIMIT) {
-                User user = userService.findUserById(applyForCourseDTO.getUserId());
-                Course course = courseService.findByName(applyForCourseDTO.getCourseName());
-                isUserAlreadyAssigned(course, user);
-                Enrollment enrollment = buildEnrollment(course, user);
-                enrollmentRepository.save(enrollment);
+            User user = userService.findUserByEmail(userEmail);
+            if (!user.getRole().equals(RoleEnum.ADMIN)) {
+                Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(user.getId());
+                assignUserForLesson(applyForCourseDTO, numberOfUserCourses, user);
             } else {
-                throw new EnrollmentException("User has already assigned for 5 courses");
+                User student = userService.findUserByEmail(userEmail);
+                Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(applyForCourseDTO.getUserId());
+                assignUserForLesson(applyForCourseDTO, numberOfUserCourses, student);
             }
         } catch (DataAccessException ex) {
             log.error("Error applying for course with name: {}", applyForCourseDTO.getCourseName(), ex);
             throw new EnrollmentException("Failed to apply for course", ex);
+        }
+    }
+
+    private void assignUserForLesson(EnrollmentApplyForCourseDTO applyForCourseDTO, Long numberOfUserCourses, User user) {
+        if (numberOfUserCourses < COURSE_LIMIT) {
+            Course course = courseService.findByName(applyForCourseDTO.getCourseName());
+            isUserAlreadyAssigned(course, user);
+            Enrollment enrollment = buildEnrollment(course, user);
+            enrollmentRepository.save(enrollment);
+            List<Lesson> lessons = courseService.findAllLessonsByCourse(course.getId());
+            for (Lesson lesson : lessons) {
+                homeworkRepository.assignUserForLesson(user.getId(), lesson.getId());
+            }
+        } else {
+            throw new EnrollmentException("User has already assigned for 5 courses");
         }
     }
 

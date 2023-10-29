@@ -49,7 +49,7 @@ CREATE TABLE homework
     mark      BIGINT,
     user_id   BIGINT NOT NULL,
     lesson_id BIGINT NOT NULL,
-    file_id   BIGINT NOT NULL,
+    file_id   BIGINT,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (lesson_id) REFERENCES lessons (id),
     FOREIGN KEY (file_id) REFERENCES files (id)

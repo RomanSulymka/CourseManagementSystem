@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface CourseMarkRepository extends BaseRepository<CourseMark, Long> {
     Optional<CourseMark> findCourseMarkByUserIdAndCourseId(Long userId, Long courseId);
+    void upsert(CourseMark courseMark);
 }

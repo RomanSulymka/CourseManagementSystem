@@ -33,4 +33,5 @@ public class CourseMark {
     @ManyToOne
     @JoinColumn(name = "course_id", referencedColumnName = "id")
     private Course course;
+    private Boolean passed;
 }

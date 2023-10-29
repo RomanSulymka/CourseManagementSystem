@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,7 +34,14 @@ public class SecurityConfiguration {
                         authorizeHttpRequests
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/api/v1/user/**").hasRole("ADMIN")
+
                                 .requestMatchers("/api/v1/course/**").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/course/create", "/api/v1/course/edit", "/api/v1/find-all-lessons/{id}", "/api/v1/course/find-all").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/course/{{id}}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/course/{{id}}").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/instructor/{instructorId}", "/api/v1/instructor/{instructorId}/{courseId}", "/finish/{studentId}/{courseId}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers("/api/v1/student/{studentId}", "/api/v1/student/lessons/{studentId}/{courseId}").hasAnyRole("ADMIN", "STUDENT")
+
                                 .requestMatchers("/api/v1/enrollment/**").hasRole("ADMIN")
                                 .requestMatchers("/api/v1/demo-controller").authenticated()
                                 .anyRequest().authenticated()

@@ -51,10 +51,11 @@ CREATE TABLE homework
     mark      BIGINT,
     user_id   BIGINT NOT NULL,
     lesson_id BIGINT NOT NULL,
-    file_id   BIGINT NOT NULL,
+    file_id   BIGINT,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (lesson_id) REFERENCES lessons (id),
-    FOREIGN KEY (file_id) REFERENCES files (id)
+    CONSTRAINT unique_file_id UNIQUE (file_id),
+    CONSTRAINT fk_file_id FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE
 );
 
 CREATE TABLE course_feedback
@@ -75,6 +76,7 @@ CREATE TABLE user_course_marks
     user_id    BIGINT NOT NULL,
     course_id  BIGINT NOT NULL,
     total_score NUMERIC(10, 2),
+    passed      BOOLEAN NOT NULL DEFAULT false,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (course_id) REFERENCES courses (id)
 );
