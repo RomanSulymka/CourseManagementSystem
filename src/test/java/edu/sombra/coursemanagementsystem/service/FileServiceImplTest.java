@@ -149,7 +149,6 @@ class FileServiceImplTest {
         assertThrows(EntityNotFoundException.class, () -> fileService.getFileDataById(fileId));
     }
 
-    //TODO: add data providers
     @Test
     void testDelete_AdminUser() {
         Long fileId = 1L;
@@ -200,19 +199,19 @@ class FileServiceImplTest {
         verify(fileRepository, never()).delete(any());
     }
 
-    @Test
-    void testDownloadFile_SuccessfulDownload() {
-        Long fileId = 1L;
+    @ParameterizedTest
+    @MethodSource("provideFileTest")
+    void testDownloadFile_SuccessfulDownload(Long fileId, String fileName, String fileData) {
         File file = new File();
-        file.setFileName("example.txt");
-        file.setFileData(new byte[]{1, 2, 3});
+        file.setFileName(fileName);
+        file.setFileData(fileData.getBytes());
         when(fileRepository.findById(fileId)).thenReturn(Optional.of(file));
 
         Resource resource = fileService.downloadFile(fileId);
 
         assertNotNull(resource);
         assertTrue(resource instanceof ByteArrayResource);
-        assertEquals("example.txt", resource.getFilename());
+        assertEquals(fileName, resource.getFilename());
     }
 
     @Test
