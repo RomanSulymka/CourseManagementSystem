@@ -62,14 +62,6 @@ jobs:
       - name: Display Code Coverage Report
         uses: actions/checkout@v2
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v1.0.0
-          files: target/site/jacoco
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
       - name: Display Coverage Report Link
         run: |
           RELEASE_URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[0].browser_download_url')
