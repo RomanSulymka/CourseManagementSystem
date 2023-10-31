@@ -52,3 +52,26 @@ jobs:
 
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
+
+      - name: Upload Code Coverage Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage
+          path: target/site/jacoco
+
+      - name: Display Code Coverage Report
+        uses: actions/checkout@v2
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/site/jacoco
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Display Coverage Report Link
+        run: |
+          RELEASE_URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.assets[0].browser_download_url')
+          echo "Code Coverage Report: [Download Here]($RELEASE_URL)"
+
+
