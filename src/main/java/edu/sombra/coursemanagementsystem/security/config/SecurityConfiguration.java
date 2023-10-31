@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
@@ -33,16 +34,67 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorizeHttpRequests ->
                         authorizeHttpRequests
                                 .requestMatchers("/api/v1/auth/**").permitAll()
-                                .requestMatchers("/api/v1/user/**").hasRole("ADMIN")
+//                                .requestMatchers("/api/v1/user/**").hasRole("ADMIN")
+//                                .requestMatchers("/api/v1/feedback/**").hasRole("ADMIN")
+//                                .requestMatchers("/api/v1/course/**").hasRole("ADMIN")
+//                                .requestMatchers("/api/v1/enrollment/**").hasRole("ADMIN")
+//                                .requestMatchers("/api/v1/homework/**").hasRole("ADMIN")
+//                                .requestMatchers("/api/v1/lesson/**").hasRole("ADMIN")
+//                                .requestMatchers("/api/v1/files/**").hasRole("ADMIN")
 
-                                .requestMatchers("/api/v1/course/**").hasRole("ADMIN")
+                                // Course
                                 .requestMatchers("/api/v1/course/create", "/api/v1/course/edit", "/api/v1/find-all-lessons/{id}", "/api/v1/course/find-all").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/v1/course/{{id}}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/course/{{id}}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/course/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/course/{id}").hasRole("ADMIN")
                                 .requestMatchers("/api/v1/instructor/{instructorId}", "/api/v1/instructor/{instructorId}/{courseId}", "/finish/{studentId}/{courseId}").hasAnyRole("ADMIN", "INSTRUCTOR")
                                 .requestMatchers("/api/v1/student/{studentId}", "/api/v1/student/lessons/{studentId}/{courseId}").hasAnyRole("ADMIN", "STUDENT")
 
-                                .requestMatchers("/api/v1/enrollment/**").hasRole("ADMIN")
+                                // Course feedback
+                                .requestMatchers(HttpMethod.POST, "/api/v1/feedback").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/feedback").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/feedback").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/feedback/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/feedback/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+
+                                // Enrollment
+                                .requestMatchers("/api/v1/enrollment/instructor").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/enrollment/user/apply").hasAnyRole("ADMIN", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/enrollment/{id}").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/enrollment/by-name").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/enrollment").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/enrollment/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/enrollment/user/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+
+                                // File
+                                .requestMatchers(HttpMethod.POST, "/api/v1/files/upload/{userId}/{lessonId}").hasAnyRole("ADMIN", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/files/download/{fileId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/files/{fileId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+
+                                // Homework
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/homework/mark").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/homework").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/homework/user/{userId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR")
+
+                                // Lesson
+                                .requestMatchers(HttpMethod.POST, "/api/v1/lesson/create").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/lesson/{id}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/lesson/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/lesson/find-all").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/lesson/find-all/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/lesson/edit").hasAnyRole("ADMIN", "INSTRUCTOR")
+
+                                // User
+                                .requestMatchers(HttpMethod.POST, "/api/v1/user/create").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/user/update").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/user/assign-role").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/user/reset-password").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/user/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/user/{email}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/user/find-all").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/user/{id}").hasRole("ADMIN")
+
                                 .requestMatchers("/api/v1/demo-controller").authenticated()
                                 .anyRequest().authenticated()
                 )
@@ -62,4 +114,5 @@ public class SecurityConfiguration {
 
         return http.build();
     }
+
 }

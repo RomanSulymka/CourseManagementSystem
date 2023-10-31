@@ -94,6 +94,12 @@ public class HomeworkServiceImpl implements HomeworkService {
         return homeworkMapper.mapToDTO(homeworkList);
     }
 
+    @Override
+    public List<GetHomeworkDTO> getAllHomeworksByUser(Long userId) {
+        List<Homework> homeworkList = homeworkRepository.findAllByUser(userId);
+        return homeworkMapper.mapToDTO(homeworkList);
+    }
+
     private Homework findHomework(Long homeworkId) {
         return homeworkRepository.findById(homeworkId)
                 .orElseThrow(EntityNotFoundException::new);

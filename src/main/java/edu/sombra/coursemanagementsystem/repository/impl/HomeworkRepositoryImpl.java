@@ -16,6 +16,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Repository
 public class HomeworkRepositoryImpl implements HomeworkRepository {
+    public static final String GET_ALL_HOMEWORKS_BY_USER = "SELECT h FROM homework h where user.id =: userId";
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -85,6 +86,13 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
         } catch (NoResultException e) {
             return false;
         }
+    }
+
+    @Override
+    public List<Homework> findAllByUser(Long userId) {
+        return getEntityManager().createQuery(GET_ALL_HOMEWORKS_BY_USER, Homework.class)
+                .setParameter("userId", userId)
+                .getResultList();
     }
 
     @Override

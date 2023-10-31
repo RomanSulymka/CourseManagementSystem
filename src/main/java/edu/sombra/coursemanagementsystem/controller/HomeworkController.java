@@ -37,6 +37,11 @@ public class HomeworkController {
         return ResponseEntity.ok(homeworkService.getAllHomeworks());
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<GetHomeworkDTO>> getAllHomeworksByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(homeworkService.getAllHomeworksByUser(userId));
+    }
+
     @DeleteMapping("/{homeworkId}")
     public ResponseEntity<String> delete(@PathVariable Long homeworkId) {
         return ResponseEntity.ok(homeworkService.deleteHomework(homeworkId));

@@ -16,7 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +34,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void saveFile(MultipartFile uploadedFile, Long lessonId, Long userId) throws IOException {
+        validateInput(uploadedFile, lessonId, userId);
+
         User user = userService.findUserById(userId);
         Lesson lesson = lessonService.findById(lessonId);
 
@@ -51,29 +52,30 @@ public class FileServiceImpl implements FileService {
                 .build());
     }
 
+    private static void validateInput(MultipartFile uploadedFile, Long lessonId, Long userId) {
+        if (uploadedFile == null || lessonId == null || userId == null || lessonId <= 0 || userId <= 0) {
+            throw new IllegalArgumentException("Invalid input parameters");
+        }
+    }
+
     @Override
     public File getFileDataById(Long fileId) {
-        return fileRepository.findById(fileId)
-                .orElseThrow(EntityNotFoundException::new);
+        return findFileById(fileId);
     }
 
     @Override
     public Resource downloadFile(Long fileId) {
-        try {
-            File file = getFileDataById(fileId);
+        File file = getFileDataById(fileId);
 
-            if (file.getFileName() != null && file.getFileData() != null) {
-                return new ByteArrayResource(file.getFileData()) {
-                    @Override
-                    public String getFilename() {
-                        return file.getFileName();
-                    }
-                };
-            } else {
-                log.error("File with ID {} not found.", fileId);
-                throw new NoResultException("File not found.");
-            }
-        } catch (DataAccessException e) {
+        if (file.getFileName() != null && file.getFileData() != null) {
+            return new ByteArrayResource(file.getFileData()) {
+                @Override
+                public String getFilename() {
+                    return file.getFileName();
+                }
+            };
+        } else {
+            log.error("File with ID {} not found.", fileId);
             throw new NoResultException("File not found.");
         }
     }
@@ -90,6 +92,8 @@ public class FileServiceImpl implements FileService {
                 File file = findFileById(fileId);
                 fileRepository.delete(file);
                 log.info("file deleted successfully");
+            } else {
+                throw new IllegalArgumentException("User has no permission to delete this homework");
             }
         }
     }
