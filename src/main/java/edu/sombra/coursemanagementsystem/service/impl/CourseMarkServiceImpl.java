@@ -53,7 +53,8 @@ public class CourseMarkServiceImpl implements CourseMarkService {
         log.info(TOTAL_MARK_SAVED_SUCCESSFULLY);
     }
 
-    private boolean isCoursePassed(Double averageMark, boolean isAllHomeworksGraded) {
+    @Override
+    public boolean isCoursePassed(Double averageMark, boolean isAllHomeworksGraded) {
         return isAllHomeworksGraded && averageMark >= 80;
     }
 }
