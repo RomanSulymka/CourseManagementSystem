@@ -81,6 +81,9 @@ public class UserServiceImpl implements UserService {
         } catch (DataAccessException ex) {
             log.error("Error creating user: {}", ex.getMessage(), ex);
             throw new UserCreationException("Failed to create user", ex);
+        } catch (NullPointerException ex) {
+            log.error("Failed to create new User, the field is empty");
+            throw new NullPointerException("Failed to create new User, the field is empty");
         }
     }
 
