@@ -95,7 +95,6 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET, "/api/v1/user/find-all").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/user/{id}").hasRole("ADMIN")
 
-                                .requestMatchers("/api/v1/demo-controller").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(authorizeRequests ->
