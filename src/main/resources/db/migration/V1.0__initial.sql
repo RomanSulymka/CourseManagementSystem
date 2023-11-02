@@ -85,10 +85,10 @@ VALUES ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT')
        ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
        ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
 
-INSERT INTO courses (name)
-VALUES ('Course A', 'RUNNING'),
-       ('Course B', 'RUNNING'),
-       ('Course C', 'RUNNING');
+INSERT INTO courses (name, status, startDate, started)
+VALUES ('Course A', 'RUNNING', '2023-01-01', TRUE),
+       ('Course B', 'RUNNING', '2023-02-15', TRUE),
+       ('Course C', 'RUNNING', '2023-03-10', TRUE);
 
 INSERT INTO enrollments (user_id, course_id)
 VALUES (1, 1),
