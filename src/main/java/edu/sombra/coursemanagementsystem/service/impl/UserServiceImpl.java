@@ -76,6 +76,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(User user) {
         try {
+            validateUser(user);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             return userRepository.save(user);
         } catch (DataAccessException ex) {
@@ -154,5 +155,17 @@ public class UserServiceImpl implements UserService {
                 .map(PropertyDescriptor::getName)
                 .filter(name -> src.getPropertyValue(name) == null)
                 .toArray(String[]::new);
+    }
+
+    private void validateUser(User user) {
+        if (user.getPassword().isEmpty()) {
+            throw new NullPointerException("Password is empty!");
+        } else if (user.getFirstName().isEmpty() || user.getLastName().isEmpty()) {
+            throw new NullPointerException("Username is empty!");
+        } else if (user.getEmail().isEmpty()) {
+            throw new NullPointerException("Email is empty!");
+        } else if (user.getRole() == null) {
+            throw new NullPointerException("User Role is empty!");
+        }
     }
 }

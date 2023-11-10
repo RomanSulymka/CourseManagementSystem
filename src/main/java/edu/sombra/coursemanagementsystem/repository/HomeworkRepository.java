@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface HomeworkRepository extends BaseRepository<Homework, Long> {
     void setMark(Long homeworkId, Long mark);
 
-    Double calculateAverageHomeworksMarkByUserId(Long userId, Long id);
+    Double calculateAverageHomeworksMarkByUserId(Long userId, Long courseId);
 
     Optional<Homework> findByUserAndLessonId(Long userId, Long lessonId);
 

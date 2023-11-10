@@ -87,6 +87,7 @@ public class LessonServiceImpl implements LessonService {
 
     @Override
     public Lesson editLesson(Lesson lesson) {
+        findById(lesson.getId());
         return lessonRepository.update(lesson);
     }
 

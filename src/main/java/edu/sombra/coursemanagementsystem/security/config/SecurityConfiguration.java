@@ -34,13 +34,6 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorizeHttpRequests ->
                         authorizeHttpRequests
                                 .requestMatchers("/api/v1/auth/**").permitAll()
-//                                .requestMatchers("/api/v1/user/**").hasRole("ADMIN")
-//                                .requestMatchers("/api/v1/feedback/**").hasRole("ADMIN")
-//                                .requestMatchers("/api/v1/course/**").hasRole("ADMIN")
-//                                .requestMatchers("/api/v1/enrollment/**").hasRole("ADMIN")
-//                                .requestMatchers("/api/v1/homework/**").hasRole("ADMIN")
-//                                .requestMatchers("/api/v1/lesson/**").hasRole("ADMIN")
-//                                .requestMatchers("/api/v1/files/**").hasRole("ADMIN")
 
                                 // Course
                                 .requestMatchers("/api/v1/course/create", "/api/v1/course/edit", "/api/v1/find-all-lessons/{id}", "/api/v1/course/find-all").hasRole("ADMIN")

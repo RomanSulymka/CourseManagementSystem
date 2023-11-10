@@ -76,7 +76,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
         return courseFeedbackMapper.mapToDTO(feedback);
     }
 
-    private CourseFeedback findById(Long id) {
+    public CourseFeedback findById(Long id) {
         return courseFeedbackRepository.findById(id)
                 .orElseThrow(EntityNotFoundException::new);
     }
@@ -89,7 +89,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
         return COURSE_FEEDBACK_DELETED_SUCCESSFULLY;
     }
 
-    private CourseFeedback createOrUpdateFeedback(CourseFeedbackDTO courseFeedbackDTO, User instructor) {
+    public CourseFeedback createOrUpdateFeedback(CourseFeedbackDTO courseFeedbackDTO, User instructor) {
         validateUsers(courseFeedbackDTO, instructor);
         CourseFeedback existingFeedback = findById(courseFeedbackDTO.getId());
 

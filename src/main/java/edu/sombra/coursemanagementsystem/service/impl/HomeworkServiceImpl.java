@@ -6,6 +6,7 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseMarkService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.HomeworkService;
@@ -13,7 +14,6 @@ import edu.sombra.coursemanagementsystem.service.LessonService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,33 +29,33 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final LessonService lessonService;
     private final EnrollmentService enrollmentService;
     private final HomeworkMapper homeworkMapper;
+    private final UserRepository userRepository;
 
     @Override
     public void save(Homework homework) {
+        if (homework == null) {
+            throw new IllegalArgumentException("Homework cannot be null");
+        }
         homeworkRepository.save(homework);
         log.info("Homework saved successfully");
     }
 
     @Override
     public void setMark(Long userId, Long homeworkId, Long mark) {
-        try {
-            if (enrollmentService.isUserAssignedToCourse(userId, homeworkId)) {
-                if (mark >= 0 && mark <= 100) {
-                    homeworkRepository.setMark(homeworkId, mark);
-                    log.info("Mark saved successfully");
-                    Lesson lesson = lessonService.findLessonByHomeworkId(homeworkId);
-                    Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, lesson.getCourse().getId());
-                    Boolean isAllHomeworksGraded = isAllHomeworksGraded(userId, lesson.getCourse().getId());
-                    courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark, isAllHomeworksGraded);
-                } else {
-                    log.error("Invalid mark value. Mark should be between 0 and 100. But now mark is {}", mark);
-                    throw new IllegalArgumentException("Invalid mark value. Mark should be between 0 and 100.");
-                }
+        if (enrollmentService.isUserAssignedToCourse(userId, homeworkId)) {
+            if (mark >= 0 && mark <= 100) {
+                homeworkRepository.setMark(homeworkId, mark);
+                log.info("Mark saved successfully");
+                Lesson lesson = lessonService.findLessonByHomeworkId(homeworkId);
+                Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, lesson.getCourse().getId());
+                boolean isAllHomeworksGraded = isAllHomeworksGraded(userId, lesson.getCourse().getId());
+                courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark, isAllHomeworksGraded);
             } else {
-                throw new UserNotAssignedToCourseException("User isn't assigned to this course");
+                log.error("Invalid mark value. Mark should be between 0 and 100. But now mark is {}", mark);
+                throw new IllegalArgumentException("Invalid mark value. Mark should be between 0 and 100.");
             }
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Invalid mark value. Mark should be between 0 and 100.");
+        } else {
+            throw new UserNotAssignedToCourseException("User isn't assigned to this course");
         }
     }
 
@@ -96,11 +96,12 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public List<GetHomeworkDTO> getAllHomeworksByUser(Long userId) {
+        userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
         List<Homework> homeworkList = homeworkRepository.findAllByUser(userId);
         return homeworkMapper.mapToDTO(homeworkList);
     }
 
-    private Homework findHomework(Long homeworkId) {
+    public Homework findHomework(Long homeworkId) {
         return homeworkRepository.findById(homeworkId)
                 .orElseThrow(EntityNotFoundException::new);
     }

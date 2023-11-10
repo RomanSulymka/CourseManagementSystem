@@ -12,14 +12,6 @@ import org.springframework.stereotype.Repository;
 public class FileRepositoryImpl implements FileRepository {
     @PersistenceContext
     private EntityManager entityManager;
-    public static final String GET_FILE_NAME_BY_ID = "SELECT f.fileName FROM files f WHERE id =: id";
-
-    @Override
-    public String findFileNameById(Long fileId) {
-        return getEntityManager().createQuery(GET_FILE_NAME_BY_ID, String.class)
-                .setParameter("id", fileId)
-                .getSingleResult();
-    }
 
     @Override
     public EntityManager getEntityManager() {
