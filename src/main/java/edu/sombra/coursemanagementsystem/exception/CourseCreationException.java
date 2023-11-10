@@ -1,10 +1,8 @@
 package edu.sombra.coursemanagementsystem.exception;
 
-import org.springframework.dao.DataAccessException;
-
 public class CourseCreationException extends RuntimeException {
 
-    public CourseCreationException(String message, DataAccessException ex) {
+    public CourseCreationException(String message, RuntimeException ex) {
         super(message, ex);
     }
 

@@ -1,7 +1,6 @@
 package edu.sombra.coursemanagementsystem.exception;
 
 import jakarta.persistence.NoResultException;
-import org.springframework.dao.DataAccessException;
 
 public class EnrollmentException extends RuntimeException {
 
@@ -9,11 +8,15 @@ public class EnrollmentException extends RuntimeException {
         super(message);
     }
 
-    public EnrollmentException(String message, DataAccessException ex) {
+    public EnrollmentException(String message, RuntimeException ex) {
         super(message, ex);
     }
 
     public EnrollmentException(String message, NoResultException ex) {
         super(message, ex);
+    }
+
+    public EnrollmentException() {
+
     }
 }
