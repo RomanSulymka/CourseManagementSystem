@@ -1,27 +1,23 @@
 package edu.sombra.coursemanagementsystem.repository;
 
 import edu.sombra.coursemanagementsystem.entity.File;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.stereotype.Repository;
 
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
-@SpringBootTest
-@Transactional
+@DataJpaTest(includeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Repository.class))
 class FileRepositoryTest {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @Autowired
+    private TestEntityManager entityManager;
 
     @Autowired
     private FileRepository fileRepository;
@@ -42,7 +38,7 @@ class FileRepositoryTest {
 
     @Test
     void testFindFileByIdWithNullId() {
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> fileRepository.findById(null));
+        assertThrows(IllegalArgumentException.class, () -> fileRepository.findById(null));
     }
 
     @Test

@@ -21,7 +21,7 @@ public interface CourseRepository extends BaseRepository<Course, Long> {
     void assignInstructor(Long courseId, Long instructorId);
     Optional<Course> findCourseByHomeworkId(Long homeworkId);
     Optional<List<Course>> findCoursesByUserId(Long instructorId);
-    List<User> findUsersInCourse(String courseId);
+    List<User> findUsersInCourse(Long courseId);
     Optional<List<Lesson>> findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId);
     boolean isUserAssignedToCourse(Long userId, Long courseId);
 }

@@ -11,7 +11,6 @@ import edu.sombra.coursemanagementsystem.service.LessonService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,17 +27,12 @@ public class LessonServiceImpl implements LessonService {
 
     @Override
     public Lesson save(CreateLessonDTO lessonDTO) {
-        try {
-            Course course = courseRepository.findById(lessonDTO.getCourseId())
-                    .orElseThrow(EntityNotFoundException::new);
-            return lessonRepository.save(Lesson.builder()
-                    .name(lessonDTO.getLessonName())
-                    .course(course)
-                    .build());
-        } catch (DataAccessException ex) {
-            log.error("Error creating lesson: {}", ex.getMessage(), ex);
-            throw new LessonException("Failed to create lesson", ex);
-        }
+        Course course = courseRepository.findById(lessonDTO.getCourseId())
+                .orElseThrow(EntityNotFoundException::new);
+        return lessonRepository.save(Lesson.builder()
+                .name(lessonDTO.getLessonName())
+                .course(course)
+                .build());
     }
 
     @Override

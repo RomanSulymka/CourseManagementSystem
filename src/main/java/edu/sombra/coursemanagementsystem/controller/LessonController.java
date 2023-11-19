@@ -2,7 +2,6 @@ package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
-import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +49,7 @@ public class LessonController {
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<Lesson> editLesson(Lesson lesson) {
+    public ResponseEntity<Lesson> editLesson(@RequestBody Lesson lesson) {
         return ResponseEntity.ok(lessonService.editLesson(lesson));
     }
 }

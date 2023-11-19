@@ -4,7 +4,9 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Generated;
 
+@Generated
 @Data
 @Builder
 @AllArgsConstructor

@@ -13,8 +13,6 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
-import edu.sombra.coursemanagementsystem.exception.CourseUpdateException;
-import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
@@ -26,7 +24,6 @@ import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,12 +82,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private Course saveCourse(Course course) {
-        try {
-            course.setStarted(false);
-            return courseRepository.save(course);
-        } catch (DataAccessException ex) {
-            throw new CourseCreationException("Error creating course: " + ex.getMessage(), ex);
-        }
+        course.setStarted(false);
+        return courseRepository.save(course);
     }
 
     private void assignInstructor(Course createdCourse, String instructorEmail) {
@@ -122,7 +115,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private boolean isCourseHasMoreLessons(int size) {
-        if (CourseServiceImpl.MIN_LESSONS > size) {
+        if (MIN_LESSONS > size) {
             log.error(FAILED_START_COURSE_COURSE_HAS_NOT_ENOUGH_LESSONS);
             throw new CourseException(COURSE_HAS_NOT_ENOUGH_LESSONS);
         } else {
@@ -152,24 +145,14 @@ public class CourseServiceImpl implements CourseService {
         if (!course.getName().equals(existingCourse.getName()) && (courseRepository.exist(course.getName()))) {
             throw new CourseAlreadyExistsException(course.getName());
         }
-        try {
-            return courseRepository.update(course);
-        } catch (DataAccessException ex) {
-            log.error(ERROR_UPDATING_COURSE_WITH_ID, course.getId(), ex);
-            throw new CourseUpdateException(FAILED_TO_UPDATE_COURSE, ex);
-        }
+        return courseRepository.update(course);
     }
 
     @Override
     public boolean delete(Long id) {
-        try {
-            Course course = findById(id);
-            courseRepository.delete(course);
-            return true;
-        } catch (DataAccessException ex) {
-            log.error(ERROR_DELETING_COURSE_WITH_ID, id, ex);
-            throw new EntityDeletionException(ERROR_DELETING_COURSE_WITH_ID, ex);
-        }
+        Course course = findById(id);
+        courseRepository.delete(course);
+        return true;
     }
 
     @Override
@@ -204,28 +187,27 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, String courseId) {
+    public List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, Long courseId) {
         userService.isUserInstructor(instructorId);
-        //userService.isInstructorAssignedToCourse(instructorId, courseId);
         List<User> user = courseRepository.findUsersInCourse(courseId);
         return userMapper.mapUsersToDTO(user);
     }
 
-    public Course startCourse(Long id, CourseStatus status) {
-        findById(id);
-        List<User> instructors = courseRepository.findUsersInCourseByRole(id, RoleEnum.INSTRUCTOR);
+    public Course startCourse(Long courseId, CourseStatus status) {
+        findById(courseId);
+        List<User> instructors = courseRepository.findUsersInCourseByRole(courseId, RoleEnum.INSTRUCTOR);
         if (instructors.isEmpty()) {
-            log.error(COURSE_SHOULD_HAVE_AT_LEAST_1_INSTRUCTOR, id);
+            log.error(COURSE_SHOULD_HAVE_AT_LEAST_1_INSTRUCTOR, courseId);
             throw new EntityNotFoundException(COURSE_SHOULD_HAVE_AT_LEAST_1_INSTRUCTOR);
         } else {
-            return updateCourseStatus(id, status);
+            return updateCourseStatus(courseId, status);
         }
     }
 
-    private Course updateCourseStatus(Long id, CourseStatus status) {
-        courseRepository.updateStatus(id, status);
-        log.info(COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY, id, status);
-        return findById(id);
+    private Course updateCourseStatus(Long courseId, CourseStatus status) {
+        courseRepository.updateStatus(courseId, status);
+        log.info(COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY, courseId, status);
+        return findById(courseId);
     }
 
     public List<Course> findCoursesByUserId(Long userId) {

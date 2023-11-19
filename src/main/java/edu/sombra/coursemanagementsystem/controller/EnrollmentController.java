@@ -4,7 +4,6 @@ import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourse
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
-import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentRequest;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import lombok.AllArgsConstructor;
@@ -46,9 +45,9 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollmentService.findEnrolmentById(id));
     }
 
-    @PostMapping("/by-name")
-    public ResponseEntity<List<EnrollmentGetByNameDTO>> getByName(@RequestBody EnrollmentRequest request)  {
-        return ResponseEntity.ok(enrollmentService.findEnrolmentByCourseName(request.getName()));
+    @GetMapping("/by-name/{name}")
+    public ResponseEntity<List<EnrollmentGetByNameDTO>> getByName(@PathVariable String name)  {
+        return ResponseEntity.ok(enrollmentService.findEnrolmentByCourseName(name));
     }
 
     @PutMapping

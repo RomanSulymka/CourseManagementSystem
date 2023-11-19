@@ -1,5 +1,6 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
+import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.entity.File;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
@@ -34,28 +36,43 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void saveFile(MultipartFile uploadedFile, Long lessonId, Long userId) throws IOException {
-        validateInput(uploadedFile, lessonId, userId);
+        try {
+            validateInput(uploadedFile, lessonId, userId);
+            if (!isUserAlreadyUploaded(userId, lessonId)) {
+                User user = userService.findUserById(userId);
+                Lesson lesson = lessonService.findById(lessonId);
 
-        User user = userService.findUserById(userId);
-        Lesson lesson = lessonService.findById(lessonId);
+                File file = fileRepository.save(File.builder()
+                        .fileName(uploadedFile.getOriginalFilename())
+                        .fileData(uploadedFile.getBytes())
+                        .build());
+                log.info("File uploaded successfully with name {}", uploadedFile.getOriginalFilename());
 
-        File file = fileRepository.save(File.builder()
-                .fileName(uploadedFile.getOriginalFilename())
-                .fileData(uploadedFile.getBytes())
-                .build());
-        log.info("File uploaded successfully with name {}", uploadedFile.getOriginalFilename());
-
-        homeworkService.save(Homework.builder()
-                .file(file)
-                .user(user)
-                .lesson(lesson)
-                .build());
+                homeworkService.save(Homework.builder()
+                        .file(file)
+                        .user(user)
+                        .lesson(lesson)
+                        .build());
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
     }
 
     private static void validateInput(MultipartFile uploadedFile, Long lessonId, Long userId) {
         if (uploadedFile == null || lessonId == null || userId == null || lessonId <= 0 || userId <= 0) {
             throw new IllegalArgumentException("Invalid input parameters");
         }
+    }
+
+    private boolean isUserAlreadyUploaded(Long userId, Long lessonId) {
+        List<GetHomeworkDTO> homeworks = homeworkService.getAllHomeworksByUser(userId);
+        for (GetHomeworkDTO homework : homeworks) {
+            if (!homework.getLesson().getId().equals(lessonId)) {
+                throw new IllegalArgumentException("User has already uploaded this homework");
+            }
+        }
+        return false;
     }
 
     @Override

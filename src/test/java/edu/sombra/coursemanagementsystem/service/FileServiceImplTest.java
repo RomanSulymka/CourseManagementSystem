@@ -22,6 +22,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -81,6 +82,7 @@ class FileServiceImplTest {
         MultipartFile uploadedFile = mock(MultipartFile.class);
         when(uploadedFile.getOriginalFilename()).thenReturn(fileName);
         when(uploadedFile.getBytes()).thenReturn(fileData);
+        when(homeworkService.getAllHomeworksByUser(userId)).thenReturn(new ArrayList<>());
 
         User user = new User();
         Lesson lesson = new Lesson();
@@ -111,7 +113,7 @@ class FileServiceImplTest {
     }
 
     @ParameterizedTest
-    @ValueSource(longs = { 1L, 2L, 3L })
+    @ValueSource(longs = {1L, 2L, 3L})
     void testGetFileDataByIdWithExistingFile(Long fileId) {
         File expectedFile = new File();
 
@@ -123,7 +125,7 @@ class FileServiceImplTest {
     }
 
     @ParameterizedTest
-    @ValueSource(longs = { 4L, 5L, 6L })
+    @ValueSource(longs = {4L, 5L, 6L})
     void testGetFileDataByIdWithNonExistingFile(Long fileId) {
         when(fileRepository.findById(fileId)).thenReturn(Optional.empty());
 
@@ -131,7 +133,7 @@ class FileServiceImplTest {
     }
 
     @ParameterizedTest
-    @ValueSource(longs = { 4L, 5L, 6L })
+    @ValueSource(longs = {4L, 5L, 6L})
     void testGetFileDataById_ExistingFile(Long fileId) {
         File expectedFile = new File();
         when(fileRepository.findById(fileId)).thenReturn(Optional.of(expectedFile));
@@ -142,7 +144,7 @@ class FileServiceImplTest {
     }
 
     @ParameterizedTest
-    @ValueSource(longs = { 4L, 5L, 6L })
+    @ValueSource(longs = {4L, 5L, 6L})
     void testGetFileDataById_NonExistingFile(Long fileId) {
         when(fileRepository.findById(fileId)).thenReturn(Optional.empty());
 

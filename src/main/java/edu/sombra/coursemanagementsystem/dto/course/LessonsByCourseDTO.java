@@ -4,10 +4,12 @@ package edu.sombra.coursemanagementsystem.dto.course;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonDTO;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Generated;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@Generated
 @Builder
 @Data
 public class LessonsByCourseDTO {
@@ -16,5 +18,5 @@ public class LessonsByCourseDTO {
     private String feedback;
     private List<LessonDTO> lessonDTO;
     private BigDecimal totalScore;
-    private Boolean passed;
+    private boolean passed;
 }

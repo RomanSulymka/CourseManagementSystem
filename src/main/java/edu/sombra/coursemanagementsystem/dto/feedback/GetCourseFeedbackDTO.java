@@ -3,7 +3,9 @@ package edu.sombra.coursemanagementsystem.dto.feedback;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Generated;
 
+@Generated
 @Builder
 @Data
 public class GetCourseFeedbackDTO {

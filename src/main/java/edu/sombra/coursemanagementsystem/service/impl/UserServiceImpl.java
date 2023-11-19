@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.dao.DataAccessException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,7 +49,7 @@ public class UserServiceImpl implements UserService {
             findUserByEmail(userDTO.getEmail());
             userRepository.updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
             return userDTO.getRole().name();
-        } catch (DataAccessException ex) {
+        } catch (UserException ex) {
             log.error("Error assigning new role for user with email: " + userDTO.getEmail());
             throw new UserException("Failed assign new role for user", ex);
         }
@@ -79,7 +78,7 @@ public class UserServiceImpl implements UserService {
             validateUser(user);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             return userRepository.save(user);
-        } catch (DataAccessException ex) {
+        } catch (UserCreationException ex) {
             log.error("Error creating user: {}", ex.getMessage(), ex);
             throw new UserCreationException("Failed to create user", ex);
         } catch (NullPointerException ex) {
@@ -99,7 +98,7 @@ public class UserServiceImpl implements UserService {
             BeanUtils.copyProperties(user, existingUser, getNullPropertyNames(user));
             userRepository.update(existingUser);
             return existingUser;
-        } catch (DataAccessException ex) {
+        } catch (NullPointerException ex) {
             log.error("Error updating user with id: {}", user.getId(), ex);
             throw new UserUpdateException("Failed to update user", ex);
         }
@@ -124,7 +123,7 @@ public class UserServiceImpl implements UserService {
             userRepository.delete(user);
             log.info("User deleted successfully");
             return "User deleted successfully!";
-        } catch (DataAccessException ex) {
+        } catch (EntityNotFoundException ex) {
             log.error("Error deleting user with id: {}", id, ex);
             throw new EntityDeletionException("Failed to delete user", ex);
         }

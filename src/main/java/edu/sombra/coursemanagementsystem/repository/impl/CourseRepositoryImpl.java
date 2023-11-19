@@ -70,7 +70,7 @@ public class CourseRepositoryImpl implements CourseRepository {
     public void updateStatus(Long id, CourseStatus status) {
         getEntityManager()
                 .createNativeQuery(UPDATE_COURSE_STATUS)
-                .setParameter("status", status)
+                .setParameter("status", status.toString())
                 .setParameter("id", id)
                 .executeUpdate();
     }
@@ -121,7 +121,7 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     @Override
-    public List<User> findUsersInCourse(String courseId) {
+    public List<User> findUsersInCourse(Long courseId) {
         return getEntityManager().createQuery(GET_ALL_USERS_IN_COURSE, User.class)
                 .setParameter("courseId", courseId)
                 .getResultList();

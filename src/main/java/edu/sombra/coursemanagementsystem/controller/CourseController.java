@@ -68,7 +68,7 @@ public class CourseController {
 
     @GetMapping("/instructor/{instructorId}/{courseId}")
     public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@PathVariable Long instructorId,
-                                                                                                 @PathVariable String courseId) {
+                                                                                                 @PathVariable Long courseId) {
         return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(instructorId, courseId));
     }
 

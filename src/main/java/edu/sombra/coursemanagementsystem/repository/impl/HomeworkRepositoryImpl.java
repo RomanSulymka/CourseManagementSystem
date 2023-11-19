@@ -6,13 +6,12 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Generated;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @AllArgsConstructor
 @Repository
 public class HomeworkRepositoryImpl implements HomeworkRepository {
@@ -95,11 +94,13 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
                 .getResultList();
     }
 
+    @Generated
     @Override
     public EntityManager getEntityManager() {
         return entityManager;
     }
 
+    @Generated
     @Override
     public Class<Homework> getEntityClass() {
         return Homework.class;

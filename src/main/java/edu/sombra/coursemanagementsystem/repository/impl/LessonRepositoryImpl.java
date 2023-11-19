@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.Generated;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class LessonRepositoryImpl implements LessonRepository {
         return entityManager;
     }
 
+    @Generated
     @Override
     public Class<Lesson> getEntityClass() {
         return Lesson.class;
