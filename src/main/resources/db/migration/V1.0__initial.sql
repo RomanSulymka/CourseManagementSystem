@@ -95,6 +95,8 @@ INSERT INTO users (first_name, last_name, password, email, role)
 VALUES
     ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT'),
     ('admin', 'admin', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'admin@gmail.com', 'ADMIN'),
+    ('instructor', 'instructor', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'instructor@gmail.com', 'INSTRUCTOR'),
+    ('student', 'student', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'student@gmail.com', 'STUDENT'),
     ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
     ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
 
