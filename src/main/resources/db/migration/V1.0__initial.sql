@@ -13,7 +13,7 @@ CREATE TABLE courses
     id        BIGSERIAL PRIMARY KEY,
     name      VARCHAR(255) NOT NULL,
     status    VARCHAR(255),
-    startDate DATE         NOT NULL,
+    start_date DATE         NOT NULL,
     started   BOOLEAN,
     UNIQUE (name)
 );
@@ -100,11 +100,11 @@ VALUES
     ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
     ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
 
-INSERT INTO courses (name, status, startDate, started)
+INSERT INTO courses (name, status, start_date, started)
 VALUES
-    ('Course A', 'Active', '2023-01-01', true),
-    ('Course B', 'Inactive', '2023-02-01', false),
-    ('Course C', 'Active', '2023-03-01', true);
+    ('Course A', 'STOP', '2023-01-01', true),
+    ('Course B', 'STARTED', '2023-02-01', false),
+    ('Course C', 'WAIT', '2023-03-01', true);
 
 INSERT INTO enrollments (user_id, course_id)
 VALUES
@@ -117,7 +117,8 @@ INSERT INTO lessons (name, course_id)
 VALUES
     ('Lesson 1', 1),
     ('Lesson 2', 1),
-    ('Lesson 3', 2);
+    ('Lesson 3', 2),
+    ('Lesson 4', 3);
 
 INSERT INTO files (file_name, file_data)
 VALUES

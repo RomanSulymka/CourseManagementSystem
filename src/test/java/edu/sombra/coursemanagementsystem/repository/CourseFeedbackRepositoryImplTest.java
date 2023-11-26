@@ -37,7 +37,7 @@ class CourseFeedbackRepositoryImplTest {
         feedback.setFeedbackText("test");
         feedback.setStudent(User.builder().id(studentId).role(RoleEnum.STUDENT).build());
         feedback.setCourse(Course.builder().id(courseId).build());
-        feedback.setInstructor(User.builder().id(12L).role(RoleEnum.INSTRUCTOR).build());
+        feedback.setInstructor(User.builder().id(1L).role(RoleEnum.INSTRUCTOR).build());
 
         entityManager.persistAndFlush(feedback);
 

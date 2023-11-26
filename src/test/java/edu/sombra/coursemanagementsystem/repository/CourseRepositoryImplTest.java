@@ -48,7 +48,7 @@ class CourseRepositoryImplTest {
     @Transactional
     void testFindByName() {
         String courseName = "Test Course";
-        Course course = Course.builder().name(courseName).build();
+        Course course = Course.builder().name(courseName).started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
 
         courseRepository.save(course);
         Optional<Course> foundCourse = courseRepository.findByName(courseName);
@@ -61,7 +61,7 @@ class CourseRepositoryImplTest {
     @Transactional
     void testExist() {
         String existingCourseName = "Existing Course";
-        Course existingCourse = Course.builder().name(existingCourseName).build();
+        Course existingCourse = Course.builder().name(existingCourseName).status(CourseStatus.WAIT).startDate(LocalDate.now()).started(true).build();
         courseRepository.save(existingCourse);
 
         boolean doesExist = courseRepository.exist(existingCourseName);
@@ -73,7 +73,7 @@ class CourseRepositoryImplTest {
     @Test
     @Transactional
     void testUpdateStatus() {
-        Course course = Course.builder().name("Test Course").status(CourseStatus.STOP).build();
+        Course course = Course.builder().name("Test Course").started(false).startDate(LocalDate.now()).status(CourseStatus.STOP).build();
         courseRepository.save(course);
 
         courseRepository.updateStatus(course.getId(), CourseStatus.STARTED);
@@ -89,12 +89,11 @@ class CourseRepositoryImplTest {
     }
 
     @Test
-    @Transactional
     void testFindUsersInCourseByRole() {
-        Course course = Course.builder().name("Test Course").build();
+        Course course = Course.builder().name("Test Course").started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
         courseRepository.save(course);
 
-        User instructor = User.builder().id(3L).email("instructor1@example.com").role(RoleEnum.INSTRUCTOR).build();
+        User instructor = User.builder().id(3L).email("instructor@gmail.com").role(RoleEnum.INSTRUCTOR).build();
         courseRepository.assignInstructor(course.getId(), instructor.getId());
 
         User student1 = User.builder().id(1L).email("user1@example.com").role(RoleEnum.STUDENT).build();
@@ -123,7 +122,7 @@ class CourseRepositoryImplTest {
     @Test
     @Transactional
     void testFindCourseByHomeworkId() {
-        Course course = Course.builder().name("Test Course").build();
+        Course course = Course.builder().name("Test Course").started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
         courseRepository.save(course);
 
         Lesson lesson = Lesson.builder().course(course).name("name").build();
@@ -141,7 +140,7 @@ class CourseRepositoryImplTest {
     @Test
     @Transactional
     void testIsUserAssignedToCourse() {
-        Course course = Course.builder().name("Test Course").build();
+        Course course = Course.builder().name("Test Course").started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
         courseRepository.save(course);
 
         User user = User.builder().id(1L).email("user@example.com").build();
@@ -158,8 +157,8 @@ class CourseRepositoryImplTest {
     @Test
     @Transactional
     void testFindCoursesByUserId() {
-        Course course1 = Course.builder().name("Course1").build();
-        Course course2 = Course.builder().name("Course2").build();
+        Course course1 = Course.builder().name("Test Course1").started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
+        Course course2 = Course.builder().name("Test Course2").started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
         courseRepository.save(course1);
         courseRepository.save(course2);
 
@@ -191,7 +190,7 @@ class CourseRepositoryImplTest {
     @Test
     @Transactional
     void testFindUsersInCourse() {
-        Course course = Course.builder().name("Test Course").build();
+        Course course = Course.builder().name("Test Course").started(true).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
         courseRepository.save(course);
 
         User user1 = User.builder()
@@ -228,7 +227,7 @@ class CourseRepositoryImplTest {
     @Test
     @Transactional
     void testFindAllLessonsByCourseAssignedToUserId() {
-        Course course = Course.builder().name("Test Course").build();
+        Course course = Course.builder().name("Test Course").started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
         courseRepository.save(course);
 
         User user = User.builder()
@@ -259,7 +258,7 @@ class CourseRepositoryImplTest {
     @Test
     @Transactional
     void testFindAllLessonsInCourse() {
-        Course course = Course.builder().name("Test Course").build();
+        Course course = Course.builder().name("Test Course").started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
         courseRepository.save(course);
 
         Lesson lesson1 = Lesson.builder().course(course).name("lesson1").build();
