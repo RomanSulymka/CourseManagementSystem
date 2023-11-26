@@ -24,8 +24,7 @@ CREATE TABLE enrollments
     user_id   BIGINT NOT NULL,
     course_id BIGINT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (course_id) REFERENCES courses (id),
-    CONSTRAINT unique_user_course UNIQUE (user_id, course_id)
+    FOREIGN KEY (course_id) REFERENCES courses (id)
 );
 
 CREATE TABLE lessons
@@ -97,6 +96,7 @@ VALUES
     ('admin', 'admin', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'admin@gmail.com', 'ADMIN'),
     ('instructor', 'instructor', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'instructor@gmail.com', 'INSTRUCTOR'),
     ('student', 'student', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'student@gmail.com', 'STUDENT'),
+    ('student2', 'student2', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'student2@gmail.com', 'STUDENT'),
     ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
     ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
 
@@ -111,7 +111,8 @@ VALUES
     (1, 1),
     (2, 2),
     (3, 2),
-    (4, 3);
+    (4, 3),
+    (5, 1);
 
 INSERT INTO lessons (name, course_id)
 VALUES
