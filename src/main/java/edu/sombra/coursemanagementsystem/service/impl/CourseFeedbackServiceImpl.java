@@ -11,6 +11,7 @@ import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.service.CourseFeedbackService;
 import edu.sombra.coursemanagementsystem.service.UserService;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     private final CourseFeedbackMapper courseFeedbackMapper;
 
     private static final String FEEDBACK_SAVED_SUCCESSFULLY = "Feedback saved successfully";
-    private static final String FAILED_TO_SAVE_FEEDBACK = "Failed to save the feedback";
+    private static final String FAILED_TO_SAVE_FEEDBACK = "Course feedback already exists";
     private static final String COURSE_FEEDBACK_DELETED_SUCCESSFULLY = "Course Feedback deleted successfully";
     private static final String INSTRUCTOR_NOT_ASSIGNED = "Instructor is not assigned for this course";
 
@@ -40,12 +41,14 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
         try {
             User instructor = userService.findUserByEmail(instructorEmail);
             CourseFeedback feedback = createOrUpdateFeedback(courseFeedbackDTO, instructor);
+            if (feedback.getId() != null) {
+                throw new EntityExistsException(FAILED_TO_SAVE_FEEDBACK);
+            }
             courseFeedbackRepository.save(feedback);
             log.info(FEEDBACK_SAVED_SUCCESSFULLY);
             return FEEDBACK_SAVED_SUCCESSFULLY;
         } catch (Exception e) {
-            log.error("Failed to save the feedback for user {} and course {}",
-                    courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId());
+            log.error(FAILED_TO_SAVE_FEEDBACK);
             throw new IllegalArgumentException(FAILED_TO_SAVE_FEEDBACK);
         }
     }
@@ -91,23 +94,31 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
 
     public CourseFeedback createOrUpdateFeedback(CourseFeedbackDTO courseFeedbackDTO, User instructor) {
         validateUsers(courseFeedbackDTO, instructor);
-        CourseFeedback existingFeedback = findById(courseFeedbackDTO.getId());
+        CourseFeedback existingFeedback = null;
+
+        if (courseFeedbackDTO.getId() != null) {
+            existingFeedback = findById(courseFeedbackDTO.getId());
+        }
+
+        if (isFeedbackExist(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId())) {
+            existingFeedback = findFeedback(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId());
+        }
 
         String feedbackText = courseFeedbackDTO.getFeedbackText() != null
                 ? courseFeedbackDTO.getFeedbackText()
-                : existingFeedback.getFeedbackText();
+                : (existingFeedback != null ? existingFeedback.getFeedbackText() : null);
 
         User student = courseFeedbackDTO.getStudentId() != null
                 ? userService.findUserById(courseFeedbackDTO.getStudentId())
-                : existingFeedback.getStudent();
+                : (existingFeedback != null ? existingFeedback.getStudent() : null);
 
         Course course = courseFeedbackDTO.getCourseId() != null
                 ? courseRepository.findById(courseFeedbackDTO.getCourseId())
                 .orElseThrow(EntityNotFoundException::new)
-                : existingFeedback.getCourse();
+                : (existingFeedback != null ? existingFeedback.getCourse() : null);
 
         return CourseFeedback.builder()
-                .id(existingFeedback.getId())
+                .id(existingFeedback != null ? existingFeedback.getId() : null)
                 .feedbackText(feedbackText)
                 .student(student)
                 .instructor(instructor)
@@ -115,11 +126,20 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
                 .build();
     }
 
-    private void validateUsers(CourseFeedbackDTO courseFeedbackDTO, User instructor) {
-        if (instructor.getRole().equals(RoleEnum.ADMIN)) {
+    private boolean isFeedbackExist(Long studentId, Long courseId) {
+        try {
+            findFeedback(studentId, courseId);
+            return true;
+        } catch (EntityNotFoundException ex) {
+            return false;
+        }
+    }
+
+    private void validateUsers(CourseFeedbackDTO courseFeedbackDTO, User user) {
+        if (user.getRole().equals(RoleEnum.ADMIN)) {
             courseRepository.isUserAssignedToCourse(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId());
         } else {
-            if (isInstructorAssignedToCourse(instructor.getId(), courseFeedbackDTO.getCourseId())) {
+            if (isInstructorAssignedToCourse(user.getId(), courseFeedbackDTO.getCourseId())) {
                 courseRepository.isUserAssignedToCourse(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId());
             } else {
                 throw new EntityNotFoundException(INSTRUCTOR_NOT_ASSIGNED);

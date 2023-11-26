@@ -41,13 +41,12 @@ public class AuthenticateServiceImpl implements AuthenticateService {
         if (userService.existsUserByEmail(registerDTO.getEmail())) {
             throw new UserAlreadyExistsException(registerDTO.getEmail());
         } else {
-            var user = User.builder()
-                    .firstName(registerDTO.getFirstName())
-                    .lastName(registerDTO.getLastName())
-                    .email(registerDTO.getEmail())
-                    .password(passwordEncoder.encode(registerDTO.getPassword()))
-                    .role(registerDTO.getRole())
-                    .build();
+            var user = new User();
+            user.setFirstName(registerDTO.getFirstName());
+            user.setLastName(registerDTO.getLastName());
+            user.setEmail(registerDTO.getEmail());
+            user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+            user.setRole(registerDTO.getRole());
 
             var savedUser = userService.createUser(user);
             var jwtToken = jwtService.generateToken(user);

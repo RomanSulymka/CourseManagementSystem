@@ -43,14 +43,13 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder()
-                .id(1L)
-                .firstName("John")
-                .lastName("Doe")
-                .email("johndoe@example.com")
-                .password("password")
-                .role(RoleEnum.STUDENT)
-                .build();
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setFirstName("John");
+        testUser.setLastName("Doe");
+        testUser.setEmail("johndoe@example.com");
+        testUser.setPassword("password");
+        testUser.setRole(RoleEnum.STUDENT);
     }
 
 /*    @Test
@@ -117,14 +116,13 @@ class UserControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindUserById() throws Exception {
         Long userId = 1L;
-        User mockUser = User.builder()
-                .id(1L)
-                .firstName("John")
-                .lastName("Doe")
-                .email("johndoe@example.com")
-                .password("password")
-                .role(RoleEnum.STUDENT)
-                .build();
+        User mockUser = new User();
+                mockUser.setId(1L);
+        mockUser.setFirstName("John");
+        mockUser.setLastName("Doe");
+        mockUser.setEmail("johndoe@example.com");
+        mockUser.setPassword("password");
+        mockUser.setRole(RoleEnum.STUDENT);
         when(userService.findUserById(userId)).thenReturn(mockUser);
 
         ResultActions result = mockMvc.perform(get("/api/v1/user/id/{id}", userId));
@@ -139,14 +137,13 @@ class UserControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindUserByEmail() throws Exception {
         String userEmail = "johndoe@example.com";
-        User mockUser = User.builder()
-                .id(1L)
-                .firstName("John")
-                .lastName("Doe")
-                .email("johndoe@example.com")
-                .password("password")
-                .role(RoleEnum.STUDENT)
-                .build();
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setFirstName("John");
+        mockUser.setLastName("Doe");
+        mockUser.setEmail("johndoe@example.com");
+        mockUser.setPassword("password");
+        mockUser.setRole(RoleEnum.STUDENT);
         when(userService.findUserByEmail(userEmail)).thenReturn(mockUser);
 
         ResultActions result = mockMvc.perform(get("/api/v1/user/email/{email}", userEmail)

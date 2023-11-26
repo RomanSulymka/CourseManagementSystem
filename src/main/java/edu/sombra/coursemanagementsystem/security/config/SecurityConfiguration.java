@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.security.config;
 
 import edu.sombra.coursemanagementsystem.security.jwt.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
@@ -95,7 +97,7 @@ public class SecurityConfiguration {
                 .authenticationProvider(authenticationProvider)
                 .exceptionHandling(exceptionHandling ->
                         exceptionHandling
-                                .accessDeniedPage("/errors/access-denied"))
+                                .accessDeniedHandler(accessDeniedHandler()))
                 .logout(logout ->
                         logout.deleteCookies("remove")
                                 .logoutUrl("/api/v1/auth/logout")
@@ -107,4 +109,11 @@ public class SecurityConfiguration {
         return http.build();
     }
 
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Access Denied");
+        };
+    }
 }

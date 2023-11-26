@@ -72,7 +72,6 @@ class CourseFeedbackServiceImplTest {
                 .build();
 
         CourseFeedback courseFeedback = CourseFeedback.builder()
-                .id(1L)
                 .feedbackText("This is a great course.")
                 .course(new Course())
                 .student(new User())
@@ -85,6 +84,7 @@ class CourseFeedbackServiceImplTest {
         when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(courseFeedback));
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(new Course()));
+        when(courseFeedbackRepository.findFeedback(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(courseFeedback));
 
         when(userService.findUserByEmail("instructor@example.com")).thenReturn(instructor);
         when(courseFeedbackService.createOrUpdateFeedback(courseFeedbackDTO, instructor)).thenReturn(any());
@@ -92,9 +92,7 @@ class CourseFeedbackServiceImplTest {
 
         String response = courseFeedbackService.create(courseFeedbackDTO, "instructor@example.com");
 
-        CourseFeedback savedFeedback = courseFeedbackService.findById(courseFeedback.getId());
-
-        assertEquals(courseFeedback, savedFeedback);
+        verify(courseFeedbackRepository, times(1)).save(any());
         assertEquals("Feedback saved successfully", response);
     }
 
@@ -162,6 +160,7 @@ class CourseFeedbackServiceImplTest {
         when(courseRepository.isUserAssignedToCourse(instructor.getId(), 1L)).thenReturn(true);
 
         when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.of(feedback));
+        when(courseFeedbackRepository.findFeedback(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(feedback));
 
         when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
 
@@ -216,6 +215,7 @@ class CourseFeedbackServiceImplTest {
         when(courseRepository.isUserAssignedToCourse(instructor.getId(), 1L)).thenReturn(true);
 
         when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(feedback));
+        when(courseFeedbackRepository.findFeedback(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(feedback));
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(new Course()));
 

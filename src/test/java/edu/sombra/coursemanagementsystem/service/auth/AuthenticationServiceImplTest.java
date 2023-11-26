@@ -61,13 +61,13 @@ class AuthenticationServiceImplTest {
     }
 
     private User createTestUser() {
-        return User.builder()
-                .id(1L)
-                .email("user@email.com")
-                .firstName("user")
-                .firstName("user")
-                .role(RoleEnum.STUDENT)
-                .build();
+         var user = new User();
+        user.setId(1L);
+        user.setEmail("user@email.com");
+        user.setLastName("user");
+        user.setFirstName("user");
+        user.setRole(RoleEnum.STUDENT);
+        return user;
     }
 
     @Test
@@ -81,13 +81,12 @@ class AuthenticationServiceImplTest {
 
         when(userService.existsUserByEmail(registerDTO.getEmail())).thenReturn(false);
 
-        User savedUser = User.builder()
-                .firstName(registerDTO.getFirstName())
-                .lastName(registerDTO.getLastName())
-                .email(registerDTO.getEmail())
-                .password("encodedPassword")
-                .role(registerDTO.getRole())
-                .build();
+        User savedUser = new User();
+        savedUser.setFirstName(registerDTO.getFirstName());
+        savedUser.setLastName(registerDTO.getLastName());
+        savedUser.setEmail(registerDTO.getEmail());
+        savedUser.setPassword("encodedPassword");
+        savedUser.setRole(registerDTO.getRole());
 
         when(userService.createUser(any(User.class))).thenReturn(savedUser);
 
@@ -190,9 +189,8 @@ class AuthenticationServiceImplTest {
         authenticationDTO.setEmail("john.doe@example.com");
         authenticationDTO.setPassword("password123");
 
-        User testUser = User.builder()
-                .email(authenticationDTO.getEmail())
-                .build();
+        User testUser = new User();
+        testUser.setEmail(authenticationDTO.getEmail());
 
         Token validToken1 = Token.builder().expired(false).revoked(false).build();
         Token validToken2 = Token.builder().expired(false).revoked(false).build();
