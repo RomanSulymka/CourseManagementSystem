@@ -52,7 +52,8 @@ CREATE TABLE homework
     file_id   BIGINT,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (lesson_id) REFERENCES lessons (id),
-    FOREIGN KEY (file_id) REFERENCES files (id)
+    CONSTRAINT unique_file_id UNIQUE (file_id),
+    CONSTRAINT fk_file_id FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE
 );
 
 CREATE TABLE course_feedback
@@ -67,6 +68,17 @@ CREATE TABLE course_feedback
     FOREIGN KEY (student_id) REFERENCES users (id)
 );
 
+CREATE TABLE user_course_marks
+(
+    id         BIGSERIAL PRIMARY KEY,
+    user_id    BIGINT NOT NULL,
+    course_id  BIGINT NOT NULL,
+    total_score NUMERIC(10, 2),
+    passed      BOOLEAN NOT NULL DEFAULT false,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (course_id) REFERENCES courses (id)
+);
+
 CREATE TABLE tokens
 (
     id         BIGSERIAL PRIMARY KEY,
@@ -78,47 +90,57 @@ CREATE TABLE tokens
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
 INSERT INTO users (first_name, last_name, password, email, role)
-VALUES ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT'),
-       ('admin', 'admin', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'admin@gmail.com', 'ADMIN'),
-       ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
-       ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
+VALUES
+    ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT'),
+    ('admin', 'admin', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'admin@gmail.com', 'ADMIN'),
+    ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
+    ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
 
 INSERT INTO courses (name, status, startDate, started)
-VALUES ('Course A', 'RUNNING', '2023-01-01', TRUE),
-       ('Course B', 'RUNNING', '2023-02-15', TRUE),
-       ('Course C', 'RUNNING', '2023-03-10', TRUE);
+VALUES
+    ('Course A', 'Active', '2023-01-01', true),
+    ('Course B', 'Inactive', '2023-02-01', false),
+    ('Course C', 'Active', '2023-03-01', true);
 
 INSERT INTO enrollments (user_id, course_id)
-VALUES (1, 1),
-       (2, 1),
-       (1, 2),
-       (3, 3),
-       (4, 3);
+VALUES
+    (1, 1),
+    (2, 1),
+    (3, 2),
+    (4, 3);
 
 INSERT INTO lessons (name, course_id)
-VALUES ('Lesson 1', 1),
-       ('Lesson 2', 1),
-       ('Lesson 1', 2),
-       ('Lesson 1', 3);
+VALUES
+    ('Lesson 1', 1),
+    ('Lesson 2', 1),
+    ('Lesson 3', 2);
 
 INSERT INTO files (file_name, file_data)
-VALUES ('file1.txt', E'\\x5465737420746578742066696C65'),
-       ('file2.txt', E'\\x5465737420746578742066696C6532'),
-       ('file3.txt', E'\\x5465737420746578742066696C6533'),
-       ('file4.txt', E'\\x5465737420746578742066696C6534'),
-       ('file5.txt', E'\\x5465737420746578742066696C6535');
+VALUES
+    ('file1.txt', E'\\x48656c6c6f20576f726c64'),
+    ('file2.txt', E'\\x576f726c642031322032303231');
 
 INSERT INTO homework (mark, user_id, lesson_id, file_id)
-VALUES (95, 1, 1, 1),
-       (88, 2, 1, 2),
-       (92, 1, 2, 3),
-       (87, 2, 2, 4),
-       (94, 1, 3, 5);
+VALUES
+    (90, 1, 1, 1),
+    (85, 2, 1, 2),
+    (75, 3, 2, NULL);
 
 INSERT INTO course_feedback (feedback_text, course_id, instructor_id, student_id)
-VALUES ('Great course!', 1, 3, 1),
-       ('Excellent instructor!', 1, 3, 2),
-       ('Good content', 2, 4, 1),
-       ('Very informative', 3, 3, 4);
+VALUES
+    ('Great course!', 1, 3, 1),
+    ('Needs improvement', 2, 3, 2),
+    ('Excellent instructor', 1, 3, 2);
+
+INSERT INTO user_course_marks (user_id, course_id, total_score, passed)
+VALUES
+    (1, 1, 95.5, true),
+    (2, 1, 88.0, true),
+    (3, 2, 70.2, false);
+
+INSERT INTO tokens (token, token_type, revoked, expired, user_id)
+VALUES
+    ('token123', 'Access', false, false, 1),
+    ('token456', 'Refresh', false, false, 2);
+
