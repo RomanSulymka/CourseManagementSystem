@@ -109,7 +109,7 @@ VALUES
 INSERT INTO enrollments (user_id, course_id)
 VALUES
     (1, 1),
-    (2, 1),
+    (2, 2),
     (3, 2),
     (4, 3);
 
@@ -139,7 +139,7 @@ VALUES
 INSERT INTO user_course_marks (user_id, course_id, total_score, passed)
 VALUES
     (1, 1, 95.5, true),
-    (2, 1, 88.0, true),
+    (2, 2, 88.0, true),
     (3, 2, 70.2, false);
 
 INSERT INTO tokens (token, token_type, revoked, expired, user_id)
