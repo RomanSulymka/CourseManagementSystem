@@ -93,7 +93,7 @@ class CourseRepositoryImplTest {
         Course course = Course.builder().name("Test Course").started(false).startDate(LocalDate.now()).status(CourseStatus.WAIT).build();
         courseRepository.save(course);
 
-        User instructor = User.builder().id(3L).email("instructor@gmail.com").role(RoleEnum.INSTRUCTOR).build();
+        User instructor = User.builder().id(3L).email("instructor1@example.com").role(RoleEnum.INSTRUCTOR).build();
         courseRepository.assignInstructor(course.getId(), instructor.getId());
 
         User student1 = User.builder().id(1L).email("user1@example.com").role(RoleEnum.STUDENT).build();

@@ -134,9 +134,9 @@ VALUES
 
 INSERT INTO course_feedback (feedback_text, course_id, instructor_id, student_id)
 VALUES
-    ('Great course!', 1, 3, 1),
-    ('Needs improvement', 2, 3, 2),
-    ('Excellent instructor', 1, 3, 2);
+    ('Great course!', 1, 6, 1),
+    ('Needs improvement', 2, 6, 2),
+    ('Excellent instructor', 1, 7, 2);
 
 INSERT INTO user_course_marks (user_id, course_id, total_score, passed)
 VALUES

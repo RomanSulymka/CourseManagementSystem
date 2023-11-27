@@ -7,8 +7,8 @@ on:
       - master
 
 jobs:
-  super-lint:
-    name: Lint code base
+  management-system:
+    name: Course management system
     runs-on: ubuntu-latest
     services:
       postgres:
