@@ -13,7 +13,6 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
 import edu.sombra.coursemanagementsystem.mapper.EnrollmentMapper;
-import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.service.impl.EnrollmentServiceImpl;
@@ -22,6 +21,9 @@ import jakarta.persistence.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,6 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -49,13 +52,54 @@ class EnrollmentServiceImplTest {
     @Mock
     private HomeworkRepository homeworkRepository;
     @Mock
-    private CourseRepository courseRepository;
-    @Mock
     private EnrollmentMapper enrollmentMapper;
 
     @BeforeEach
     void setUp() {
         enrollmentService = new EnrollmentServiceImpl(enrollmentRepository, courseService, userService, homeworkRepository, enrollmentMapper);
+    }
+
+    private static Stream<Arguments> provideTestDataForAssignInstructorSuccessfully() {
+        Course validCourse = new Course();
+        User validInstructor = new User();
+        EnrollmentDTO validEnrollmentDTO = EnrollmentDTO.builder()
+                .userEmail("user@email.com")
+                .courseName("Course 1")
+                .build();
+
+        Course existingCourse = new Course();
+        User existingInstructor = new User();
+        EnrollmentDTO existingEnrollmentDTO = EnrollmentDTO.builder()
+                .userEmail("user@email.com")
+                .courseName("Course 2")
+                .build();
+
+        return Stream.of(
+                Arguments.of(validEnrollmentDTO, validCourse, validInstructor, false),
+                Arguments.of(existingEnrollmentDTO, existingCourse, existingInstructor, false)
+        );
+    }
+
+    private static Stream<Arguments> provideTestDataForAssignInstructorWithUserAlreadyAssigned() {
+        Course validCourse = new Course();
+        User validInstructor = new User();
+        EnrollmentDTO validEnrollmentDTO = EnrollmentDTO.builder()
+                .userEmail("user@email.com")
+                .courseName("Course 1")
+                .build();
+
+        Course existingCourse = new Course();
+        User existingInstructor = new User();
+        EnrollmentDTO existingEnrollmentDTO = EnrollmentDTO.builder()
+                .userEmail("user@email.com")
+                .courseName("Course 2")
+                .build();
+
+        return Stream.of(
+                Arguments.of(validEnrollmentDTO, validCourse, validInstructor, true),
+                Arguments.of(existingEnrollmentDTO, existingCourse, existingInstructor, true),
+                Arguments.of(validEnrollmentDTO, validCourse, validInstructor, true)
+        );
     }
 
     @Test
@@ -76,36 +120,25 @@ class EnrollmentServiceImplTest {
         verify(enrollmentRepository, never()).save(any());
     }
 
-    @Test
-    void testAssignInstructorSuccessfully() {
-        EnrollmentDTO enrollmentDTO = EnrollmentDTO.builder()
-                .userEmail("user@email.com")
-                .courseName("Course 1")
-                .build();
-        Course course = new Course();
-        User instructor = new User();
-
+    @ParameterizedTest
+    @MethodSource("provideTestDataForAssignInstructorSuccessfully")
+    void testAssignInstructorSuccessfully(EnrollmentDTO enrollmentDTO, Course course, User instructor, boolean isUserAssigned) {
         when(courseService.findByName(enrollmentDTO.getCourseName())).thenReturn(course);
         when(userService.findUserByEmail(enrollmentDTO.getUserEmail())).thenReturn(instructor);
-        when(enrollmentRepository.isUserAssignedToCourse(course, instructor)).thenReturn(false);
+        when(enrollmentRepository.isUserAssignedToCourse(course, instructor)).thenReturn(isUserAssigned);
 
         assertDoesNotThrow(() -> enrollmentService.assignInstructor(enrollmentDTO));
 
         verify(enrollmentRepository).save(any());
     }
 
-    @Test
-    void testAssignInstructorWithUserAlreadyAssigned() {
-        EnrollmentDTO enrollmentDTO = EnrollmentDTO.builder()
-                .userEmail("user@email.com")
-                .courseName("Course 1")
-                .build();
-        Course course = new Course();
-        User instructor = new User();
-
+    @ParameterizedTest
+    @MethodSource("provideTestDataForAssignInstructorWithUserAlreadyAssigned")
+    void testAssignInstructorWithUserAlreadyAssigned(
+            EnrollmentDTO enrollmentDTO, Course course, User instructor, boolean isUserAssigned) {
         when(courseService.findByName(enrollmentDTO.getCourseName())).thenReturn(course);
         when(userService.findUserByEmail(enrollmentDTO.getUserEmail())).thenReturn(instructor);
-        when(enrollmentRepository.isUserAssignedToCourse(course, instructor)).thenReturn(true);
+        when(enrollmentRepository.isUserAssignedToCourse(course, instructor)).thenReturn(isUserAssigned);
 
         UserAlreadyAssignedException exception = assertThrows(UserAlreadyAssignedException.class,
                 () -> enrollmentService.assignInstructor(enrollmentDTO));

@@ -14,6 +14,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -40,6 +44,97 @@ class UserServiceImplTest {
     @BeforeEach
     void setUp() {
         userService = new UserServiceImpl(userRepository, passwordEncoder);
+    }
+
+    private static Stream<Arguments> provideTestDataForAssignNewRoleUpdateFailed() {
+        UserDTO validUserDTO = UserDTO.builder()
+                .email("user@example.com")
+                .role(RoleEnum.ADMIN)
+                .build();
+        User mockUser = mock(User.class);
+
+        return Stream.of(
+                Arguments.of(validUserDTO, mockUser, "Failed assign new role for user"),
+                Arguments.of(validUserDTO, mockUser, "Failed assign new role for user")
+        );
+    }
+
+    private static Stream<Arguments> provideTestDataForCreateUserSuccessfully() {
+        User validUser = User.builder()
+                .id(1L)
+                .firstName("firstName")
+                .lastName("lastName")
+                .role(RoleEnum.STUDENT)
+                .password("validPassword")
+                .email("user@example.com")
+                .build();
+
+        User anotherValidUser = User.builder()
+                .id(2L)
+                .firstName("anotherFirstName")
+                .lastName("anotherLastName")
+                .role(RoleEnum.INSTRUCTOR)
+                .password("anotherValidPassword")
+                .email("anotherUser@example.com")
+                .build();
+
+        return Stream.of(
+                Arguments.of(validUser),
+                Arguments.of(anotherValidUser)
+        );
+    }
+
+    private static Stream<Arguments> provideTestDataForUpdateUserSuccessfully() {
+        User existingUserStudentRole = User.builder()
+                .id(1L)
+                .firstName("firstName")
+                .lastName("lastName")
+                .role(RoleEnum.STUDENT)
+                .password("validPassword")
+                .email("user@example.com")
+                .build();
+
+        User existingUserInstructorRole = User.builder()
+                .id(2L)
+                .firstName("firstName")
+                .lastName("lastName")
+                .role(RoleEnum.INSTRUCTOR)
+                .password("validPassword")
+                .email("user@example.com")
+                .build();
+
+        User updateUser = User.builder()
+                .id(1L)
+                .firstName("firstName")
+                .lastName("lastName")
+                .role(RoleEnum.INSTRUCTOR)
+                .password("validPassword")
+                .email("user@example.com")
+                .build();
+
+        return Stream.of(
+                Arguments.of(existingUserStudentRole, updateUser),
+                Arguments.of(existingUserInstructorRole, updateUser)
+        );
+    }
+
+    private static Stream<Arguments> provideTestUser() {
+        String userEmail1 = "user@example.com";
+        User mockUser1 = User.builder()
+                .id(1L)
+                .email("user@example.com")
+                .build();
+
+        String userEmail2 = "another@example.com";
+        User mockUser2 = User.builder()
+                .id(2L)
+                .email("another@example.com")
+                .build();
+
+        return Stream.of(
+                Arguments.of(userEmail1, mockUser1),
+                Arguments.of(userEmail2, mockUser2)
+        );
     }
 
     @Test
@@ -99,33 +194,22 @@ class UserServiceImplTest {
         assertEquals("User not found", exception.getMessage());
     }
 
-    @Test
-    void testAssignNewRoleUpdateFailed() {
-        UserDTO userDTO = UserDTO.builder()
-                .email("user@example.com")
-                .role(RoleEnum.ADMIN)
-                .build();
-
-        User mockUser = mock(User.class);
-
+    @ParameterizedTest
+    @MethodSource("provideTestDataForAssignNewRoleUpdateFailed")
+    void testAssignNewRoleUpdateFailed(UserDTO userDTO, User mockUser, String errorMessage) {
         when(userRepository.findUserByEmail(userDTO.getEmail())).thenReturn(mockUser);
-        doThrow(new UserException("Failed assign new role for user")).when(userRepository)
+        doThrow(new UserException(errorMessage)).when(userRepository)
                 .updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
 
         UserException exception = assertThrows(UserException.class,
                 () -> userService.assignNewRole(userDTO));
 
-        assertEquals("Failed assign new role for user", exception.getMessage());
+        assertEquals(errorMessage, exception.getMessage());
     }
 
-    @Test
-    void testFindUserByEmailSuccessfully() {
-        String userEmail = "user@example.com";
-        User mockUser = User.builder()
-                .id(1L)
-                .email("user@example.com")
-                .build();
-
+    @ParameterizedTest
+    @MethodSource("provideTestUser")
+    void testFindUserByEmailSuccessfully(String userEmail, User mockUser) {
         when(userRepository.findUserByEmail(userEmail)).thenReturn(mockUser);
 
         User resultUser = userService.findUserByEmail(userEmail);
@@ -170,17 +254,9 @@ class UserServiceImplTest {
         assertEquals("User should has the role: " + expectedRole.name(), exception.getMessage());
     }
 
-    @Test
-    void testCreateUserSuccessfully() {
-        User user = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(RoleEnum.STUDENT)
-                .password("validPassword")
-                .email("user@example.com")
-                .build();
-
+    @ParameterizedTest
+    @MethodSource("provideTestDataForCreateUserSuccessfully")
+    void testCreateUserSuccessfully(User user) {
         when(passwordEncoder.encode(user.getPassword())).thenReturn("encodedPassword");
         when(userRepository.save(user)).thenReturn(user);
 
@@ -190,16 +266,10 @@ class UserServiceImplTest {
         assertEquals("encodedPassword", createdUser.getPassword());
     }
 
-    @Test
-    void testCreateUserWithEmptyPassword() {
-        User user = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(RoleEnum.STUDENT)
-                .password("")
-                .email("user@example.com")
-                .build();
+    @ParameterizedTest
+    @MethodSource("provideTestDataForCreateUserSuccessfully")
+    void testCreateUserWithEmptyPassword(User user) {
+       user.setPassword("");
 
         NullPointerException exception = assertThrows(NullPointerException.class,
                 () -> userService.createUser(user));
@@ -207,17 +277,11 @@ class UserServiceImplTest {
         assertEquals("Failed to create new User, the field is empty", exception.getMessage());
     }
 
-    @Test
-    void testCreateUserWithEmptyUsername() {
-        User user = User.builder()
-                .id(1L)
-                .firstName("")
-                .lastName("")
-                .password("1111")
-                .role(RoleEnum.STUDENT)
-                .password(" ")
-                .email("user@example.com")
-                .build();
+    @ParameterizedTest
+    @MethodSource("provideTestDataForCreateUserSuccessfully")
+    void testCreateUserWithEmptyUsername(User user) {
+       user.setLastName("");
+       user.setFirstName(" ");
 
         NullPointerException exception = assertThrows(NullPointerException.class,
                 () -> userService.createUser(user));
@@ -225,16 +289,9 @@ class UserServiceImplTest {
         assertEquals("Failed to create new User, the field is empty", exception.getMessage());
     }
 
-    @Test
-    void testCreateUserWithEmptyEmail() {
-        User user = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(RoleEnum.STUDENT)
-                .password("validPassword")
-                .email("")
-                .build();
+    @ParameterizedTest
+    @MethodSource("provideTestDataForCreateUserSuccessfully")
+    void testCreateUserWithEmptyEmail(User user) {
         user.setEmail("");
 
         NullPointerException exception = assertThrows(NullPointerException.class,
@@ -243,16 +300,10 @@ class UserServiceImplTest {
         assertEquals("Failed to create new User, the field is empty", exception.getMessage());
     }
 
-    @Test
-    void testCreateUserWithNullRole() {
-        User user = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(null)
-                .password("validPassword")
-                .email("user@example.com")
-                .build();
+    @ParameterizedTest
+    @MethodSource("provideTestDataForCreateUserSuccessfully")
+    void testCreateUserWithNullRole(User user) {
+        user.setRole(null);
 
         NullPointerException exception = assertThrows(NullPointerException.class,
                 () -> userService.createUser(user));
@@ -260,16 +311,9 @@ class UserServiceImplTest {
         assertEquals("Failed to create new User, the field is empty", exception.getMessage());
     }
 
-    @Test
-    void testCreateUserWithUserCreationException() {
-        User user = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(RoleEnum.STUDENT)
-                .password("validPassword")
-                .email("user@example.com")
-                .build();
+    @ParameterizedTest
+    @MethodSource("provideTestDataForCreateUserSuccessfully")
+    void testCreateUserWithUserCreationException(User user) {
         doThrow(UserCreationException.class).when(userRepository).save(user);
 
         UserCreationException exception = assertThrows(UserCreationException.class,
@@ -278,26 +322,9 @@ class UserServiceImplTest {
         assertEquals("Failed to create user", exception.getMessage());
     }
 
-    @Test
-    void testUpdateUserSuccessfully() {
-        User existingUser = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(RoleEnum.STUDENT)
-                .password("validPassword")
-                .email("user@example.com")
-                .build();
-
-        User updateUser = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(RoleEnum.INSTRUCTOR)
-                .password("validPassword")
-                .email("user@example.com")
-                .build();
-
+    @ParameterizedTest
+    @MethodSource("provideTestDataForUpdateUserSuccessfully")
+    void testUpdateUserSuccessfully(User existingUser, User updateUser) {
         when(userRepository.findById(updateUser.getId())).thenReturn(Optional.ofNullable(existingUser));
         when(userRepository.update(existingUser)).thenReturn(existingUser);
 
@@ -307,25 +334,10 @@ class UserServiceImplTest {
         assertEquals(existingUser.getId(), updatedUser.getId());
     }
 
-    @Test
-    void testUpdateUserWithNullRole() {
-        User existingUser = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(RoleEnum.STUDENT)
-                .password("validPassword")
-                .email("user@example.com")
-                .build();
-
-        User updateUser = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(null)
-                .password("validPassword")
-                .email("user@example.com")
-                .build();
+    @ParameterizedTest
+    @MethodSource("provideTestDataForUpdateUserSuccessfully")
+    void testUpdateUserWithNullRole(User existingUser, User updateUser) {
+        updateUser.setRole(null);
 
         when(userRepository.findById(updateUser.getId())).thenReturn(Optional.ofNullable(existingUser));
         when(userRepository.update(existingUser)).thenReturn(existingUser);

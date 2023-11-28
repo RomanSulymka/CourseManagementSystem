@@ -169,6 +169,39 @@ class CourseServiceImplTest {
         );
     }
 
+    private static Stream<Arguments> provideTestDataForCreateCourse() {
+        Course existingCourse = Course.builder()
+                .id(1L)
+                .startDate(LocalDate.now())
+                .build();
+
+        User instructor = User.builder()
+                .id(1L)
+                .role(RoleEnum.INSTRUCTOR)
+                .email("instructor@example")
+                .build();
+
+        CourseDTO validCourseDTO = CourseDTO.builder()
+                .course(Course.builder()
+                        .name("ValidCourseName")
+                        .startDate(LocalDate.now())
+                        .build())
+                .numberOfLessons(5L)
+                .instructorEmail("instructor@example")
+                .build();
+
+        CourseDTO existingCourseDTO = CourseDTO.builder()
+                .course(existingCourse)
+                .numberOfLessons(5L)
+                .instructorEmail("instructor@example")
+                .build();
+
+        return Stream.of(
+                Arguments.of(validCourseDTO, instructor, null, false),
+                Arguments.of(existingCourseDTO, instructor, existingCourse, true)
+        );
+    }
+
     private CourseMark createSampleCourseMark() {
         return CourseMark.builder().build();
     }
@@ -219,24 +252,10 @@ class CourseServiceImplTest {
         verify(courseRepository, never()).saveAll(any());
     }
 
-    @Test
-    void testCreateCourse() {
-        Course course = Course.builder()
-                .id(1L)
-                .startDate(LocalDate.now())
-                .build();
+    @ParameterizedTest
+    @MethodSource("provideTestDataForCreateCourse")
+    void testCreateCourse(CourseDTO courseDTO, User user) {
 
-        CourseDTO courseDTO = CourseDTO.builder()
-                .course(course)
-                .numberOfLessons(5L)
-                .instructorEmail("instructor@example")
-                .build();
-
-        User user = User.builder()
-                .id(1L)
-                .role(RoleEnum.INSTRUCTOR)
-                .email("instructor@example")
-                .build();
         when(courseRepository.exist(courseDTO.getCourse().getName())).thenReturn(false);
         when(courseRepository.save(any())).thenAnswer(invocation -> {
             Course savedCourse = invocation.getArgument(0);
@@ -244,7 +263,7 @@ class CourseServiceImplTest {
             return savedCourse;
         });
         when(userService.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(courseDTO.getCourse()));
 
         Course createdCourse = assertDoesNotThrow(() -> courseService.create(courseDTO));
 

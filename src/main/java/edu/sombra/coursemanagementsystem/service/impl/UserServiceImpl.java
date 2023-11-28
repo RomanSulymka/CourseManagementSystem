@@ -157,11 +157,12 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateUser(User user) {
-        if (user.getPassword().isEmpty()) {
+        if (user.getPassword().isEmpty() || user.getPassword().isBlank()) {
             throw new NullPointerException("Password is empty!");
-        } else if (user.getFirstName().isEmpty() || user.getLastName().isEmpty()) {
+        } else if (user.getFirstName().isEmpty() || user.getLastName().isEmpty()
+                || user.getFirstName().isBlank() || user.getLastName().isBlank()) {
             throw new NullPointerException("Username is empty!");
-        } else if (user.getEmail().isEmpty()) {
+        } else if (user.getEmail().isEmpty() || user.getEmail().isBlank()) {
             throw new NullPointerException("Email is empty!");
         } else if (user.getRole() == null) {
             throw new NullPointerException("User Role is empty!");

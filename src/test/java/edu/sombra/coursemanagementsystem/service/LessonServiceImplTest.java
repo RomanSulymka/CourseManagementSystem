@@ -12,11 +12,13 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,61 +45,69 @@ class LessonServiceImplTest {
     @Mock
     private CourseRepository courseRepository;
 
-    @Mock
-    private Logger log;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         lessonService = new LessonServiceImpl(lessonRepository, courseRepository);
     }
 
-    //TODO: refactor
-    @Test
-    void testSaveLessonWithValidCourse() {
+    private static Stream<Arguments> provideTestDataForSaveLesson() {
         CreateLessonDTO lessonDTO = new CreateLessonDTO();
         lessonDTO.setCourseId(1L);
         lessonDTO.setLessonName("Test Lesson");
 
-        Course course = new Course();
-        course.setId(1L);
+        Course validCourse = new Course();
+        validCourse.setId(1L);
 
-        Lesson lesson = Lesson.builder()
-                .course(course)
+        Lesson savedLesson = Lesson.builder()
+                .course(validCourse)
                 .name("Test Lesson")
                 .build();
 
-        when(courseRepository.findById(lessonDTO.getCourseId())).thenReturn(Optional.of(course));
-        when(lessonRepository.save(any())).thenReturn(lesson);
+        CreateLessonDTO anotherLessonDTO = new CreateLessonDTO();
+        anotherLessonDTO.setCourseId(2L);
+        anotherLessonDTO.setLessonName("Another Lesson");
 
-        Lesson savedLesson = lessonService.save(lessonDTO);
+        Course anotherCourse = new Course();
+        anotherCourse.setId(2L);
 
-        assertNotNull(savedLesson);
-        assertEquals("Test Lesson", savedLesson.getName());
-        assertEquals(course, savedLesson.getCourse());
+        Lesson anotherSavedLesson = Lesson.builder()
+                .course(anotherCourse)
+                .name("Another Lesson")
+                .build();
+
+        return Stream.of(
+                Arguments.of(lessonDTO, validCourse, savedLesson),
+                Arguments.of(anotherLessonDTO, anotherCourse, anotherSavedLesson)
+        );
     }
 
-    @Test
-    void testSaveLessonWithInvalidCourse() {
-        CreateLessonDTO lessonDTO = new CreateLessonDTO();
-        lessonDTO.setCourseId(1L);
-        lessonDTO.setLessonName("Test Lesson");
+    @ParameterizedTest
+    @MethodSource("provideTestDataForSaveLesson")
+    void testSaveLessonWithValidCourse(CreateLessonDTO lessonDTO, Course course, Lesson savedLesson) {
+        when(courseRepository.findById(lessonDTO.getCourseId())).thenReturn(Optional.of(course));
+        when(lessonRepository.save(any())).thenReturn(savedLesson);
 
-        when(courseRepository.findById(1L)).thenReturn(Optional.empty());
+        Lesson result = lessonService.save(lessonDTO);
+
+        assertNotNull(result);
+        assertEquals(savedLesson.getName(), result.getName());
+        assertEquals(course, result.getCourse());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestDataForSaveLesson")
+    void testSaveLessonWithInvalidCourse(CreateLessonDTO lessonDTO) {
+
+        when(courseRepository.findById(lessonDTO.getCourseId())).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> lessonService.save(lessonDTO));
     }
 
-    @Test
-    void testSaveLessonSuccessfully() {
-        CreateLessonDTO lessonDTO = new CreateLessonDTO();
-        lessonDTO.setCourseId(1L);
-        lessonDTO.setLessonName("Test Lesson");
-
-        Course course = new Course();
-        course.setId(1L);
-
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+    @ParameterizedTest
+    @MethodSource("provideTestDataForSaveLesson")
+    void testSaveLessonSuccessfully(CreateLessonDTO lessonDTO, Course course) {
+        when(courseRepository.findById(course.getId())).thenReturn(Optional.of(course));
 
         Lesson lesson = new Lesson();
         when(lessonRepository.save(any())).thenReturn(lesson);

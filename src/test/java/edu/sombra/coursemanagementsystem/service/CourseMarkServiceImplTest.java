@@ -52,6 +52,13 @@ class CourseMarkServiceImplTest {
         );
     }
 
+    private static Stream<Arguments> provideTestDataForSaveTotalMark() {
+        return Stream.of(
+                Arguments.of(1L, 2L, 90.0, true),
+                Arguments.of(3L, 4L, 85.5, false)
+        );
+    }
+
     static class CourseMarkProvider implements ArgumentsProvider {
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
@@ -139,13 +146,9 @@ class CourseMarkServiceImplTest {
         assertEquals(expectedCourseMarks, result);
     }
 
-    @Test
-    void testSaveTotalMark() {
-        Long userId = 1L;
-        Long courseId = 2L;
-        Double averageMark = 90.0;
-        boolean isAllHomeworksGraded = true;
-
+    @ParameterizedTest
+    @MethodSource("provideTestDataForSaveTotalMark")
+    void testSaveTotalMark(Long userId, Long courseId, Double averageMark, boolean isAllHomeworksGraded) {
         User user = new User();
         Course course = new Course();
 
