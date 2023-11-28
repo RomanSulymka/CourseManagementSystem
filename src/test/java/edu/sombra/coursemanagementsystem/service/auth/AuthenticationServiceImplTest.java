@@ -17,6 +17,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -32,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,6 +64,68 @@ class AuthenticationServiceImplTest {
         authenticateService = new AuthenticateServiceImpl(userService, passwordEncoder, jwtService, authenticationManager, tokenRepository);
     }
 
+    private static Stream<Arguments> provideRegisterDTOs() {
+        RegisterDTO dto1 = new RegisterDTO();
+        dto1.setFirstName("John");
+        dto1.setLastName("Doe");
+        dto1.setEmail("john.doe@example.com");
+        dto1.setPassword("password123");
+        dto1.setRole(RoleEnum.STUDENT);
+
+        RegisterDTO dto2 = new RegisterDTO();
+        dto2.setFirstName("Jane");
+        dto2.setLastName("Doe");
+        dto2.setEmail("jane.doe@example.com");
+        dto2.setPassword("password456");
+        dto2.setRole(RoleEnum.STUDENT);
+
+        return Stream.of(
+                Arguments.of(dto1, "mockedJwtToken"),
+                Arguments.of(dto2, "mockedJwtToken2")
+        );
+    }
+
+    private static Stream<Arguments> provideRegisterEmails() {
+        return Stream.of(
+                Arguments.of("existingUser1@example.com"),
+                Arguments.of("existingUser2@gmail.com")
+        );
+    }
+
+    private static Stream<Arguments> provideAuthenticationDTOs() {
+        AuthenticationDTO dto1 = new AuthenticationDTO();
+        dto1.setEmail("john.doe@example.com");
+        dto1.setPassword("password123");
+
+        AuthenticationDTO dto2 = new AuthenticationDTO();
+        dto2.setEmail("jane.doe@example.com");
+        dto2.setPassword("password456");
+
+        return Stream.of(
+                Arguments.of(dto1, "mockedAccessToken", "mockedRefreshToken"),
+                Arguments.of(dto2, "mockedAccessToken2", "mockedRefreshToken2")
+        );
+    }
+
+    private static Stream<AuthenticationDTO> provideAuthenticationDTOsForInvalidCredentialsTest() {
+        AuthenticationDTO dto1 = new AuthenticationDTO();
+        dto1.setEmail("nonexistent.user1@example.com");
+        dto1.setPassword("invalidPassword1");
+
+        AuthenticationDTO dto2 = new AuthenticationDTO();
+        dto2.setEmail("nonexistent.user2@example.com");
+        dto2.setPassword("invalidPassword2");
+
+        return Stream.of(dto1, dto2);
+    }
+
+    private static Stream<Arguments> provideRefreshTokenTestData() {
+        return Stream.of(
+                Arguments.of("Bearer mockRefreshToken1", "user1@example.com", "mockAccessToken1"),
+                Arguments.of("Bearer mockRefreshToken2", "user2@example.com", "mockAccessToken2")
+        );
+    }
+
     private User createTestUser() {
          var user = new User();
         user.setId(1L);
@@ -70,15 +136,9 @@ class AuthenticationServiceImplTest {
         return user;
     }
 
-    @Test
-    void testRegister_SuccessfulRegistration() {
-        RegisterDTO registerDTO = new RegisterDTO();
-        registerDTO.setFirstName("John");
-        registerDTO.setLastName("Doe");
-        registerDTO.setEmail("john.doe@example.com");
-        registerDTO.setPassword("password123");
-        registerDTO.setRole(RoleEnum.STUDENT);
-
+    @ParameterizedTest
+    @MethodSource("provideRegisterDTOs")
+    void testRegister_SuccessfulRegistration(RegisterDTO registerDTO, String expectedJwtToken) {
         when(userService.existsUserByEmail(registerDTO.getEmail())).thenReturn(false);
 
         User savedUser = new User();
@@ -89,22 +149,21 @@ class AuthenticationServiceImplTest {
         savedUser.setRole(registerDTO.getRole());
 
         when(userService.createUser(any(User.class))).thenReturn(savedUser);
-
-        String jwtToken = "mockedJwtToken";
-        when(jwtService.generateToken(any(UserDetails.class))).thenReturn(jwtToken);
+        when(jwtService.generateToken(any(UserDetails.class))).thenReturn(expectedJwtToken);
 
         AuthenticationResponse response = authenticateService.register(registerDTO);
 
         assertNotNull(response);
-        assertEquals(jwtToken, response.getAccessToken());
+        assertEquals(expectedJwtToken, response.getAccessToken());
 
         verify(tokenRepository, times(1)).save(any(Token.class));
     }
 
-    @Test
-    void testRegister_UserAlreadyExistsException() {
+    @ParameterizedTest
+    @MethodSource("provideRegisterEmails")
+    void testRegister_UserAlreadyExistsException(String email)  {
         RegisterDTO registerDTO = new RegisterDTO();
-        registerDTO.setEmail("existingUser@example.com");
+        registerDTO.setEmail(email);
 
         when(userService.existsUserByEmail(registerDTO.getEmail())).thenReturn(true);
 
@@ -115,29 +174,24 @@ class AuthenticationServiceImplTest {
         verify(tokenRepository, never()).save(any(Token.class));
     }
 
-    @Test
-    void testAuthenticate_SuccessfulAuthentication() {
-        AuthenticationDTO authenticationDTO = new AuthenticationDTO();
-        authenticationDTO.setEmail("john.doe@example.com");
-        authenticationDTO.setPassword("password123");
-
+    @ParameterizedTest
+    @MethodSource("provideAuthenticationDTOs")
+    void testAuthenticate_SuccessfulAuthentication(AuthenticationDTO authenticationDTO, String expectedAccessToken, String expectedRefreshToken) {
         when(userService.findUserByEmail(authenticationDTO.getEmail())).thenReturn(createTestUser());
-        when(jwtService.generateToken(any(UserDetails.class))).thenReturn("mockedAccessToken");
-        when(jwtService.generateRefreshToken(any(UserDetails.class))).thenReturn("mockedRefreshToken");
+        when(jwtService.generateToken(any(UserDetails.class))).thenReturn(expectedAccessToken);
+        when(jwtService.generateRefreshToken(any(UserDetails.class))).thenReturn(expectedRefreshToken);
 
         AuthenticationResponse response = authenticateService.authenticate(authenticationDTO);
 
         assertNotNull(response);
-        assertEquals("mockedAccessToken", response.getAccessToken());
+        assertEquals(expectedAccessToken, response.getAccessToken());
 
         verify(tokenRepository, times(1)).save(any(Token.class));
     }
 
-    @Test
-    void testAuthenticate_InvalidCredentials() {
-        AuthenticationDTO authenticationDTO = new AuthenticationDTO();
-        authenticationDTO.setEmail("nonexistent.user@example.com");
-        authenticationDTO.setPassword("invalidPassword");
+    @ParameterizedTest
+    @MethodSource("provideAuthenticationDTOsForInvalidCredentialsTest")
+    void testAuthenticate_InvalidCredentials(AuthenticationDTO authenticationDTO) {
 
         doThrow(new BadCredentialsException("Invalid credentials")).when(authenticationManager)
                 .authenticate(any(UsernamePasswordAuthenticationToken.class));
@@ -150,23 +204,23 @@ class AuthenticationServiceImplTest {
         verify(tokenRepository, never()).save(any(Token.class));
     }
 
-    @Test
-    void testRefreshToken_SuccessfulRefresh() throws IOException {
+    @ParameterizedTest
+    @MethodSource("provideRefreshTokenTestData")
+    void testRefreshToken_SuccessfulRefresh(String authorizationHeader, String username, String expectedAccessToken) throws IOException {
         HttpServletRequest request = mock(HttpServletRequest.class);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer mockRefreshToken");
-
-        when(jwtService.extractUsername("mockRefreshToken")).thenReturn("user@example.com");
-        when(userService.findUserByEmail("user@example.com")).thenReturn(createTestUser());
-        when(jwtService.isTokenValid("mockRefreshToken", createTestUser())).thenReturn(true);
-        when(jwtService.generateToken(createTestUser())).thenReturn("mockAccessToken");
+        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(authorizationHeader);
+        when(jwtService.extractUsername(authorizationHeader.substring(7))).thenReturn(username);
+        when(userService.findUserByEmail(username)).thenReturn(createTestUser());
+        when(jwtService.isTokenValid(authorizationHeader.substring(7), createTestUser())).thenReturn(true);
+        when(jwtService.generateToken(createTestUser())).thenReturn(expectedAccessToken);
 
         authenticateService.refreshToken(request, response);
 
         verify(tokenRepository, times(1)).findAllValidTokenByUser(anyLong());
 
-        String expectedJson = "{\"access_token\":\"mockAccessToken\",\"refresh_token\":\"mockRefreshToken\"}";
+        String expectedJson = String.format("{\"access_token\":\"%s\",\"refresh_token\":\"%s\"}", expectedAccessToken, authorizationHeader.substring(7));
         assertEquals(expectedJson, response.getContentAsString());
     }
 
