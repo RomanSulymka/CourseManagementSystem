@@ -62,7 +62,7 @@ class AdminCourseFeedbackControllerE2ETest {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         courseFeedbackDTO.setFeedbackText("This is a great course.");
         courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
+        courseFeedbackDTO.setStudentId(4L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -84,7 +84,7 @@ class AdminCourseFeedbackControllerE2ETest {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         courseFeedbackDTO.setFeedbackText("This is a great course.");
         courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
+        courseFeedbackDTO.setStudentId(4L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -104,10 +104,10 @@ class AdminCourseFeedbackControllerE2ETest {
     @Test
     void testEditFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setId(32L);
+        courseFeedbackDTO.setId(1L);
         courseFeedbackDTO.setFeedbackText("Great!!");
-        courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
+        courseFeedbackDTO.setCourseId(1L);
+        courseFeedbackDTO.setStudentId(1L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -141,7 +141,7 @@ class AdminCourseFeedbackControllerE2ETest {
 
     @Test
     void testGetFeedbackById() {
-        Long feedbackId = 8L;
+        Long feedbackId = 1L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -158,7 +158,7 @@ class AdminCourseFeedbackControllerE2ETest {
 
     @Test
     void testGetFeedbackByIdThrowNotFoundException() {
-        Long feedbackId = 1L;
+        Long feedbackId = 10000L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -175,7 +175,7 @@ class AdminCourseFeedbackControllerE2ETest {
 
     @Test
     void testDeleteFeedback() {
-        Long feedbackId = 32L;
+        Long feedbackId = 1L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
