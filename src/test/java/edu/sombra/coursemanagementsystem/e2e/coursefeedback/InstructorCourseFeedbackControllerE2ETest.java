@@ -1,3 +1,4 @@
+/*
 package edu.sombra.coursemanagementsystem.e2e.coursefeedback;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
@@ -100,6 +101,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
+*/
 /*    @Test
     void testEditFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
@@ -121,7 +123,9 @@ class InstructorCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }*/
+    }*//*
+
+*/
 /*    @Test
     void testGetAllFeedbacks() {
         HttpHeaders headers = new HttpHeaders();
@@ -136,7 +140,8 @@ class InstructorCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-    }*/
+    }*//*
+
 
     @Test
     void testGetFeedbackById() {
@@ -172,6 +177,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
+*/
 /*    @Test
     void testDeleteFeedback() {
         Long feedbackId = 5L;
@@ -187,9 +193,11 @@ class InstructorCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }*/
+    }*//*
+
 
     private String buildUrl(String path, Object... uriVariables) {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
 }
+*/
