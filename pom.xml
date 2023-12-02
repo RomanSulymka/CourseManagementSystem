@@ -180,6 +180,7 @@
                         <exclude>edu/sombra/coursemanagementsystem/config/**</exclude>
                         <exclude>edu/sombra/coursemanagementsystem/security/**</exclude>
                         <exclude>edu/sombra/coursemanagementsystem/controller/exception/**</exclude>
+                        <exclude>edu/sombra/coursemanagementsystem/mapper/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
