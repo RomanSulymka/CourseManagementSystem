@@ -1,5 +1,6 @@
 package edu.sombra.coursemanagementsystem.controller;
 
+import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
@@ -32,7 +33,6 @@ public class CourseController {
         return ResponseEntity.ok(courseService.create(courseDTO));
     }
 
-    //FIXME: change entity
     @PutMapping("/edit")
     public ResponseEntity<Course> editCourse(@RequestBody UpdateCourseDTO courseDTO) {
         return ResponseEntity.ok(courseService.update(courseDTO));
@@ -53,9 +53,9 @@ public class CourseController {
         return ResponseEntity.ok(courseService.delete(id));
     }
 
-    @PutMapping("/{courseId}/{action}")
-    public ResponseEntity<Course> startOrStopCourse(@PathVariable Long courseId, @PathVariable String action) {
-        return ResponseEntity.ok(courseService.startOrStopCourse(courseId, action));
+    @PutMapping
+    public ResponseEntity<Course> startOrStopCourse(@RequestBody CourseActionDTO courseActionDTO) {
+        return ResponseEntity.ok(courseService.startOrStopCourse(courseActionDTO.getCourseId(), courseActionDTO.getAction()));
     }
 
     @GetMapping("/find-all-lessons/{id}")

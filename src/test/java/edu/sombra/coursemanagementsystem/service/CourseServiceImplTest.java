@@ -96,10 +96,8 @@ class CourseServiceImplTest {
 
     private CourseDTO createSampleCourseDTO() {
         return CourseDTO.builder()
-                .course(Course.builder()
-                        .name("Sample Course")
-                        .startDate(LocalDate.now().plusDays(1))
-                        .build())
+                .name("Sample Course")
+                .startDate(LocalDate.now().plusDays(1))
                 .instructorEmail("instructor@example.com")
                 .numberOfLessons(5L)
                 .build();
@@ -196,6 +194,7 @@ class CourseServiceImplTest {
     private static Stream<Arguments> provideTestDataForCreateCourse() {
         Course existingCourse = Course.builder()
                 .id(1L)
+                .name("Test course")
                 .startDate(LocalDate.now())
                 .build();
 
@@ -206,16 +205,14 @@ class CourseServiceImplTest {
                 .build();
 
         CourseDTO validCourseDTO = CourseDTO.builder()
-                .course(Course.builder()
-                        .name("ValidCourseName")
-                        .startDate(LocalDate.now())
-                        .build())
+                .name("ValidCourseName")
+                .startDate(LocalDate.now())
                 .numberOfLessons(5L)
                 .instructorEmail("instructor@example")
                 .build();
 
         CourseDTO existingCourseDTO = CourseDTO.builder()
-                .course(existingCourse)
+                .name(existingCourse.getName())
                 .numberOfLessons(5L)
                 .instructorEmail("instructor@example")
                 .build();
@@ -279,15 +276,23 @@ class CourseServiceImplTest {
     @ParameterizedTest
     @MethodSource("provideTestDataForCreateCourse")
     void testCreateCourse(CourseDTO courseDTO, User user) {
+        Course course = Course.builder()
+                .id(1L)
+                .name("Java Programming")
+                .status(CourseStatus.STOP)
+                .startDate(LocalDate.of(2025, 1, 1))
+                .started(true)
+                .build();
 
-        when(courseRepository.exist(courseDTO.getCourse().getName())).thenReturn(false);
+        when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
+        when(courseRepository.exist(course.getName())).thenReturn(false);
         when(courseRepository.save(any())).thenAnswer(invocation -> {
             Course savedCourse = invocation.getArgument(0);
             savedCourse.setId(1L);
             return savedCourse;
         });
         when(userRepository.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(courseDTO.getCourse()));
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
 
         Course createdCourse = assertDoesNotThrow(() -> courseService.create(courseDTO));
 
@@ -303,11 +308,15 @@ class CourseServiceImplTest {
     void testCreateCourseWhenUserIsStudent() {
         Course course = Course.builder()
                 .id(1L)
-                .startDate(LocalDate.now())
+                .name("Java Programming")
+                .status(CourseStatus.STOP)
+                .startDate(LocalDate.of(2025, 1, 1))
+                .started(true)
                 .build();
 
         CourseDTO courseDTO = CourseDTO.builder()
-                .course(course)
+                .name(course.getName())
+                .startDate(course.getStartDate())
                 .numberOfLessons(5L)
                 .instructorEmail("student@example")
                 .build();
@@ -317,7 +326,9 @@ class CourseServiceImplTest {
                 .role(RoleEnum.STUDENT)
                 .email("student@example")
                 .build();
-        when(courseRepository.exist(courseDTO.getCourse().getName())).thenReturn(false);
+
+        when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
+        when(courseRepository.exist(courseDTO.getName())).thenReturn(false);
         when(courseRepository.save(any())).thenAnswer(invocation -> {
             Course savedCourse = invocation.getArgument(0);
             savedCourse.setId(1L);
@@ -330,9 +341,22 @@ class CourseServiceImplTest {
 
     @Test
     void testCreateCourseWithExpiredStartDate() {
-        CourseDTO courseDTO = createSampleCourseDTO();
-        courseDTO.getCourse().setStartDate(LocalDate.now().minusDays(1));
+        Course course = Course.builder()
+                .id(1L)
+                .name("Java Programming")
+                .status(CourseStatus.STOP)
+                .startDate(LocalDate.now().minusDays(1))
+                .started(true)
+                .build();
 
+        CourseDTO courseDTO = CourseDTO.builder()
+                .name(course.getName())
+                .startDate(LocalDate.now().minusDays(1))
+                .numberOfLessons(5L)
+                .instructorEmail("student@example")
+                .build();
+
+        when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
         assertThrows(IllegalArgumentException.class, () -> courseService.create(courseDTO));
         verify(courseRepository, never()).save(any());
         verify(courseRepository, never()).assignInstructor(anyLong(), anyLong());

@@ -62,9 +62,10 @@ public class CourseServiceImpl implements CourseService {
 
     private static final Long MIN_LESSONS = 5L;
 
+    //TODO: test it, because logic was changed
     @Override
     public Course create(CourseDTO courseDTO) {
-        Course course = courseDTO.getCourse();
+        Course course = courseMapper.fromCourseDTO(courseDTO);
         validateCourseCreation(course.getName(), course.getStartDate());
         Course createdCourse = saveCourse(course);
         assignInstructor(createdCourse, courseDTO.getInstructorEmail());

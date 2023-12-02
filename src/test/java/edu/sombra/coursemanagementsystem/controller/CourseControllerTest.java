@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
@@ -49,7 +50,10 @@ class CourseControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testCreateCourseSuccess() throws Exception {
         CourseDTO courseDTO = CourseDTO.builder()
-                .course(Course.builder().id(1L).name("Java learn").build())
+                .name("Java learn")
+                .startDate(LocalDate.now())
+                .status(CourseStatus.WAIT)
+                .started(false)
                 .instructorEmail("instructor@example.com")
                 .numberOfLessons(10L)
                 .build();
@@ -165,9 +169,6 @@ class CourseControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testStartOrStopCourseSuccess() throws Exception {
-        Long courseId = 1L;
-        String action = "start";
-
         Course course = Course.builder()
                 .id(1L)
                 .name("Java Programming")
@@ -176,17 +177,24 @@ class CourseControllerTest {
                 .started(true)
                 .build();
 
-        when(courseService.startOrStopCourse(courseId, action)).thenReturn(course);
+        CourseActionDTO courseActionDTO = CourseActionDTO.builder()
+                .courseId(1L)
+                .action("start")
+                .build();
 
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/course/{courseId}/{action}", courseId, action));
+        when(courseService.startOrStopCourse(courseActionDTO.getCourseId(), courseActionDTO.getAction())).thenReturn(course);
+
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/course")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(courseActionDTO)));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(courseId))
+                .andExpect(jsonPath("$.id").value(courseActionDTO.getCourseId()))
                 .andExpect(jsonPath("$.status").value("STARTED"))
                 .andExpect(jsonPath("$.name").value("Java Programming"));
 
-        verify(courseService, times(1)).startOrStopCourse(courseId, action);
+        verify(courseService, times(1)).startOrStopCourse(courseActionDTO.getCourseId(), courseActionDTO.getAction());
     }
 
     @Test
