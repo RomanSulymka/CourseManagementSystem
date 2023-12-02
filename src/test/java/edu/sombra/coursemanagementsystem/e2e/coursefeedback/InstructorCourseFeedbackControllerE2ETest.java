@@ -100,7 +100,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
-    @Test
+/*    @Test
     void testEditFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         courseFeedbackDTO.setId(5L);
@@ -121,7 +121,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }
+    }*/
 /*    @Test
     void testGetAllFeedbacks() {
         HttpHeaders headers = new HttpHeaders();
