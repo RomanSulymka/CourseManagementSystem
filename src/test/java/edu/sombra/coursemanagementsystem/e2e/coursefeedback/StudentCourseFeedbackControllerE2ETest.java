@@ -15,10 +15,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -62,7 +64,7 @@ class StudentCourseFeedbackControllerE2ETest {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         courseFeedbackDTO.setFeedbackText("This is a great course.");
         courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
+        courseFeedbackDTO.setStudentId(4L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -82,10 +84,10 @@ class StudentCourseFeedbackControllerE2ETest {
     @Test
     void testEditFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setId(32L);
+        courseFeedbackDTO.setId(6L);
         courseFeedbackDTO.setFeedbackText("Great!!");
         courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
+        courseFeedbackDTO.setStudentId(4L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -102,10 +104,11 @@ class StudentCourseFeedbackControllerE2ETest {
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
     }
 
-   @Test
+    @Test
     void testGetAllFeedbacks() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         ResponseEntity<List> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback"),
@@ -120,7 +123,7 @@ class StudentCourseFeedbackControllerE2ETest {
 
     @Test
     void testGetFeedbackById() {
-        Long feedbackId = 8L;
+        Long feedbackId = 6L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -154,7 +157,7 @@ class StudentCourseFeedbackControllerE2ETest {
 
     @Test
     void testDeleteFeedback() {
-        Long feedbackId = 34L;
+        Long feedbackId = 6L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);

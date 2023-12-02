@@ -95,7 +95,7 @@ VALUES
     ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT'),
     ('admin', 'admin', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'admin@gmail.com', 'ADMIN'),
     ('instructor', 'instructor', '$2a$10$d7NjI6y4aBFXdKEbaiPqVeQG3sXJk34.rQaonW5AAQi7wjVX7qjki', 'instructor@gmail.com', 'INSTRUCTOR'),
-    ('student', 'student', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'student@gmail.com', 'STUDENT'),
+    ('student', 'student', '$2a$10$KNhkSyMKkSm1bMLwM41WzOEnRs6ZCusvU2s984UBa9mIpYZJ6lMm2', 'student@gmail.com', 'STUDENT'),
     ('student2', 'student2', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'student2@gmail.com', 'STUDENT'),
     ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
     ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
