@@ -146,6 +146,6 @@ VALUES
 
 INSERT INTO tokens (token, token_type, revoked, expired, user_id)
 VALUES
-    ('token123', 'Access', false, false, 1),
-    ('token456', 'Refresh', false, false, 2);
+    ('token123', 'BEARER', false, false, 1),
+    ('token456', 'BEARER', false, false, 2);
 
