@@ -498,6 +498,7 @@ class UserServiceImplTest {
                 .email("user@example.com")
                 .build();
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        doNothing().when(userRepository).delete(existingUser);
 
         String result = userService.deleteUser(userId);
 
