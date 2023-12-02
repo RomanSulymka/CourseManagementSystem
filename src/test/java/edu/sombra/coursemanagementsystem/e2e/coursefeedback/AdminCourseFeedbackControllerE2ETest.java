@@ -1,4 +1,3 @@
-/*
 package edu.sombra.coursemanagementsystem.e2e.coursefeedback;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
@@ -195,4 +194,3 @@ class AdminCourseFeedbackControllerE2ETest {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
 }
-*/
