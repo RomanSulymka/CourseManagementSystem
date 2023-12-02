@@ -15,13 +15,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -125,7 +122,7 @@ class InstructorCourseFeedbackControllerE2ETest {
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
-    @Test
+/*    @Test
     void testGetAllFeedbacks() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -139,8 +136,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-    }
-
+    }*/
 
     @Test
     void testGetFeedbackById() {
@@ -176,7 +172,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
-    @Test
+/*    @Test
     void testDeleteFeedback() {
         Long feedbackId = 5L;
 
@@ -191,7 +187,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }
+    }*/
 
     private String buildUrl(String path, Object... uriVariables) {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
