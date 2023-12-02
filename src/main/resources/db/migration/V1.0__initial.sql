@@ -112,7 +112,8 @@ VALUES
     (2, 2),
     (3, 2),
     (4, 3),
-    (5, 1);
+    (5, 1),
+    (3, 1);
 
 INSERT INTO lessons (name, course_id)
 VALUES

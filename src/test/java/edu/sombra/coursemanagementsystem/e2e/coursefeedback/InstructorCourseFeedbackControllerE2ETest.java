@@ -106,7 +106,7 @@ class InstructorCourseFeedbackControllerE2ETest {
     @Test
     void testEditFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setId(6L);
+        courseFeedbackDTO.setId(5L);
         courseFeedbackDTO.setFeedbackText("Amazing!!");
         courseFeedbackDTO.setCourseId(1L);
         courseFeedbackDTO.setStudentId(5L);
@@ -178,7 +178,7 @@ class InstructorCourseFeedbackControllerE2ETest {
 
     @Test
     void testDeleteFeedback() {
-        Long feedbackId = 6L;
+        Long feedbackId = 2L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
