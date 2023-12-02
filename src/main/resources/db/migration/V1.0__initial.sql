@@ -94,7 +94,7 @@ INSERT INTO users (first_name, last_name, password, email, role)
 VALUES
     ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT'),
     ('admin', 'admin', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'admin@gmail.com', 'ADMIN'),
-    ('instructor', 'instructor', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'instructor@gmail.com', 'INSTRUCTOR'),
+    ('instructor', 'instructor', '$2a$10$d7NjI6y4aBFXdKEbaiPqVeQG3sXJk34.rQaonW5AAQi7wjVX7qjki', 'instructor@gmail.com', 'INSTRUCTOR'),
     ('student', 'student', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'student@gmail.com', 'STUDENT'),
     ('student2', 'student2', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'student2@gmail.com', 'STUDENT'),
     ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
@@ -147,5 +147,7 @@ VALUES
 INSERT INTO tokens (token, token_type, revoked, expired, user_id)
 VALUES
     ('token123', 'BEARER', false, false, 1),
-    ('token456', 'BEARER', false, false, 2);
+    ('token456', 'BEARER', false, false, 2),
+    ('token789', 'BEARER', false, false, 3),
+    ('token012', 'BEARER', false, false, 4);
 

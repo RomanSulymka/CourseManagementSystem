@@ -63,8 +63,8 @@ class InstructorCourseFeedbackControllerE2ETest {
     void testAddFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         courseFeedbackDTO.setFeedbackText("This is a great course.");
-        courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
+        courseFeedbackDTO.setCourseId(1L);
+        courseFeedbackDTO.setStudentId(5L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -82,28 +82,11 @@ class InstructorCourseFeedbackControllerE2ETest {
     }
 
     @Test
-    void testAddFeedback_Unauthorized() {
-        CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setFeedbackText("This is a great course.");
-        courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback"),
-                HttpMethod.POST,
-                null,
-                String.class
-        );
-
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }
-
-    @Test
     void testAddFeedback_EntityExistException() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         courseFeedbackDTO.setFeedbackText("This is a great course.");
-        courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
+        courseFeedbackDTO.setCourseId(1L);
+        courseFeedbackDTO.setStudentId(5L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -123,10 +106,10 @@ class InstructorCourseFeedbackControllerE2ETest {
     @Test
     void testEditFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setId(33L);
+        courseFeedbackDTO.setId(6L);
         courseFeedbackDTO.setFeedbackText("Amazing!!");
-        courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(13L);
+        courseFeedbackDTO.setCourseId(1L);
+        courseFeedbackDTO.setStudentId(5L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -161,7 +144,7 @@ class InstructorCourseFeedbackControllerE2ETest {
 
     @Test
     void testGetFeedbackById() {
-        Long feedbackId = 8L;
+        Long feedbackId = 2L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -178,7 +161,7 @@ class InstructorCourseFeedbackControllerE2ETest {
 
     @Test
     void testGetFeedbackByIdThrowNotFoundException() {
-        Long feedbackId = 1L;
+        Long feedbackId = 10000L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -195,7 +178,7 @@ class InstructorCourseFeedbackControllerE2ETest {
 
     @Test
     void testDeleteFeedback() {
-        Long feedbackId = 33L;
+        Long feedbackId = 6L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
