@@ -1,13 +1,17 @@
 package edu.sombra.coursemanagementsystem.service;
 
+import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UpdateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.UserCreationException;
 import edu.sombra.coursemanagementsystem.exception.UserException;
 import edu.sombra.coursemanagementsystem.exception.UserUpdateException;
+import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.UserServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
@@ -40,10 +44,12 @@ class UserServiceImplTest {
     private UserRepository userRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private UserMapper userMapper;
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, passwordEncoder);
+        userService = new UserServiceImpl(userRepository, passwordEncoder, userMapper);
     }
 
     private static Stream<Arguments> provideTestDataForAssignNewRoleUpdateFailed() {
@@ -84,6 +90,29 @@ class UserServiceImplTest {
         );
     }
 
+    private static Stream<Arguments> provideTestDataForCreateUserDTO() {
+        CreateUserDTO validUser = CreateUserDTO.builder()
+                .firstName("firstName")
+                .lastName("lastName")
+                .role(RoleEnum.STUDENT)
+                .password("validPassword")
+                .email("user@example.com")
+                .build();
+
+        CreateUserDTO anotherValidUser = CreateUserDTO.builder()
+                .firstName("anotherFirstName")
+                .lastName("anotherLastName")
+                .role(RoleEnum.INSTRUCTOR)
+                .password("anotherValidPassword")
+                .email("anotherUser@example.com")
+                .build();
+
+        return Stream.of(
+                Arguments.of(validUser),
+                Arguments.of(anotherValidUser)
+        );
+    }
+
     private static Stream<Arguments> provideTestDataForUpdateUserSuccessfully() {
         User existingUserStudentRole = User.builder()
                 .id(1L)
@@ -103,7 +132,7 @@ class UserServiceImplTest {
                 .email("user@example.com")
                 .build();
 
-        User updateUser = User.builder()
+        UpdateUserDTO updateUser = UpdateUserDTO.builder()
                 .id(1L)
                 .firstName("firstName")
                 .lastName("lastName")
@@ -143,12 +172,18 @@ class UserServiceImplTest {
         User expectedUser = User.builder()
                 .id(1L)
                 .build();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(expectedUser));
 
-        User foundUser = userService.findUserById(userId);
+        UserResponseDTO expectedUserResponseDTO = UserResponseDTO.builder()
+                .id(1L)
+                .build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(expectedUser));
+        when(userMapper.mapToResponseDTO(expectedUser)).thenReturn(expectedUserResponseDTO);
+
+        UserResponseDTO foundUser = userService.findUserById(userId);
 
         assertNotNull(foundUser);
-        assertEquals(expectedUser, foundUser);
+        assertEquals(expectedUserResponseDTO, foundUser);
     }
 
     @Test
@@ -211,11 +246,11 @@ class UserServiceImplTest {
     @MethodSource("provideTestUser")
     void testFindUserByEmailSuccessfully(String userEmail, User mockUser) {
         when(userRepository.findUserByEmail(userEmail)).thenReturn(mockUser);
-
-        User resultUser = userService.findUserByEmail(userEmail);
+        when(userMapper.mapToResponseDTO(mockUser)).thenReturn(mock(UserResponseDTO.class));
+        UserResponseDTO resultUser = userService.findUserByEmail(userEmail);
 
         assertNotNull(resultUser);
-        assertEquals(mockUser, resultUser);
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
     }
 
     @Test
@@ -255,103 +290,148 @@ class UserServiceImplTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestDataForCreateUserSuccessfully")
-    void testCreateUserSuccessfully(User user) {
-        when(passwordEncoder.encode(user.getPassword())).thenReturn("encodedPassword");
-        when(userRepository.save(user)).thenReturn(user);
+    @MethodSource("provideTestDataForCreateUserDTO")
+    void testCreateUserSuccessfully(CreateUserDTO userDTO) {
+        User user = User.builder()
+                .id(1L)
+                .firstName(userDTO.getFirstName())
+                .lastName(userDTO.getLastName())
+                .role(userDTO.getRole())
+                .password("encodedPassword")
+                .email(userDTO.getEmail())
+                .build();
 
-        User createdUser = userService.createUser(user);
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(1L);
+        userResponseDTO.setFirstName(user.getFirstName());
+        userResponseDTO.setLastName(user.getLastName());
+        userResponseDTO.setEmail(user.getEmail());
+        userResponseDTO.setRole(user.getRole());
+
+        when(userMapper.fromDTO(userDTO)).thenReturn(user);
+        when(passwordEncoder.encode(userDTO.getPassword())).thenReturn("encodedPassword");
+        when(userRepository.save(user)).thenReturn(user);
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+        when(userMapper.mapToResponseDTO(user)).thenReturn(userResponseDTO);
+        UserResponseDTO createdUser = userService.createUser(userDTO);
 
         assertNotNull(createdUser);
-        assertEquals("encodedPassword", createdUser.getPassword());
+        assertEquals(userResponseDTO, createdUser);
+        verify(userRepository, times(1)).save(user);
+        verify(userRepository, times(1)).findUserByEmail(user.getEmail());
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestDataForCreateUserSuccessfully")
-    void testCreateUserWithEmptyPassword(User user) {
-       user.setPassword("");
+    @MethodSource("provideTestDataForCreateUserDTO")
+    void testCreateUserWithEmptyPassword(CreateUserDTO userDTO) {
+        userDTO.setPassword("");
 
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> userService.createUser(user));
+                () -> userService.createUser(userDTO));
 
         assertEquals("Failed to create new User, the field is empty", exception.getMessage());
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestDataForCreateUserSuccessfully")
-    void testCreateUserWithEmptyUsername(User user) {
-       user.setLastName("");
-       user.setFirstName(" ");
+    @MethodSource("provideTestDataForCreateUserDTO")
+    void testCreateUserWithEmptyUsername(CreateUserDTO userDTO) {
+        userDTO.setLastName("");
+        userDTO.setFirstName(" ");
 
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> userService.createUser(user));
+                () -> userService.createUser(userDTO));
 
         assertEquals("Failed to create new User, the field is empty", exception.getMessage());
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestDataForCreateUserSuccessfully")
-    void testCreateUserWithEmptyEmail(User user) {
-        user.setEmail("");
+    @MethodSource("provideTestDataForCreateUserDTO")
+    void testCreateUserWithEmptyEmail(CreateUserDTO userDTO) {
+        userDTO.setEmail("");
 
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> userService.createUser(user));
+                () -> userService.createUser(userDTO));
 
         assertEquals("Failed to create new User, the field is empty", exception.getMessage());
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestDataForCreateUserSuccessfully")
-    void testCreateUserWithNullRole(User user) {
-        user.setRole(null);
+    @MethodSource("provideTestDataForCreateUserDTO")
+    void testCreateUserWithNullRole(CreateUserDTO userDTO) {
+        userDTO.setRole(null);
 
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> userService.createUser(user));
+                () -> userService.createUser(userDTO));
 
         assertEquals("Failed to create new User, the field is empty", exception.getMessage());
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestDataForCreateUserSuccessfully")
-    void testCreateUserWithUserCreationException(User user) {
-        doThrow(UserCreationException.class).when(userRepository).save(user);
+    @MethodSource("provideTestDataForCreateUserDTO")
+    void testCreateUserWithUserCreationException(CreateUserDTO userDTO) {
+        User user = User.builder()
+                .id(1L)
+                .firstName(userDTO.getFirstName())
+                .lastName(userDTO.getLastName())
+                .role(userDTO.getRole())
+                .password("encodedPassword")
+                .email(userDTO.getEmail())
+                .build();
+
+        when(userMapper.fromDTO(userDTO)).thenReturn(user);
+        doThrow(UserCreationException.class)
+                .when(userRepository)
+                .save(user);
 
         UserCreationException exception = assertThrows(UserCreationException.class,
-                () -> userService.createUser(user));
+                () -> userService.createUser(userDTO));
 
         assertEquals("Failed to create user", exception.getMessage());
     }
 
     @ParameterizedTest
     @MethodSource("provideTestDataForUpdateUserSuccessfully")
-    void testUpdateUserSuccessfully(User existingUser, User updateUser) {
+    void testUpdateUserSuccessfully(User existingUser, UpdateUserDTO updateUser) {
         when(userRepository.findById(updateUser.getId())).thenReturn(Optional.ofNullable(existingUser));
         when(userRepository.update(existingUser)).thenReturn(existingUser);
+        UserResponseDTO mockResponse = mock(UserResponseDTO.class);
+        when(userMapper.mapToResponseDTO(existingUser)).thenReturn(mockResponse);
 
-        User updatedUser = userService.updateUser(updateUser);
+        UserResponseDTO updatedUser = userService.updateUser(updateUser);
 
         assertNotNull(updatedUser);
-        assertEquals(existingUser.getId(), updatedUser.getId());
+        assertEquals(existingUser.getEmail(), updateUser.getEmail());
+        assertEquals(existingUser.getId(), updateUser.getId());
+        verify(userRepository, times(1)).update(existingUser);
     }
 
     @ParameterizedTest
     @MethodSource("provideTestDataForUpdateUserSuccessfully")
-    void testUpdateUserWithNullRole(User existingUser, User updateUser) {
+    void testUpdateUserWithNullRole(User existingUser, UpdateUserDTO updateUser) {
         updateUser.setRole(null);
 
         when(userRepository.findById(updateUser.getId())).thenReturn(Optional.ofNullable(existingUser));
         when(userRepository.update(existingUser)).thenReturn(existingUser);
+        UserResponseDTO mockResponse = UserResponseDTO.builder()
+                .id(existingUser.getId())
+                .firstName(existingUser.getFirstName())
+                .lastName(existingUser.getLastName())
+                .role(existingUser.getRole())
+                .email(existingUser.getEmail())
+                .build();
 
-        User updatedUser = userService.updateUser(updateUser);
+        when(userMapper.mapToResponseDTO(existingUser)).thenReturn(mockResponse);
+
+        UserResponseDTO updatedUser = userService.updateUser(updateUser);
 
         assertNotNull(updatedUser);
-        assertEquals(existingUser.getId(), updatedUser.getId());
         assertEquals(existingUser.getRole(), updatedUser.getRole());
+        verify(userRepository, times(1)).update(existingUser);
     }
 
     @Test
     void testUpdateUserWithUserUpdateException() {
-        User updateUser = new User();
+        UpdateUserDTO updateUser = mock(UpdateUserDTO.class);
 
         when(userRepository.findById(updateUser.getId())).thenReturn(null);
 
@@ -376,11 +456,14 @@ class UserServiceImplTest {
                 .password("validPassword")
                 .email("user@example.com")
                 .build();
+
+        when(userMapper.mapToResponseDTO(existingUser)).thenReturn(mock(UserResponseDTO.class));
         when(userRepository.findUserByEmail(resetPasswordDTO.getEmail())).thenReturn(existingUser);
         when(passwordEncoder.encode(resetPasswordDTO.getNewPassword())).thenReturn("encodedPassword");
-        when(userRepository.findById(existingUser.getId())).thenReturn(Optional.of(existingUser));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(existingUser));
+        when(userMapper.mapToUpdateDTO(existingUser)).thenReturn(mock(UpdateUserDTO.class));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(existingUser));
         when(userRepository.update(existingUser)).thenReturn(existingUser);
-
         String result = userService.resetPassword(resetPasswordDTO);
 
         assertEquals("Password changed!", result);
@@ -449,12 +532,16 @@ class UserServiceImplTest {
                 mock(User.class),
                 mock(User.class)
         );
-        when(userRepository.findAll()).thenReturn(expectedUsers);
 
-        List<User> actualUsers = userService.findAllUsers();
+        List<UserResponseDTO> expectedUserResponseDTOs = List.of(mock(UserResponseDTO.class), mock(UserResponseDTO.class));
+
+        when(userRepository.findAll()).thenReturn(expectedUsers);
+        when(userMapper.mapToResponsesDTO(expectedUsers)).thenReturn(expectedUserResponseDTOs);
+
+        List<UserResponseDTO> actualUsers = userService.findAllUsers();
 
         assertEquals(expectedUsers.size(), actualUsers.size());
-        assertTrue(actualUsers.containsAll(expectedUsers));
+        assertTrue(actualUsers.containsAll(expectedUserResponseDTOs));
         verify(userRepository, times(1)).findAll();
     }
 

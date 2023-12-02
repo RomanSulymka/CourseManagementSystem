@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.service.LessonService;
@@ -177,11 +178,17 @@ class LessonControllerTest {
                 .course(Course.builder().id(2L).build())
                 .build();
 
-        when(lessonService.editLesson(lesson)).thenReturn(lesson);
+        UpdateLessonDTO updateLessonDTO = UpdateLessonDTO.builder()
+                .id(1L)
+                .name("Introduction to Spring")
+                .courseId(2L)
+                .build();
+
+        when(lessonService.editLesson(updateLessonDTO)).thenReturn(lesson);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/lesson/edit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(lesson)));
+                .content(objectMapper.writeValueAsString(updateLessonDTO)));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -189,6 +196,6 @@ class LessonControllerTest {
                 .andExpect(jsonPath("$.name").value("Introduction to Spring"))
                 .andExpect(jsonPath("$.course.id").value(2));
 
-        verify(lessonService, times(1)).editLesson(lesson);
+        verify(lessonService, times(1)).editLesson(updateLessonDTO);
     }
 }

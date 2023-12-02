@@ -7,10 +7,10 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.FileService;
 import edu.sombra.coursemanagementsystem.service.HomeworkService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
-import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
@@ -31,7 +31,7 @@ import java.util.List;
 public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final HomeworkService homeworkService;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final LessonService lessonService;
 
     @Override
@@ -39,7 +39,7 @@ public class FileServiceImpl implements FileService {
         try {
             validateInput(uploadedFile, lessonId, userId);
             if (!isUserAlreadyUploaded(userId, lessonId)) {
-                User user = userService.findUserById(userId);
+                User user = userRepository.findById(userId).orElseThrow();
                 Lesson lesson = lessonService.findById(lessonId);
 
                 File file = fileRepository.save(File.builder()
@@ -99,7 +99,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void delete(Long fileId, String userEmail) {
-        User user = userService.findUserByEmail(userEmail);
+        User user = userRepository.findUserByEmail(userEmail);
         if (user.getRole().equals(RoleEnum.ADMIN)) {
             File file = findFileById(fileId);
             fileRepository.delete(file);

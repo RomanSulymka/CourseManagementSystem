@@ -28,8 +28,8 @@ public class EnrollmentController {
     private final EnrollmentService enrollmentService;
 
     @PostMapping("/instructor")
-    public ResponseEntity<String> setInstructor(@RequestBody EnrollmentDTO enrollmentDTO) {
-        enrollmentService.  assignInstructor(enrollmentDTO);
+    public ResponseEntity<String> assignInstructor(@RequestBody EnrollmentDTO enrollmentDTO) {
+        enrollmentService.assignInstructor(enrollmentDTO);
         return ResponseEntity.ok("Instructor assigned successfully.");
     }
 
@@ -56,13 +56,13 @@ public class EnrollmentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<String> removeUserFromCourse(@PathVariable Long id) {
         enrollmentService.removeUserFromCourse(id);
         return ResponseEntity.ok("Instructor removed successfully");
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<String>> listOfCourseByUser(@PathVariable Long id) {
+    public ResponseEntity<List<String>> listAllCoursesByUser(@PathVariable Long id) {
         return ResponseEntity.ok(enrollmentService.findAllCoursesByUser(id));
     }
 }

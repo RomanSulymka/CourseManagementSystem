@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.FileServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
@@ -35,7 +36,7 @@ class FileServiceImplTest {
     private FileService fileService;
 
     @Mock
-    private UserService userService;
+    private UserRepository userRepository;
 
     @Mock
     private LessonService lessonService;
@@ -49,7 +50,7 @@ class FileServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        fileService = new FileServiceImpl(fileRepository, homeworkService, userService, lessonService);
+        fileService = new FileServiceImpl(fileRepository, homeworkService, userRepository, lessonService);
     }
 
     public static Object[][] provideFileTest() {
@@ -86,7 +87,7 @@ class FileServiceImplTest {
 
         User user = new User();
         Lesson lesson = new Lesson();
-        when(userService.findUserById(userId)).thenReturn(user);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(lessonService.findById(lessonId)).thenReturn(lesson);
 
 
@@ -159,7 +160,7 @@ class FileServiceImplTest {
                 .email(adminEmail)
                 .role(RoleEnum.ADMIN)
                 .build();
-        when(userService.findUserByEmail(adminEmail)).thenReturn(adminUser);
+        when(userRepository.findUserByEmail(adminEmail)).thenReturn(adminUser);
         File file = new File();
         when(fileRepository.findById(fileId)).thenReturn(Optional.of(file));
 
@@ -176,7 +177,7 @@ class FileServiceImplTest {
                 .email(userEmail)
                 .role(RoleEnum.STUDENT)
                 .build();
-        when(userService.findUserByEmail(userEmail)).thenReturn(normalUser);
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(normalUser);
         File file = new File();
         when(fileRepository.findById(fileId)).thenReturn(Optional.of(file));
         when(homeworkService.isUserUploadedThisHomework(fileId, normalUser.getId())).thenReturn(true);
@@ -194,7 +195,7 @@ class FileServiceImplTest {
                 .email(userEmail)
                 .role(RoleEnum.STUDENT)
                 .build();
-        when(userService.findUserByEmail(userEmail)).thenReturn(normalUser);
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(normalUser);
         when(homeworkService.isUserUploadedThisHomework(fileId, normalUser.getId())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class, () -> fileService.delete(fileId, userEmail));

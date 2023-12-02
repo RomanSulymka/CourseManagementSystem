@@ -9,6 +9,7 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.mapper.CourseFeedbackMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseFeedbackService;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityExistsException;
@@ -29,6 +30,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     private final CourseFeedbackRepository courseFeedbackRepository;
     private final CourseRepository courseRepository;
     private final CourseFeedbackMapper courseFeedbackMapper;
+    private final UserRepository userRepository;
 
     private static final String FEEDBACK_SAVED_SUCCESSFULLY = "Feedback saved successfully";
     private static final String FAILED_TO_SAVE_FEEDBACK = "Course feedback already exists";
@@ -39,7 +41,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     @Override
     public String create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
         try {
-            User instructor = userService.findUserByEmail(instructorEmail);
+            User instructor = userRepository.findUserByEmail(instructorEmail);
             CourseFeedback feedback = createOrUpdateFeedback(courseFeedbackDTO, instructor);
             if (feedback.getId() != null) {
                 throw new EntityExistsException(FAILED_TO_SAVE_FEEDBACK);
@@ -55,7 +57,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
 
     @Override
     public GetCourseFeedbackDTO edit(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
-        User instructor = userService.findUserByEmail(instructorEmail);
+        User instructor = userRepository.findUserByEmail(instructorEmail);
         CourseFeedback feedback = createOrUpdateFeedback(courseFeedbackDTO, instructor);
         courseFeedbackRepository.update(feedback);
         return courseFeedbackMapper.mapToDTO(feedback);
@@ -109,7 +111,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
                 : (existingFeedback != null ? existingFeedback.getFeedbackText() : null);
 
         User student = courseFeedbackDTO.getStudentId() != null
-                ? userService.findUserById(courseFeedbackDTO.getStudentId())
+                ? userRepository.findById(courseFeedbackDTO.getStudentId()).orElseThrow()
                 : (existingFeedback != null ? existingFeedback.getStudent() : null);
 
         Course course = courseFeedbackDTO.getCourseId() != null

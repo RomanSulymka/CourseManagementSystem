@@ -31,6 +31,7 @@ public class CourseController {
         return ResponseEntity.ok(courseService.create(courseDTO));
     }
 
+    //FIXME: change entity
     @PutMapping("/edit")
     public ResponseEntity<Course> editCourse(@RequestBody Course course) {
         return ResponseEntity.ok(courseService.update(course));

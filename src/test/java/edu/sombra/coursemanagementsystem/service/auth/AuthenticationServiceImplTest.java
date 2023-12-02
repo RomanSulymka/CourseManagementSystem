@@ -4,10 +4,13 @@ package edu.sombra.coursemanagementsystem.service.auth;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
 import edu.sombra.coursemanagementsystem.dto.auth.RegisterDTO;
+import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.Token;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyExistsException;
+import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.token.TokenRepository;
 import edu.sombra.coursemanagementsystem.security.jwt.JwtService;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -57,11 +60,13 @@ class AuthenticationServiceImplTest {
     private AuthenticationManager authenticationManager;
     @Mock
     private TokenRepository tokenRepository;
+    @Mock
+    private UserMapper userMapper;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        authenticateService = new AuthenticateServiceImpl(userService, passwordEncoder, jwtService, authenticationManager, tokenRepository);
+        authenticateService = new AuthenticateServiceImpl(userService, userMapper, passwordEncoder, jwtService, authenticationManager, tokenRepository);
     }
 
     private static Stream<Arguments> provideRegisterDTOs() {
@@ -126,9 +131,28 @@ class AuthenticationServiceImplTest {
         );
     }
 
-    private User createTestUser() {
-         var user = new User();
+    private UserResponseDTO createTestUserResponse() {
+        var user = new UserResponseDTO();
         user.setId(1L);
+        user.setEmail("user@email.com");
+        user.setLastName("user");
+        user.setFirstName("user");
+        user.setRole(RoleEnum.STUDENT);
+        return user;
+    }
+
+    private User createTestUser() {
+        var user = new User();
+        user.setId(1L);
+        user.setEmail("user@email.com");
+        user.setLastName("user");
+        user.setFirstName("user");
+        user.setRole(RoleEnum.STUDENT);
+        return user;
+    }
+
+    private CreateUserDTO createTestUserDTO() {
+        var user = new CreateUserDTO();
         user.setEmail("user@email.com");
         user.setLastName("user");
         user.setFirstName("user");
@@ -142,13 +166,22 @@ class AuthenticationServiceImplTest {
         when(userService.existsUserByEmail(registerDTO.getEmail())).thenReturn(false);
 
         User savedUser = new User();
+        savedUser.setId(1L);
         savedUser.setFirstName(registerDTO.getFirstName());
         savedUser.setLastName(registerDTO.getLastName());
         savedUser.setEmail(registerDTO.getEmail());
         savedUser.setPassword("encodedPassword");
         savedUser.setRole(registerDTO.getRole());
 
-        when(userService.createUser(any(User.class))).thenReturn(savedUser);
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(1L);
+        userResponseDTO.setFirstName(registerDTO.getFirstName());
+        userResponseDTO.setLastName(registerDTO.getLastName());
+        userResponseDTO.setEmail(registerDTO.getEmail());
+        userResponseDTO.setRole(registerDTO.getRole());
+
+        when(userMapper.mapToDTO(any(User.class))).thenReturn(createTestUserDTO());
+        when(userService.createUser(any(CreateUserDTO.class))).thenReturn(userResponseDTO);
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn(expectedJwtToken);
 
         AuthenticationResponse response = authenticateService.register(registerDTO);
@@ -161,7 +194,7 @@ class AuthenticationServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("provideRegisterEmails")
-    void testRegister_UserAlreadyExistsException(String email)  {
+    void testRegister_UserAlreadyExistsException(String email) {
         RegisterDTO registerDTO = new RegisterDTO();
         registerDTO.setEmail(email);
 
@@ -169,7 +202,7 @@ class AuthenticationServiceImplTest {
 
         assertThrows(UserAlreadyExistsException.class, () -> authenticateService.register(registerDTO));
 
-        verify(userService, never()).createUser(any(User.class));
+        verify(userService, never()).createUser(any(CreateUserDTO.class));
         verify(jwtService, never()).generateToken(any(User.class));
         verify(tokenRepository, never()).save(any(Token.class));
     }
@@ -177,10 +210,10 @@ class AuthenticationServiceImplTest {
     @ParameterizedTest
     @MethodSource("provideAuthenticationDTOs")
     void testAuthenticate_SuccessfulAuthentication(AuthenticationDTO authenticationDTO, String expectedAccessToken, String expectedRefreshToken) {
-        when(userService.findUserByEmail(authenticationDTO.getEmail())).thenReturn(createTestUser());
+        when(userService.findUserByEmail(authenticationDTO.getEmail())).thenReturn(createTestUserResponse());
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn(expectedAccessToken);
         when(jwtService.generateRefreshToken(any(UserDetails.class))).thenReturn(expectedRefreshToken);
-
+        when(userMapper.fromResponseDTO(any(UserResponseDTO.class))).thenReturn(createTestUser());
         AuthenticationResponse response = authenticateService.authenticate(authenticationDTO);
 
         assertNotNull(response);
@@ -212,10 +245,10 @@ class AuthenticationServiceImplTest {
 
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(authorizationHeader);
         when(jwtService.extractUsername(authorizationHeader.substring(7))).thenReturn(username);
-        when(userService.findUserByEmail(username)).thenReturn(createTestUser());
+        when(userService.findUserByEmail(username)).thenReturn(createTestUserResponse());
         when(jwtService.isTokenValid(authorizationHeader.substring(7), createTestUser())).thenReturn(true);
         when(jwtService.generateToken(createTestUser())).thenReturn(expectedAccessToken);
-
+        when(userMapper.fromResponseDTO(any(UserResponseDTO.class))).thenReturn(createTestUser());
         authenticateService.refreshToken(request, response);
 
         verify(tokenRepository, times(1)).findAllValidTokenByUser(anyLong());
@@ -244,16 +277,17 @@ class AuthenticationServiceImplTest {
         authenticationDTO.setPassword("password123");
 
         User testUser = new User();
+        testUser.setId(1L);
         testUser.setEmail(authenticationDTO.getEmail());
 
         Token validToken1 = Token.builder().expired(false).revoked(false).build();
         Token validToken2 = Token.builder().expired(false).revoked(false).build();
 
-        when(userService.findUserByEmail(authenticationDTO.getEmail())).thenReturn(testUser);
-        when(jwtService.generateToken(testUser)).thenReturn("mockedAccessToken");
-        when(jwtService.generateRefreshToken(testUser)).thenReturn("mockedRefreshToken");
+        when(userService.findUserByEmail(authenticationDTO.getEmail())).thenReturn(createTestUserResponse());
+        when(userMapper.fromResponseDTO(createTestUserResponse())).thenReturn(createTestUser());
+        when(jwtService.generateToken(createTestUser())).thenReturn("mockedAccessToken");
+        when(jwtService.generateRefreshToken(createTestUser())).thenReturn("mockedRefreshToken");
         when(tokenRepository.findAllValidTokenByUser(testUser.getId())).thenReturn(Arrays.asList(validToken1, validToken2));
-
         AuthenticationResponse response = authenticateService.authenticate(authenticationDTO);
 
         assertNotNull(response);

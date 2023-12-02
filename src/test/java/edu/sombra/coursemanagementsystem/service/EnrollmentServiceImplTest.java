@@ -15,6 +15,7 @@ import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
 import edu.sombra.coursemanagementsystem.mapper.EnrollmentMapper;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.EnrollmentServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.Tuple;
@@ -49,6 +50,9 @@ class EnrollmentServiceImplTest {
     private CourseService courseService;
     @Mock
     private UserService userService;
+
+    @Mock
+    private UserRepository userRepository;
     @Mock
     private HomeworkRepository homeworkRepository;
     @Mock
@@ -56,7 +60,7 @@ class EnrollmentServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        enrollmentService = new EnrollmentServiceImpl(enrollmentRepository, courseService, userService, homeworkRepository, enrollmentMapper);
+        enrollmentService = new EnrollmentServiceImpl(enrollmentRepository, courseService, userService, userRepository, homeworkRepository, enrollmentMapper);
     }
 
     private static Stream<Arguments> provideTestDataForAssignInstructorSuccessfully() {
@@ -124,7 +128,7 @@ class EnrollmentServiceImplTest {
     @MethodSource("provideTestDataForAssignInstructorSuccessfully")
     void testAssignInstructorSuccessfully(EnrollmentDTO enrollmentDTO, Course course, User instructor, boolean isUserAssigned) {
         when(courseService.findByName(enrollmentDTO.getCourseName())).thenReturn(course);
-        when(userService.findUserByEmail(enrollmentDTO.getUserEmail())).thenReturn(instructor);
+        when(userRepository.findUserByEmail(enrollmentDTO.getUserEmail())).thenReturn(instructor);
         when(enrollmentRepository.isUserAssignedToCourse(course, instructor)).thenReturn(isUserAssigned);
 
         assertDoesNotThrow(() -> enrollmentService.assignInstructor(enrollmentDTO));
@@ -137,7 +141,7 @@ class EnrollmentServiceImplTest {
     void testAssignInstructorWithUserAlreadyAssigned(
             EnrollmentDTO enrollmentDTO, Course course, User instructor, boolean isUserAssigned) {
         when(courseService.findByName(enrollmentDTO.getCourseName())).thenReturn(course);
-        when(userService.findUserByEmail(enrollmentDTO.getUserEmail())).thenReturn(instructor);
+        when(userRepository.findUserByEmail(enrollmentDTO.getUserEmail())).thenReturn(instructor);
         when(enrollmentRepository.isUserAssignedToCourse(course, instructor)).thenReturn(isUserAssigned);
 
         UserAlreadyAssignedException exception = assertThrows(UserAlreadyAssignedException.class,
@@ -319,12 +323,11 @@ class EnrollmentServiceImplTest {
         updateDTO.setUserId(1L);
         updateDTO.setCourseId(1L);
         updateDTO.setId(1L);
-        User mockUser = mock(User.class);
         Course mockCourse = mock(Course.class);
         Enrollment mockEnrollment = mock(Enrollment.class);
         EnrollmentGetByNameDTO expectedDTO = new EnrollmentGetByNameDTO("name", "firstName", "lastName", "email.com", RoleEnum.INSTRUCTOR);
 
-        when(userService.findUserById(updateDTO.getUserId())).thenReturn(mockUser);
+        when(userRepository.findById(updateDTO.getUserId())).thenReturn(Optional.of(mock(User.class)));
         when(courseService.findById(updateDTO.getCourseId())).thenReturn(mockCourse);
         when(enrollmentRepository.update(any(Enrollment.class))).thenReturn(mockEnrollment);
         when(enrollmentMapper.mapToDTO(mockEnrollment)).thenReturn(expectedDTO);
@@ -368,7 +371,7 @@ class EnrollmentServiceImplTest {
                 .course(mockCourse)
                 .build();
 
-        when(userService.findUserByEmail(userEmail)).thenReturn(mockUser);
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(mockUser);
         when(enrollmentRepository.getUserRegisteredCourseCount(mockUser.getId())).thenReturn(3L);
         when(courseService.findByName(applyForCourseDTO.getCourseName())).thenReturn(mockCourse);
         when(courseService.findAllLessonsByCourse(mockCourse.getId())).thenReturn(List.of(mockLesson));
@@ -385,7 +388,7 @@ class EnrollmentServiceImplTest {
         String userEmail = "student@example.com";
         User mockUser = mock(User.class);
 
-        when(userService.findUserByEmail(userEmail)).thenReturn(mockUser);
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(mockUser);
         when(mockUser.getRole()).thenReturn(RoleEnum.STUDENT);
         when(enrollmentRepository.getUserRegisteredCourseCount(mockUser.getId())).thenReturn(5L);
 
@@ -424,7 +427,7 @@ class EnrollmentServiceImplTest {
                 .build();
 
 
-        when(userService.findUserByEmail(studentMail)).thenReturn(adminUser);
+        when(userRepository.findUserByEmail(studentMail)).thenReturn(adminUser);
         when(courseService.findByName(applyForCourseDTO.getCourseName())).thenReturn(mockCourse);
         when(courseService.findAllLessonsByCourse(mockCourse.getId())).thenReturn(List.of(mockLesson));
 
@@ -469,7 +472,7 @@ class EnrollmentServiceImplTest {
                 .build();
 
         when(courseService.findCourseByHomeworkId(userId, homeworkId)).thenReturn(mockCourse);
-        when(userService.findUserById(userId)).thenReturn(mockUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.ofNullable(mockUser));
         when(enrollmentRepository.isUserAssignedToCourse(mockCourse, mockUser)).thenReturn(true);
 
         boolean result = enrollmentService.isUserAssignedToCourse(userId, homeworkId);
@@ -490,7 +493,7 @@ class EnrollmentServiceImplTest {
                 .build();
 
         when(courseService.findCourseByHomeworkId(userId, homeworkId)).thenReturn(mockCourse);
-        when(userService.findUserById(userId)).thenReturn(mockUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.ofNullable(mockUser));
         when(enrollmentRepository.isUserAssignedToCourse(mockCourse, mockUser)).thenReturn(false);
 
         boolean result = enrollmentService.isUserAssignedToCourse(userId, homeworkId);

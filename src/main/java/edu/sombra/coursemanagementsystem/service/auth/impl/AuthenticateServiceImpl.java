@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
 import edu.sombra.coursemanagementsystem.dto.auth.RegisterDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.Token;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.TokenType;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyExistsException;
+import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.token.TokenRepository;
 import edu.sombra.coursemanagementsystem.security.jwt.JwtService;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -31,6 +33,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
     private static final String JWT_HEADER = "Bearer ";
 
     private final UserService userService;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -48,7 +51,10 @@ public class AuthenticateServiceImpl implements AuthenticateService {
             user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
             user.setRole(registerDTO.getRole());
 
-            var savedUser = userService.createUser(user);
+            var createUserDTO = userMapper.mapToDTO(user);
+            var savedUserDTO = userService.createUser(createUserDTO);
+            var savedUser = userMapper.fromResponseDTO(savedUserDTO);
+
             var jwtToken = jwtService.generateToken(user);
             var refreshedToken = jwtService.generateToken(user);
             saveUserToken(savedUser, jwtToken);
@@ -68,7 +74,9 @@ public class AuthenticateServiceImpl implements AuthenticateService {
                 )
         );
 
-        var user = userService.findUserByEmail(authenticationDTO.getEmail());
+        UserResponseDTO userResponseDTO = userService.findUserByEmail(authenticationDTO.getEmail());
+        User user = userMapper.fromResponseDTO(userResponseDTO);
+
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
@@ -90,7 +98,9 @@ public class AuthenticateServiceImpl implements AuthenticateService {
         refreshToken = authHeader.substring(7);
         userEmail = jwtService.extractUsername(refreshToken);
         if (userEmail != null) {
-            var user = this.userService.findUserByEmail(userEmail);
+            UserResponseDTO userResponseDTO = userService.findUserByEmail(userEmail);
+            User user = userMapper.fromResponseDTO(userResponseDTO);
+
             if (jwtService.isTokenValid(refreshToken, user)) {
                 var accessToken = jwtService.generateToken(user);
                 revokeAllUserTokens(user);

@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 
@@ -19,7 +20,7 @@ public interface LessonService {
 
     void deleteLesson(Long id);
 
-    Lesson editLesson(Lesson lesson);
+    Lesson editLesson(UpdateLessonDTO lesson);
 
     Lesson findLessonByHomeworkId(Long homeworkId);
 }

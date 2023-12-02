@@ -9,6 +9,7 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.mapper.CourseFeedbackMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.CourseFeedbackServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,10 +52,14 @@ class CourseFeedbackServiceImplTest {
     @Mock
     private CourseFeedbackMapper courseFeedbackMapper;
 
+    @Mock
+    private UserRepository userRepository;
+
 
     @BeforeEach
     void setUp() {
-        courseFeedbackService = new CourseFeedbackServiceImpl(userService, courseFeedbackRepository, courseRepository, courseFeedbackMapper);
+        courseFeedbackService = new CourseFeedbackServiceImpl(userService, courseFeedbackRepository, courseRepository,
+                courseFeedbackMapper, userRepository);
     }
 
     private static Stream<Arguments> provideFeedbackTestData() {
@@ -127,7 +132,6 @@ class CourseFeedbackServiceImplTest {
     @ParameterizedTest
     @MethodSource("provideFeedbackTestData")
     void testCreateFeedbackSuccess(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
-
         User instructor = User.builder()
                 .id(3L)
                 .role(RoleEnum.INSTRUCTOR)
@@ -144,7 +148,6 @@ class CourseFeedbackServiceImplTest {
                 .instructor(instructor)
                 .build();
 
-        when(userService.findUserById(courseFeedbackDTO.getStudentId())).thenReturn(new User());
         when(courseRepository.isUserAssignedToCourse(instructor.getId(), courseFeedbackDTO.getCourseId())).thenReturn(true);
 
         when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(courseFeedback));
@@ -152,7 +155,8 @@ class CourseFeedbackServiceImplTest {
         when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
         when(courseFeedbackRepository.findFeedback(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(courseFeedback));
 
-        when(userService.findUserByEmail(instructorEmail)).thenReturn(instructor);
+        when(userRepository.findUserByEmail(instructorEmail)).thenReturn(instructor);
+        when(userRepository.findById(courseFeedbackDTO.getStudentId())).thenReturn(Optional.of(new User()));
         when(courseFeedbackService.createOrUpdateFeedback(courseFeedbackDTO, instructor)).thenReturn(any());
         when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
 
@@ -166,7 +170,7 @@ class CourseFeedbackServiceImplTest {
     void createFeedbackWithInvalidInstructorEmail() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         String instructorEmail = "invalid@example.com";
-        when(userService.findUserByEmail(instructorEmail)).thenReturn(null);
+        //when(userService.findUserByEmail(instructorEmail)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> courseFeedbackService.create(courseFeedbackDTO, instructorEmail));
     }
@@ -194,7 +198,6 @@ class CourseFeedbackServiceImplTest {
     @ParameterizedTest
     @MethodSource("provideEditFeedbackTestData")
     void testEdit_Success(String instructorEmail, CourseFeedbackDTO courseFeedbackDTO, User instructor, CourseFeedback feedback, GetCourseFeedbackDTO expectedDTO) {
-        when(userService.findUserById(courseFeedbackDTO.getStudentId())).thenReturn(new User());
         when(courseRepository.isUserAssignedToCourse(instructor.getId(), 1L)).thenReturn(true);
 
         when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.of(feedback));
@@ -202,7 +205,8 @@ class CourseFeedbackServiceImplTest {
 
         when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
 
-        when(userService.findUserByEmail(instructorEmail)).thenReturn(instructor);
+        when(userRepository.findUserByEmail(instructorEmail)).thenReturn(instructor);
+        when(userRepository.findById(courseFeedbackDTO.getStudentId())).thenReturn(Optional.of(new User()));
         when(courseFeedbackService.createOrUpdateFeedback(courseFeedbackDTO, instructor)).thenReturn(any());
         when(courseFeedbackRepository.update(feedback)).thenReturn(feedback);
         when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
@@ -217,7 +221,6 @@ class CourseFeedbackServiceImplTest {
     @MethodSource("provideEditFeedbackTestData")
     void testEdit_CreateOrUpdateFeedback_EntityNotFoundException(
             String instructorEmail, CourseFeedbackDTO courseFeedbackDTO, User instructor, CourseFeedback feedback) {
-        when(userService.findUserById(courseFeedbackDTO.getStudentId())).thenReturn(new User());
         when(courseRepository.isUserAssignedToCourse(instructor.getId(), 1L)).thenReturn(true);
 
         when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(feedback));
@@ -225,7 +228,8 @@ class CourseFeedbackServiceImplTest {
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(new Course()));
 
-        when(userService.findUserByEmail(instructorEmail)).thenReturn(instructor);
+        when(userRepository.findUserByEmail(instructorEmail)).thenReturn(instructor);
+        when(userRepository.findById(courseFeedbackDTO.getStudentId())).thenReturn(Optional.of(new User()));
         when(courseFeedbackService.createOrUpdateFeedback(courseFeedbackDTO, instructor)).thenThrow(EntityNotFoundException.class);
 
         assertThrows(EntityNotFoundException.class, () -> {

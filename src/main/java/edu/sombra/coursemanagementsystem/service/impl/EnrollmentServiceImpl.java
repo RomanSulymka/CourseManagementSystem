@@ -15,6 +15,7 @@ import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
 import edu.sombra.coursemanagementsystem.mapper.EnrollmentMapper;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -35,6 +36,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseService courseService;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final HomeworkRepository homeworkRepository;
     private final EnrollmentMapper enrollmentMapper;
 
@@ -57,7 +59,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public void assignInstructor(EnrollmentDTO enrollmentDTO) {
         try {
             Course course = courseService.findByName(enrollmentDTO.getCourseName());
-            User instructor = userService.findUserByEmail(enrollmentDTO.getUserEmail());
+            User instructor = userRepository.findUserByEmail(enrollmentDTO.getUserEmail());
             userService.validateInstructor(instructor, RoleEnum.INSTRUCTOR);
 
             isUserAlreadyAssigned(course, instructor);
@@ -140,7 +142,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (updateDTO.getCourseId() == null && updateDTO.getUserId() == null & updateDTO.getId() == null) {
             throw new EnrollmentException("Elements are empty!");
         }
-        User user = userService.findUserById(updateDTO.getUserId());
+        User user = userRepository.findById(updateDTO.getUserId()).orElseThrow();
         Course course = courseService.findById(updateDTO.getCourseId());
         Enrollment enrollment = enrollmentRepository.update(Enrollment.builder()
                 .id(updateDTO.getId())
@@ -152,12 +154,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail) {
-        User user = userService.findUserByEmail(userEmail);
+        User user = userRepository.findUserByEmail(userEmail);
         if (!user.getRole().equals(RoleEnum.ADMIN)) {
             Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(user.getId());
             assignUserForLesson(applyForCourseDTO, numberOfUserCourses, user);
         } else {
-            User student = userService.findUserByEmail(userEmail);
+            User student = userRepository.findUserByEmail(userEmail);
             Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(applyForCourseDTO.getUserId());
             assignUserForLesson(applyForCourseDTO, numberOfUserCourses, student);
         }
@@ -218,7 +220,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public boolean isUserAssignedToCourse(Long userId, Long homeworkId) {
         Course course = courseService.findCourseByHomeworkId(userId, homeworkId);
-        User user = userService.findUserById(userId);
+        User user = userRepository.findById(userId).orElseThrow();
         return enrollmentRepository.isUserAssignedToCourse(course, user);
     }
 }

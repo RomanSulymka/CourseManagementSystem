@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
@@ -79,10 +80,17 @@ public class LessonServiceImpl implements LessonService {
         }
     }
 
+    //TODO: test it
     @Override
-    public Lesson editLesson(Lesson lesson) {
+    public Lesson editLesson(UpdateLessonDTO lesson) {
         findById(lesson.getId());
-        return lessonRepository.update(lesson);
+        Course course = courseRepository.findById(lesson.getId()).orElseThrow();
+        Lesson editedLesson = Lesson.builder()
+                .id(lesson.getId())
+                .name(lesson.getName())
+                .course(course)
+                .build();
+        return lessonRepository.update(editedLesson);
     }
 
     @Override

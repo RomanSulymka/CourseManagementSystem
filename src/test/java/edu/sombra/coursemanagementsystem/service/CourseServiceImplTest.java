@@ -17,6 +17,7 @@ import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.CourseServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +55,8 @@ class CourseServiceImplTest {
     @Mock
     private UserService userService;
     @Mock
+    private UserRepository userRepository;
+    @Mock
     private LessonService lessonService;
     @Mock
     private UserMapper userMapper;
@@ -64,8 +67,8 @@ class CourseServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        courseService = new CourseServiceImpl(courseRepository, courseMarkRepository, userService, lessonService,
-                userMapper, courseMapper, courseFeedbackService);
+        courseService = new CourseServiceImpl(courseRepository, courseMarkRepository, userService, userRepository,
+                lessonService, userMapper, courseMapper, courseFeedbackService);
     }
 
     private static Stream<Arguments> lessonListProvider() {
@@ -262,7 +265,7 @@ class CourseServiceImplTest {
             savedCourse.setId(1L);
             return savedCourse;
         });
-        when(userService.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
+        when(userRepository.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
         when(courseRepository.findById(1L)).thenReturn(Optional.of(courseDTO.getCourse()));
 
         Course createdCourse = assertDoesNotThrow(() -> courseService.create(courseDTO));
@@ -299,7 +302,7 @@ class CourseServiceImplTest {
             savedCourse.setId(1L);
             return savedCourse;
         });
-        when(userService.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
+        when(userRepository.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
 
         assertThrows(CourseCreationException.class, () -> courseService.create(courseDTO));
     }

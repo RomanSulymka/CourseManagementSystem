@@ -17,6 +17,7 @@ import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseFeedbackService;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
@@ -45,9 +46,6 @@ public class CourseServiceImpl implements CourseService {
     public static final String COURSE_HAS_NOT_ENOUGH_LESSONS = "Course has not enough lessons";
     public static final String COURSE_NOT_FOUND_WITH_ID = "Course not found with id: ";
     public static final String COURSE_NOT_FOUND_WITH_NAME = "Course not found with name: ";
-    public static final String ERROR_UPDATING_COURSE_WITH_ID = "Error updating course with id: {}";
-    public static final String FAILED_TO_UPDATE_COURSE = "Failed to update course";
-    public static final String ERROR_DELETING_COURSE_WITH_ID = "Error deleting course with id: {}";
     public static final String COURSE_SHOULD_HAVE_AT_LEAST_1_INSTRUCTOR = "Course {} should have at least 1 Instructor";
     public static final String COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY = "Course with id: {} changed status to {} successfully";
     public static final String INCORRECT_ACTION_PARAMETER = "Incorrect action parameter!";
@@ -55,6 +53,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final CourseMarkRepository courseMarkRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final LessonService lessonService;
     private final UserMapper userMapper;
     private final CourseMapper courseMapper;
@@ -87,7 +86,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private void assignInstructor(Course createdCourse, String instructorEmail) {
-        User user = userService.findUserByEmail(instructorEmail);
+        User user = userRepository.findUserByEmail(instructorEmail);
 
         if (user.getRole() != RoleEnum.INSTRUCTOR) {
             log.error(USER_SHOULD_HAVE_INSTRUCTOR_ROLE_BUT_NOW_USER_HAS_ROLE, user.getRole());

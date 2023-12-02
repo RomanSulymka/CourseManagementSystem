@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -116,8 +117,8 @@ class UserControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindUserById() throws Exception {
         Long userId = 1L;
-        User mockUser = new User();
-                mockUser.setId(1L);
+        UserResponseDTO mockUser = new UserResponseDTO();
+        mockUser.setId(1L);
         mockUser.setFirstName("John");
         mockUser.setLastName("Doe");
         mockUser.setEmail("johndoe@example.com");
@@ -137,7 +138,7 @@ class UserControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindUserByEmail() throws Exception {
         String userEmail = "johndoe@example.com";
-        User mockUser = new User();
+        UserResponseDTO mockUser = new UserResponseDTO();
         mockUser.setId(1L);
         mockUser.setFirstName("John");
         mockUser.setLastName("Doe");
@@ -160,7 +161,9 @@ class UserControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindAllUsersSuccess() throws Exception {
-        when(userService.findAllUsers()).thenReturn(Collections.singletonList(testUser));
+        UserResponseDTO userResponseDTO = UserResponseDTO.builder().id(1L).role(RoleEnum.STUDENT).build();
+
+        when(userService.findAllUsers()).thenReturn(Collections.singletonList(userResponseDTO));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/user/find-all"))
                 .andExpect(status().isOk())

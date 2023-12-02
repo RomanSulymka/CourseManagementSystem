@@ -1,8 +1,10 @@
 package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
+import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
@@ -21,6 +23,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -264,16 +267,32 @@ class LessonServiceImplTest {
                 .course(mock(Course.class))
                 .name("Original Lesson")
                 .build();
-        Lesson updatedLesson = Lesson.builder()
+
+        UpdateLessonDTO updateLessonDTO = UpdateLessonDTO.builder()
                 .id(1L)
-                .course(mock(Course.class))
                 .name("Updated Lesson")
+                .courseId(1L)
+                .build();
+
+        Course course = Course.builder()
+                .id(1L)
+                .name("Sample Course")
+                .status(CourseStatus.WAIT)
+                .startDate(LocalDate.now().plusDays(1))
+                .started(true)
+                .build();
+
+        Lesson updatedLesson = Lesson.builder()
+                .id(updateLessonDTO.getId())
+                .course(course)
+                .name(updateLessonDTO.getName())
                 .build();
 
         when(lessonRepository.findById(1L)).thenReturn(Optional.of(originalLesson));
+        when(courseRepository.findById(updateLessonDTO.getId())).thenReturn(Optional.of(course));
         when(lessonRepository.update(updatedLesson)).thenReturn(updatedLesson);
 
-        Lesson editedLesson = lessonService.editLesson(updatedLesson);
+        Lesson editedLesson = lessonService.editLesson(updateLessonDTO);
 
         assertNotNull(editedLesson);
         assertEquals(updatedLesson.getId(), editedLesson.getId());
@@ -284,7 +303,7 @@ class LessonServiceImplTest {
 
     @Test
     void testEditLesson_NullInput() {
-        Lesson nullLesson = null;
+        UpdateLessonDTO nullLesson = null;
 
         assertThrows(NullPointerException.class, () -> lessonService.editLesson(nullLesson));
         verify(lessonRepository, never()).findById(anyLong());
@@ -293,9 +312,9 @@ class LessonServiceImplTest {
 
     @Test
     void testEditLesson_lessonNotFound() {
-        Lesson lesson = Lesson.builder()
+        UpdateLessonDTO lesson = UpdateLessonDTO.builder()
                 .id(1L)
-                .course(mock(Course.class))
+                .courseId(1L)
                 .name("Original Lesson")
                 .build();
 
