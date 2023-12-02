@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
@@ -15,7 +16,7 @@ public interface CourseService {
 
     Course findByName(String courseName);
 
-    Course update(Course course);
+    Course update(UpdateCourseDTO course);
 
     Course findById(Long courseId);
 

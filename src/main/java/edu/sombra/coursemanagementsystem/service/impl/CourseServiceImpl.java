@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
@@ -139,12 +140,13 @@ public class CourseServiceImpl implements CourseService {
 
 
     @Override
-    public Course update(Course course) {
-        Course existingCourse = findById(course.getId());
-        if (!course.getName().equals(existingCourse.getName()) && (courseRepository.exist(course.getName()))) {
-            throw new CourseAlreadyExistsException(course.getName());
+    public Course update(UpdateCourseDTO courseDTO) {
+        Course existingCourse = findById(courseDTO.getId());
+        if (!courseDTO.getName().equals(existingCourse.getName()) && (courseRepository.exist(courseDTO.getName()))) {
+            throw new CourseAlreadyExistsException(courseDTO.getName());
         }
-        return courseRepository.update(course);
+        Course updatedCourse = courseMapper.fromDTO(courseDTO);
+        return courseRepository.update(updatedCourse);
     }
 
     @Override

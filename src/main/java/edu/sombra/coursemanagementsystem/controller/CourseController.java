@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
@@ -33,8 +34,8 @@ public class CourseController {
 
     //FIXME: change entity
     @PutMapping("/edit")
-    public ResponseEntity<Course> editCourse(@RequestBody Course course) {
-        return ResponseEntity.ok(courseService.update(course));
+    public ResponseEntity<Course> editCourse(@RequestBody UpdateCourseDTO courseDTO) {
+        return ResponseEntity.ok(courseService.update(courseDTO));
     }
 
     @GetMapping("/{id}")

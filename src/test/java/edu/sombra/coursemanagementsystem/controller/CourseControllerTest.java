@@ -3,6 +3,7 @@ package edu.sombra.coursemanagementsystem.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
@@ -15,14 +16,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -65,15 +63,10 @@ class CourseControllerTest {
         verify(courseService, times(1)).create(courseDTO);
     }
 
-    @PutMapping("/edit")
-    public ResponseEntity<Course> editCourse(@RequestBody Course course) {
-        return ResponseEntity.ok(courseService.update(course));
-    }
-
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testEditCourseSuccess() throws Exception {
-        Course course = Course.builder()
+        UpdateCourseDTO course = UpdateCourseDTO.builder()
                 .id(1L)
                 .name("Java Programming")
                 .status(CourseStatus.STOP)

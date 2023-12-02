@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
@@ -114,6 +115,26 @@ class CourseServiceImplTest {
 
     private Course createSampleCourse() {
         return Course.builder()
+                .id(1L)
+                .name("Sample Course")
+                .status(CourseStatus.WAIT)
+                .startDate(LocalDate.now().plusDays(1))
+                .started(true)
+                .build();
+    }
+
+    private Course updatedSampleCourse() {
+        return Course.builder()
+                .id(1L)
+                .name("Updated Course")
+                .status(CourseStatus.WAIT)
+                .startDate(LocalDate.now().plusDays(1))
+                .started(true)
+                .build();
+    }
+
+    private UpdateCourseDTO updateSampleCourse() {
+        return UpdateCourseDTO.builder()
                 .id(1L)
                 .name("Sample Course")
                 .status(CourseStatus.WAIT)
@@ -371,29 +392,30 @@ class CourseServiceImplTest {
     @Test
     void testUpdateCourseSuccessfully() {
         Course existingCourse = createSampleCourse();
-        Course updatedCourse = createSampleCourse();
-        updatedCourse.setName("Updated Course");
+        UpdateCourseDTO updatedCourse = UpdateCourseDTO.builder()
+                .id(1L)
+                .name("New Course Name")
+                .status(CourseStatus.STARTED)
+                .startDate(LocalDate.now())
+                .started(true)
+                .build();
 
+        when(courseMapper.fromDTO(updatedCourse)).thenReturn(createSampleCourse());
         when(courseRepository.exist(updatedCourse.getName())).thenReturn(false);
-        when(courseRepository.update(updatedCourse)).thenReturn(updatedCourse);
+        when(courseRepository.update(any())).thenReturn(existingCourse);
         when(courseRepository.findById(updatedCourse.getId())).thenReturn(Optional.of(existingCourse));
 
-        Course resultCourse = assertDoesNotThrow(() -> courseService.update(updatedCourse));
+        Course result = courseService.update(updatedCourse);
 
-        assertNotNull(resultCourse);
-        assertEquals(updatedCourse.getId(), resultCourse.getId());
-        assertEquals(updatedCourse.getName(), resultCourse.getName());
-        assertTrue(resultCourse.getStarted());
+        verify(courseRepository, times(1)).update(existingCourse);
 
-        verify(courseRepository, times(1)).exist(updatedCourse.getName());
-        verify(courseRepository, times(1)).update(updatedCourse);
-        verify(courseRepository, times(1)).findById(updatedCourse.getId());
+        assertEquals(existingCourse, result);
     }
 
     @Test
     void testUpdateCourseAlreadyExists() {
         Course existingCourse = createSampleCourse();
-        Course updatedCourse = createSampleCourse();
+        UpdateCourseDTO updatedCourse = updateSampleCourse();
         updatedCourse.setName("Existing Course");
 
         when(courseRepository.exist(updatedCourse.getName())).thenReturn(true);
@@ -405,7 +427,7 @@ class CourseServiceImplTest {
         assertEquals("Course with this name is already exist: " + updatedCourse.getName(), exception.getMessage());
 
         verify(courseRepository, times(1)).exist(updatedCourse.getName());
-        verify(courseRepository, never()).update(updatedCourse);
+        verify(courseRepository, never()).update(existingCourse);
         verify(courseRepository, times(1)).findById(updatedCourse.getId());
     }
 
