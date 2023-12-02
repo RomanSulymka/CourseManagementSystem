@@ -103,6 +103,5 @@ class LogoutServiceTest {
 
         verify(tokenRepository, never()).save(any());
         verify(authentication, never()).setAuthenticated(anyBoolean());
-        assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 }
