@@ -6,9 +6,9 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
-import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.service.CourseService;
@@ -227,9 +227,9 @@ class CourseControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindAllLessonsByCourseSuccess() throws Exception {
         Long courseId = 1L;
-        Lesson lesson1 = Lesson.builder().id(1L).name("Lesson 1").course(Course.builder().id(courseId).build()).build();
-        Lesson lesson2 = Lesson.builder().id(2L).name("Lesson 2").course(Course.builder().id(courseId).build()).build();
-        List<Lesson> lessons = Arrays.asList(lesson1, lesson2);
+        LessonResponseDTO lesson1 = LessonResponseDTO.builder().id(1L).name("Lesson 1").course(CourseResponseDTO.builder().courseId(courseId).build()).build();
+        LessonResponseDTO lesson2 = LessonResponseDTO.builder().id(2L).name("Lesson 2").course(CourseResponseDTO.builder().courseId(courseId).build()).build();
+        List<LessonResponseDTO> lessons = Arrays.asList(lesson1, lesson2);
 
         when(courseService.findAllLessonsByCourse(courseId)).thenReturn(lessons);
 
@@ -239,8 +239,8 @@ class CourseControllerTest {
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].name").value("Lesson 1"))
-                .andExpect(jsonPath("$[1].name").value("Lesson 2"));
+                .andExpect(jsonPath("$[0].courseName").value("Lesson 1"))
+                .andExpect(jsonPath("$[1].courseName").value("Lesson 2"));
 
         verify(courseService, times(1)).findAllLessonsByCourse(courseId);
     }

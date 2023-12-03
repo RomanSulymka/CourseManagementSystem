@@ -17,6 +17,7 @@ import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
+import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
@@ -67,11 +68,13 @@ class CourseServiceImplTest {
     private CourseMapper courseMapper;
     @Mock
     private CourseFeedbackService courseFeedbackService;
+    @Mock
+    private LessonMapper lessonMapper;
 
     @BeforeEach
     void setUp() {
         courseService = new CourseServiceImpl(courseRepository, courseMarkRepository, userService, userRepository,
-                lessonService, userMapper, courseMapper, courseFeedbackService);
+                lessonService, userMapper, courseMapper, courseFeedbackService, lessonMapper);
     }
 
     private static Stream<Arguments> lessonListProvider() {
@@ -625,13 +628,52 @@ class CourseServiceImplTest {
         Lesson sampleLesson = createSampleLesson(1L, "Sample Lesson");
         List<Lesson> expectedLessons = Collections.singletonList(sampleLesson);
 
+        CourseResponseDTO courseResponseDTO = CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Sample Course")
+                .status(CourseStatus.WAIT)
+                .startDate(LocalDate.now())
+                .started(false)
+                .build();
+
+        List<CourseResponseDTO> courseResponseList = List.of(courseResponseDTO);
+        List<LessonResponseDTO> lessons = Arrays.asList(
+                LessonResponseDTO.builder()
+                        .id(1L)
+                        .name("Introduction to Spring")
+                        .course(mock(CourseResponseDTO.class))
+                        .build(),
+                LessonResponseDTO.builder()
+                        .id(2L)
+                        .name("Introduction to Scala")
+                        .course(mock(CourseResponseDTO.class))
+                        .build()
+        );
+
+        List<LessonResponseDTO> expectedResponseDTOs = Arrays.asList(
+                LessonResponseDTO.builder()
+                        .id(1L)
+                        .name("Introduction to Spring")
+                        .course(mock(CourseResponseDTO.class))
+                        .build(),
+                LessonResponseDTO.builder()
+                        .id(2L)
+                        .name("Introduction to Scala")
+                        .course(mock(CourseResponseDTO.class))
+                        .build()
+        );
+
         when(courseRepository.findAllLessonsInCourse(courseId))
                 .thenReturn(Optional.of(expectedLessons));
+        when(courseMapper.mapToResponseDTO(sampleLesson.getCourse())).thenReturn(courseResponseDTO);
 
-        List<Lesson> resultLessons = courseService.findAllLessonsByCourse(courseId);
+        when(lessonMapper.mapToResponsesDTO(expectedLessons, courseResponseList)).thenReturn(lessons);
+
+        List<LessonResponseDTO> resultLessons = courseService.findAllLessonsByCourse(courseId);
 
         assertNotNull(resultLessons);
-        assertEquals(expectedLessons, resultLessons);
+        assertEquals(expectedResponseDTOs.get(0).getName(), resultLessons.get(0).getName());
+        assertEquals(expectedResponseDTOs.get(0).getId(), resultLessons.get(0).getId());
 
         verify(courseRepository, times(1)).findAllLessonsInCourse(courseId);
     }

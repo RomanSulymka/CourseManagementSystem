@@ -5,9 +5,9 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
-import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -58,9 +58,8 @@ public class CourseController {
         return ResponseEntity.ok(courseService.startOrStopCourse(courseActionDTO.getCourseId(), courseActionDTO.getAction()));
     }
 
-    //FIXME: should return DTO
     @GetMapping("/find-all-lessons/{id}")
-    public ResponseEntity<List<Lesson>> findAllLessonsByCourse(@PathVariable Long id) {
+    public ResponseEntity<List<LessonResponseDTO>> findAllLessonsByCourse(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.findAllLessonsByCourse(id));
     }
 

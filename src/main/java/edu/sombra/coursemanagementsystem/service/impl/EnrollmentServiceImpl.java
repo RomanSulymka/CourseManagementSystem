@@ -177,7 +177,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             isUserAlreadyAssigned(course, user);
             Enrollment enrollment = buildEnrollment(course, user);
             enrollmentRepository.save(enrollment);
-            List<Lesson> lessons = courseService.findAllLessonsByCourse(course.getId());
+            List<Lesson> lessons = courseRepository.findAllLessonsInCourse(course.getId()).orElseThrow(EntityNotFoundException::new);
             for (Lesson lesson : lessons) {
                 homeworkRepository.assignUserForLesson(user.getId(), lesson.getId());
             }

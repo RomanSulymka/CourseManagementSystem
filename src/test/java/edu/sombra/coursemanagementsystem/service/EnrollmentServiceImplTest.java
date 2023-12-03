@@ -382,7 +382,7 @@ class EnrollmentServiceImplTest {
         when(userRepository.findUserByEmail(userEmail)).thenReturn(mockUser);
         when(enrollmentRepository.getUserRegisteredCourseCount(mockUser.getId())).thenReturn(3L);
         when(courseRepository.findByName(applyForCourseDTO.getCourseName())).thenReturn(Optional.ofNullable(mockCourse));
-        when(courseService.findAllLessonsByCourse(mockCourse.getId())).thenReturn(List.of(mockLesson));
+        when(courseRepository.findAllLessonsInCourse(mockCourse.getId())).thenReturn(Optional.of(List.of(mockLesson)));
 
         assertDoesNotThrow(() -> enrollmentService.applyForCourse(applyForCourseDTO, userEmail));
 
@@ -437,7 +437,7 @@ class EnrollmentServiceImplTest {
 
         when(userRepository.findUserByEmail(studentMail)).thenReturn(adminUser);
         when(courseRepository.findByName(applyForCourseDTO.getCourseName())).thenReturn(Optional.ofNullable(mockCourse));
-        when(courseService.findAllLessonsByCourse(mockCourse.getId())).thenReturn(List.of(mockLesson));
+        when(courseRepository.findAllLessonsInCourse(mockCourse.getId())).thenReturn(Optional.of(List.of(mockLesson)));
 
         assertDoesNotThrow(() -> enrollmentService.applyForCourse(applyForCourseDTO, studentMail));
     }

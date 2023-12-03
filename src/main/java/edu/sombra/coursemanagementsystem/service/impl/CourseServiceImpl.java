@@ -17,6 +17,7 @@ import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
+import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
@@ -61,6 +62,7 @@ public class CourseServiceImpl implements CourseService {
     private final UserMapper userMapper;
     private final CourseMapper courseMapper;
     private final CourseFeedbackService courseFeedbackService;
+    private final LessonMapper lessonMapper;
 
     private static final Long MIN_LESSONS = 5L;
 
@@ -195,8 +197,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<Lesson> findAllLessonsByCourse(Long id) {
-        return courseRepository.findAllLessonsInCourse(id).orElseThrow(EntityNotFoundException::new);
+    public List<LessonResponseDTO> findAllLessonsByCourse(Long id) {
+        List<Lesson> lessons = courseRepository.findAllLessonsInCourse(id).orElseThrow(EntityNotFoundException::new);
+        List<CourseResponseDTO> courseResponseList = lessons.stream()
+                .map(lesson -> courseMapper.mapToResponseDTO(lesson.getCourse()))
+                .toList();
+        return lessonMapper.mapToResponsesDTO(lessons, courseResponseList);
     }
 
     @Override
