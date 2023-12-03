@@ -2,10 +2,10 @@ package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
-import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.service.CourseService;
@@ -28,23 +28,24 @@ import java.util.List;
 public class CourseController {
     private final CourseService courseService;
 
+    //FIXME: should return DTO
     @PostMapping("/create")
-    public ResponseEntity<Course> createCourse(@RequestBody CourseDTO courseDTO) {
+    public ResponseEntity<CourseResponseDTO> createCourse(@RequestBody CourseDTO courseDTO) {
         return ResponseEntity.ok(courseService.create(courseDTO));
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<Course> editCourse(@RequestBody UpdateCourseDTO courseDTO) {
+    public ResponseEntity<CourseResponseDTO> editCourse(@RequestBody UpdateCourseDTO courseDTO) {
         return ResponseEntity.ok(courseService.update(courseDTO));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
+    public ResponseEntity<CourseResponseDTO> getCourseById(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.findById(id));
     }
 
     @GetMapping("/find-all")
-    public ResponseEntity<List<Course>> findAll() {
+    public ResponseEntity<List<CourseResponseDTO>> findAll() {
         return ResponseEntity.ok(courseService.findAllCourses());
     }
 
@@ -54,17 +55,18 @@ public class CourseController {
     }
 
     @PutMapping
-    public ResponseEntity<Course> startOrStopCourse(@RequestBody CourseActionDTO courseActionDTO) {
+    public ResponseEntity<CourseResponseDTO> startOrStopCourse(@RequestBody CourseActionDTO courseActionDTO) {
         return ResponseEntity.ok(courseService.startOrStopCourse(courseActionDTO.getCourseId(), courseActionDTO.getAction()));
     }
 
+    //FIXME: should return DTO
     @GetMapping("/find-all-lessons/{id}")
     public ResponseEntity<List<Lesson>> findAllLessonsByCourse(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.findAllLessonsByCourse(id));
     }
 
     @GetMapping("/instructor/{instructorId}")
-    public ResponseEntity<List<Course>> findCoursesByInstructorId(@PathVariable Long instructorId) {
+    public ResponseEntity<List<CourseResponseDTO>> findCoursesByInstructorId(@PathVariable Long instructorId) {
         return ResponseEntity.ok(courseService.findCoursesByInstructorId(instructorId));
     }
 
@@ -75,7 +77,7 @@ public class CourseController {
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<Course>> findCoursesByStudentId(@PathVariable Long studentId) {
+    public ResponseEntity<List<CourseResponseDTO>> findCoursesByStudentId(@PathVariable Long studentId) {
         return ResponseEntity.ok(courseService.findCoursesByUserId(studentId));
     }
 

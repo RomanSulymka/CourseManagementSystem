@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
@@ -62,15 +63,14 @@ public class CourseServiceImpl implements CourseService {
 
     private static final Long MIN_LESSONS = 5L;
 
-    //TODO: test it, because logic was changed
     @Override
-    public Course create(CourseDTO courseDTO) {
+    public CourseResponseDTO create(CourseDTO courseDTO) {
         Course course = courseMapper.fromCourseDTO(courseDTO);
         validateCourseCreation(course.getName(), course.getStartDate());
         Course createdCourse = saveCourse(course);
         assignInstructor(createdCourse, courseDTO.getInstructorEmail());
         lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), createdCourse);
-        return findById(createdCourse.getId());
+        return courseMapper.mapToResponseDTO(createdCourse);
     }
 
     private void validateCourseCreation(String courseName, LocalDate startDate) {
@@ -125,45 +125,54 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course findByName(String courseName) throws EntityNotFoundException {
-        return courseRepository.findByName(courseName)
+    public CourseResponseDTO findByName(String courseName) throws EntityNotFoundException {
+        Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new EntityNotFoundException(COURSE_NOT_FOUND_WITH_NAME + courseName));
+        return courseMapper.mapToResponseDTO(course);
     }
 
     @Override
-    public Course findById(Long courseId) {
-        return courseRepository.findById(courseId)
+    public CourseResponseDTO findById(Long courseId) {
+        Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> {
                     log.error(COURSE_NOT_FOUND_WITH_ID + courseId);
                     return new EntityNotFoundException(COURSE_NOT_FOUND_WITH_ID + courseId);
                 });
+        return courseMapper.mapToResponseDTO(course);
     }
 
 
     @Override
-    public Course update(UpdateCourseDTO courseDTO) {
-        Course existingCourse = findById(courseDTO.getId());
+    public CourseResponseDTO update(UpdateCourseDTO courseDTO) {
+        Course existingCourse = courseRepository.findById(courseDTO.getId())
+                .orElseThrow();
         if (!courseDTO.getName().equals(existingCourse.getName()) && (courseRepository.exist(courseDTO.getName()))) {
             throw new CourseAlreadyExistsException(courseDTO.getName());
         }
-        Course updatedCourse = courseMapper.fromDTO(courseDTO);
-        return courseRepository.update(updatedCourse);
+        Course courseFromDTO = courseMapper.fromDTO(courseDTO);
+        Course updatedCourse = courseRepository.update(courseFromDTO);
+        return courseMapper.mapToResponseDTO(updatedCourse);
     }
 
     @Override
     public boolean delete(Long id) {
-        Course course = findById(id);
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error(COURSE_NOT_FOUND_WITH_ID + id);
+                    return new EntityNotFoundException(COURSE_NOT_FOUND_WITH_ID + id);
+                });
         courseRepository.delete(course);
         return true;
     }
 
     @Override
-    public List<Course> findAllCourses() {
-        return courseRepository.findAll();
+    public List<CourseResponseDTO> findAllCourses() {
+        List<Course> courseList = courseRepository.findAll();
+        return courseMapper.mapToResponsesDTO(courseList);
     }
 
     @Override
-    public Course updateStatus(Long id, CourseStatus status) {
+    public CourseResponseDTO updateStatus(Long id, CourseStatus status) {
         if (Objects.requireNonNull(status) == CourseStatus.STARTED) {
             return startCourse(id, status);
         } else {
@@ -172,13 +181,14 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course findCourseByHomeworkId(Long userId, Long homeworkId) {
-        return courseRepository.findCourseByHomeworkId(homeworkId)
+    public CourseResponseDTO findCourseByHomeworkId(Long userId, Long homeworkId) {
+        Course course = courseRepository.findCourseByHomeworkId(homeworkId)
                 .orElseThrow(EntityNotFoundException::new);
+        return courseMapper.mapToResponseDTO(course);
     }
 
     @Override
-    public List<Course> findCoursesByInstructorId(Long instructorId) {
+    public List<CourseResponseDTO> findCoursesByInstructorId(Long instructorId) {
         userService.isUserInstructor(instructorId);
         return findCoursesByUserId(instructorId);
     }
@@ -195,7 +205,7 @@ public class CourseServiceImpl implements CourseService {
         return userMapper.mapUsersToDTO(user);
     }
 
-    public Course startCourse(Long courseId, CourseStatus status) {
+    public CourseResponseDTO startCourse(Long courseId, CourseStatus status) {
         findById(courseId);
         List<User> instructors = courseRepository.findUsersInCourseByRole(courseId, RoleEnum.INSTRUCTOR);
         if (instructors.isEmpty()) {
@@ -206,25 +216,30 @@ public class CourseServiceImpl implements CourseService {
         }
     }
 
-    private Course updateCourseStatus(Long courseId, CourseStatus status) {
+    private CourseResponseDTO updateCourseStatus(Long courseId, CourseStatus status) {
         courseRepository.updateStatus(courseId, status);
         log.info(COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY, courseId, status);
         return findById(courseId);
     }
 
-    public List<Course> findCoursesByUserId(Long userId) {
-        return courseRepository.findCoursesByUserId(userId)
+    public List<CourseResponseDTO> findCoursesByUserId(Long userId) {
+        List<Course> courses = courseRepository.findCoursesByUserId(userId)
                 .orElseThrow(EntityNotFoundException::new);
+        return courseMapper.mapToResponsesDTO(courses);
     }
 
     @Override
     public LessonsByCourseDTO findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId) {
         isUserAssignedToCourse(studentId, courseId);
-        Course course = findById(courseId);
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow();
+
         CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
                 .orElse(null);
+
         List<Lesson> lessons = courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)
                 .orElseThrow(EntityNotFoundException::new);
+
         CourseFeedback feedback = courseFeedbackService.findFeedback(studentId, courseId);
         return courseMapper.toDTO(course, lessons, courseMark, studentId, feedback);
     }
@@ -239,7 +254,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course startOrStopCourse(Long courseId, String action) {
+    public CourseResponseDTO startOrStopCourse(Long courseId, String action) {
         if (action.equals("start")) {
             return startCourse(courseId, CourseStatus.STARTED);
         } else if (action.equals("stop")) {
@@ -249,7 +264,7 @@ public class CourseServiceImpl implements CourseService {
         }
     }
 
-    private Course stopCourse(Long courseId, CourseStatus courseStatus) {
+    private CourseResponseDTO stopCourse(Long courseId, CourseStatus courseStatus) {
         return updateStatus(courseId, courseStatus);
     }
 

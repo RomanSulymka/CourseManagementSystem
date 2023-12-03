@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
@@ -121,10 +122,30 @@ class CourseServiceImplTest {
                 .build();
     }
 
-    private Course updatedSampleCourse() {
-        return Course.builder()
-                .id(1L)
-                .name("Updated Course")
+    private CourseResponseDTO createCourseResponseDTO() {
+        return CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Sample Course")
+                .status(CourseStatus.STARTED)
+                .startDate(LocalDate.now().plusDays(1))
+                .started(true)
+                .build();
+    }
+
+    private CourseResponseDTO createCourseResponseDTOStatusStop() {
+        return CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Sample Course")
+                .status(CourseStatus.STOP)
+                .startDate(LocalDate.now().plusDays(1))
+                .started(true)
+                .build();
+    }
+
+    private CourseResponseDTO createCourseResponseDTOWithWaitStatus() {
+        return CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
                 .started(true)
@@ -284,6 +305,14 @@ class CourseServiceImplTest {
                 .started(true)
                 .build();
 
+        CourseResponseDTO responseDTO = CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Java Programming")
+                .status(CourseStatus.STOP)
+                .startDate(LocalDate.of(2025, 1, 1))
+                .started(false)
+                .build();
+
         when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
         when(courseRepository.exist(course.getName())).thenReturn(false);
         when(courseRepository.save(any())).thenAnswer(invocation -> {
@@ -292,13 +321,13 @@ class CourseServiceImplTest {
             return savedCourse;
         });
         when(userRepository.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(courseMapper.mapToResponseDTO(course)).thenReturn(responseDTO);
 
-        Course createdCourse = assertDoesNotThrow(() -> courseService.create(courseDTO));
+        CourseResponseDTO courseResponseDTO = assertDoesNotThrow(() -> courseService.create(courseDTO));
 
-        assertNotNull(createdCourse);
-        assertEquals(1L, createdCourse.getId());
-        assertFalse(createdCourse.getStarted());
+        assertNotNull(courseResponseDTO);
+        assertEquals(1L, courseResponseDTO.getCourseId());
+        assertFalse(courseResponseDTO.getStarted());
         verify(courseRepository, times(1)).save(any());
         verify(courseRepository, times(1)).assignInstructor(eq(1L), eq(1L));
         verify(lessonService, times(1)).generateAndAssignLessons(eq(courseDTO.getNumberOfLessons()), any());
@@ -368,12 +397,13 @@ class CourseServiceImplTest {
         String courseName = "Sample Course";
         Course sampleCourse = createSampleCourse();
         when(courseRepository.findByName(courseName)).thenReturn(Optional.of(sampleCourse));
+        when(courseMapper.mapToResponseDTO(sampleCourse)).thenReturn(createCourseResponseDTO());
 
-        Course foundCourse = assertDoesNotThrow(() -> courseService.findByName(courseName));
+        CourseResponseDTO foundCourse = assertDoesNotThrow(() -> courseService.findByName(courseName));
 
         assertNotNull(foundCourse);
-        assertEquals(sampleCourse.getId(), foundCourse.getId());
-        assertEquals(sampleCourse.getName(), foundCourse.getName());
+        assertEquals(sampleCourse.getId(), foundCourse.getCourseId());
+        assertEquals(sampleCourse.getName(), foundCourse.getCourseName());
         assertTrue(foundCourse.getStarted());
     }
 
@@ -393,12 +423,13 @@ class CourseServiceImplTest {
         Long courseId = 1L;
         Course sampleCourse = createSampleCourse();
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(sampleCourse));
+        when(courseMapper.mapToResponseDTO(sampleCourse)).thenReturn(createCourseResponseDTO());
 
-        Course foundCourse = assertDoesNotThrow(() -> courseService.findById(courseId));
+        CourseResponseDTO foundCourse = assertDoesNotThrow(() -> courseService.findById(courseId));
 
         assertNotNull(foundCourse);
-        assertEquals(sampleCourse.getId(), foundCourse.getId());
-        assertEquals(sampleCourse.getName(), foundCourse.getName());
+        assertEquals(sampleCourse.getId(), foundCourse.getCourseId());
+        assertEquals(sampleCourse.getName(), foundCourse.getCourseName());
         assertTrue(foundCourse.getStarted());
     }
 
@@ -424,16 +455,25 @@ class CourseServiceImplTest {
                 .started(true)
                 .build();
 
+        CourseResponseDTO responseCourse = CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("New Course Name")
+                .status(CourseStatus.STARTED)
+                .startDate(LocalDate.now())
+                .started(true)
+                .build();
+
         when(courseMapper.fromDTO(updatedCourse)).thenReturn(createSampleCourse());
         when(courseRepository.exist(updatedCourse.getName())).thenReturn(false);
         when(courseRepository.update(any())).thenReturn(existingCourse);
         when(courseRepository.findById(updatedCourse.getId())).thenReturn(Optional.of(existingCourse));
+        when(courseMapper.mapToResponseDTO(existingCourse)).thenReturn(responseCourse);
 
-        Course result = courseService.update(updatedCourse);
+        CourseResponseDTO result = courseService.update(updatedCourse);
 
         verify(courseRepository, times(1)).update(existingCourse);
 
-        assertEquals(existingCourse, result);
+        assertEquals(responseCourse, result);
     }
 
     @Test
@@ -490,14 +530,14 @@ class CourseServiceImplTest {
         Course course1 = createSampleCourse(1L, "Course 1");
         Course course2 = createSampleCourse(2L, "Course 2");
         List<Course> expectedCourses = Arrays.asList(course1, course2);
-
+        List<CourseResponseDTO> responseDTOList = Arrays.asList(createCourseResponseDTO(), createCourseResponseDTO());
+        when(courseMapper.mapToResponsesDTO(expectedCourses)).thenReturn(responseDTOList);
         when(courseRepository.findAll()).thenReturn(expectedCourses);
 
-        List<Course> resultCourses = courseService.findAllCourses();
+        List<CourseResponseDTO> resultCourses = courseService.findAllCourses();
 
         assertNotNull(resultCourses);
         assertEquals(expectedCourses.size(), resultCourses.size());
-        assertTrue(resultCourses.containsAll(expectedCourses));
 
         verify(courseRepository, times(1)).findAll();
     }
@@ -510,11 +550,12 @@ class CourseServiceImplTest {
 
         List<User> users = Collections.singletonList(User.builder().id(userId).role(RoleEnum.INSTRUCTOR).build());
 
+        when(courseMapper.mapToResponseDTO(createSampleCourse(courseId, "Sample Course"))).thenReturn(createCourseResponseDTO());
         when(courseRepository.findById(courseId))
                 .thenReturn(Optional.of(createSampleCourse(courseId, "Sample Course")));
         when(courseRepository.findUsersInCourseByRole(courseId, RoleEnum.INSTRUCTOR)).thenReturn(users);
 
-        Course resultCourse = courseService.updateStatus(courseId, status);
+        CourseResponseDTO resultCourse = courseService.updateStatus(courseId, status);
 
         assertNotNull(resultCourse);
         assertEquals(status, resultCourse.getStatus());
@@ -527,10 +568,11 @@ class CourseServiceImplTest {
         Long courseId = 1L;
         CourseStatus status = CourseStatus.WAIT;
 
+        when(courseMapper.mapToResponseDTO(createSampleCourse())).thenReturn(createCourseResponseDTOWithWaitStatus());
         when(courseRepository.findById(courseId))
                 .thenReturn(Optional.of(createSampleCourse()));
 
-        Course resultCourse = courseService.updateStatus(courseId, status);
+        CourseResponseDTO resultCourse = courseService.updateStatus(courseId, status);
 
         assertNotNull(resultCourse);
         assertEquals(status, resultCourse.getStatus());
@@ -544,10 +586,11 @@ class CourseServiceImplTest {
         Long userId = 1L;
         Long homeworkId = 2L;
 
+        when(courseMapper.mapToResponseDTO(createSampleCourse(1L, "Sample Course"))).thenReturn(createCourseResponseDTOWithWaitStatus());
         when(courseRepository.findCourseByHomeworkId(homeworkId))
-                .thenReturn(java.util.Optional.of(createSampleCourse(1L, "Sample Course")));
+                .thenReturn(Optional.of(createSampleCourse(1L, "Sample Course")));
 
-        Course resultCourse = courseService.findCourseByHomeworkId(userId, homeworkId);
+        CourseResponseDTO resultCourse = courseService.findCourseByHomeworkId(userId, homeworkId);
 
         assertNotNull(resultCourse);
 
@@ -559,7 +602,7 @@ class CourseServiceImplTest {
         Long userId = 1L;
         Long homeworkId = 2L;
 
-        when(courseRepository.findCourseByHomeworkId(homeworkId)).thenReturn(java.util.Optional.empty());
+        when(courseRepository.findCourseByHomeworkId(homeworkId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> courseService.findCourseByHomeworkId(userId, homeworkId));
 
@@ -569,12 +612,13 @@ class CourseServiceImplTest {
     @Test
     void testFindCoursesByInstructorId() {
         Long instructorId = 1L;
-        List<Course> expectedCourses = Collections.singletonList(createSampleCourse(1L, "Sample Course"));
+        List<CourseResponseDTO> expectedCourses = Collections.singletonList(createCourseResponseDTO());
 
         when(userService.isUserInstructor(instructorId)).thenReturn(true);
-        when(courseRepository.findCoursesByUserId(instructorId)).thenReturn(java.util.Optional.of(expectedCourses));
+        when(courseRepository.findCoursesByUserId(instructorId)).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
+        when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
 
-        List<Course> resultCourses = courseService.findCoursesByInstructorId(instructorId);
+        List<CourseResponseDTO> resultCourses = courseService.findCoursesByInstructorId(instructorId);
 
         assertNotNull(resultCourses);
         assertEquals(expectedCourses, resultCourses);
@@ -642,12 +686,13 @@ class CourseServiceImplTest {
         Long courseId = 1L;
         CourseStatus status = CourseStatus.STARTED;
 
+        when(courseMapper.mapToResponseDTO(createSampleCourse(1L, "Sample Course"))).thenReturn(createCourseResponseDTO());
         when(courseRepository.findById(courseId))
                 .thenReturn(java.util.Optional.of(createSampleCourse(courseId, "Sample Course")));
         when(courseRepository.findUsersInCourseByRole(courseId, RoleEnum.INSTRUCTOR))
                 .thenReturn(Collections.singletonList(createSampleInstructor(2L, "instructor@example.com")));
 
-        Course resultCourse = courseService.startCourse(courseId, status);
+        CourseResponseDTO resultCourse = courseService.startCourse(courseId, status);
 
         assertNotNull(resultCourse);
         assertEquals(status, resultCourse.getStatus());
@@ -746,12 +791,12 @@ class CourseServiceImplTest {
         String action = "start";
         List<User> users = Collections.singletonList(User.builder().id(1L).role(RoleEnum.INSTRUCTOR).build());
 
-
+        when(courseMapper.mapToResponseDTO(createSampleCourse(1L, "Sample Course"))).thenReturn(createCourseResponseDTO());
         when(courseRepository.findById(courseId))
                 .thenReturn(Optional.of(createSampleCourse(courseId, "Sample Course")));
         when(courseRepository.findUsersInCourseByRole(courseId, RoleEnum.INSTRUCTOR)).thenReturn(users);
 
-        Course resultCourse = courseService.startOrStopCourse(courseId, action);
+        CourseResponseDTO resultCourse = courseService.startOrStopCourse(courseId, action);
 
         assertNotNull(resultCourse);
         assertEquals(CourseStatus.STARTED, resultCourse.getStatus());
@@ -767,9 +812,10 @@ class CourseServiceImplTest {
 
         when(courseRepository.findById(courseId))
                 .thenReturn(Optional.of(createSampleCourseWithStatusStop(courseId, "Sample Course")));
+        when(courseMapper.mapToResponseDTO(createSampleCourseWithStatusStop(courseId, "Sample Course"))).thenReturn(createCourseResponseDTOStatusStop());
 
         doNothing().when(courseRepository).updateStatus(courseId, CourseStatus.STOP);
-        Course resultCourse = courseService.startOrStopCourse(courseId, action);
+        CourseResponseDTO resultCourse = courseService.startOrStopCourse(courseId, action);
 
         assertNotNull(resultCourse);
         assertEquals(CourseStatus.STOP, resultCourse.getStatus());

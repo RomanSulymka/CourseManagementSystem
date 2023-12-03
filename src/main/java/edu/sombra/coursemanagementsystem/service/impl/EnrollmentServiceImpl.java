@@ -1,5 +1,6 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
@@ -12,7 +13,9 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
+import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.EnrollmentMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
@@ -35,6 +38,8 @@ import java.util.List;
 public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseService courseService;
+    private final CourseMapper courseMapper;
+    private final CourseRepository courseRepository;
     private final UserService userService;
     private final UserRepository userRepository;
     private final HomeworkRepository homeworkRepository;
@@ -58,7 +63,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public void assignInstructor(EnrollmentDTO enrollmentDTO) {
         try {
-            Course course = courseService.findByName(enrollmentDTO.getCourseName());
+            Course course = courseRepository.findByName(enrollmentDTO.getCourseName())
+                    .orElseThrow();
             User instructor = userRepository.findUserByEmail(enrollmentDTO.getUserEmail());
             userService.validateInstructor(instructor, RoleEnum.INSTRUCTOR);
 
@@ -143,7 +149,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new EnrollmentException("Elements are empty!");
         }
         User user = userRepository.findById(updateDTO.getUserId()).orElseThrow();
-        Course course = courseService.findById(updateDTO.getCourseId());
+        Course course = courseRepository.findById(updateDTO.getCourseId()).orElseThrow();
         Enrollment enrollment = enrollmentRepository.update(Enrollment.builder()
                 .id(updateDTO.getId())
                 .course(course)
@@ -167,7 +173,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private void assignUserForLesson(EnrollmentApplyForCourseDTO applyForCourseDTO, Long numberOfUserCourses, User user) {
         if (numberOfUserCourses < COURSE_LIMIT) {
-            Course course = courseService.findByName(applyForCourseDTO.getCourseName());
+            Course course = courseRepository.findByName(applyForCourseDTO.getCourseName()).orElseThrow();
             isUserAlreadyAssigned(course, user);
             Enrollment enrollment = buildEnrollment(course, user);
             enrollmentRepository.save(enrollment);
@@ -219,7 +225,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public boolean isUserAssignedToCourse(Long userId, Long homeworkId) {
-        Course course = courseService.findCourseByHomeworkId(userId, homeworkId);
+        CourseResponseDTO courseResponseDTO = courseService.findCourseByHomeworkId(userId, homeworkId);
+        Course course = courseMapper.fromResponseDTO(courseResponseDTO);
         User user = userRepository.findById(userId).orElseThrow();
         return enrollmentRepository.isUserAssignedToCourse(course, user);
     }

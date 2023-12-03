@@ -4,9 +4,9 @@ import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseMarkService;
-import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.List;
 public class CourseMarkServiceImpl implements CourseMarkService {
     public static final String TOTAL_MARK_SAVED_SUCCESSFULLY = "Total mark saved successfully";
     private final CourseMarkRepository courseMarkRepository;
-    private final CourseService courseService;
+    private final CourseRepository courseRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -43,7 +43,7 @@ public class CourseMarkServiceImpl implements CourseMarkService {
     @Override
     public void saveTotalMark(Long userId, Long courseId, Double averageMark, Boolean isAllHomeworksGraded) {
         User user = userRepository.findById(userId).orElseThrow();
-        Course course = courseService.findById(courseId);
+        Course course = courseRepository.findById(courseId).orElseThrow();
         courseMarkRepository.upsert(CourseMark.builder()
                 .user(user)
                 .course(course)

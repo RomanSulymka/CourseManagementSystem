@@ -1,5 +1,6 @@
 package edu.sombra.coursemanagementsystem.service;
 
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
@@ -12,7 +13,9 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
+import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.EnrollmentMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
@@ -49,6 +52,10 @@ class EnrollmentServiceImplTest {
     @Mock
     private CourseService courseService;
     @Mock
+    private CourseMapper courseMapper;
+    @Mock
+    private CourseRepository courseRepository;
+    @Mock
     private UserService userService;
 
     @Mock
@@ -60,7 +67,8 @@ class EnrollmentServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        enrollmentService = new EnrollmentServiceImpl(enrollmentRepository, courseService, userService, userRepository, homeworkRepository, enrollmentMapper);
+        enrollmentService = new EnrollmentServiceImpl(enrollmentRepository, courseService, courseMapper, courseRepository,
+                userService, userRepository, homeworkRepository, enrollmentMapper);
     }
 
     private static Stream<Arguments> provideTestDataForAssignInstructorSuccessfully() {
@@ -127,7 +135,7 @@ class EnrollmentServiceImplTest {
     @ParameterizedTest
     @MethodSource("provideTestDataForAssignInstructorSuccessfully")
     void testAssignInstructorSuccessfully(EnrollmentDTO enrollmentDTO, Course course, User instructor, boolean isUserAssigned) {
-        when(courseService.findByName(enrollmentDTO.getCourseName())).thenReturn(course);
+        when(courseRepository.findByName(enrollmentDTO.getCourseName())).thenReturn(Optional.ofNullable(course));
         when(userRepository.findUserByEmail(enrollmentDTO.getUserEmail())).thenReturn(instructor);
         when(enrollmentRepository.isUserAssignedToCourse(course, instructor)).thenReturn(isUserAssigned);
 
@@ -140,7 +148,7 @@ class EnrollmentServiceImplTest {
     @MethodSource("provideTestDataForAssignInstructorWithUserAlreadyAssigned")
     void testAssignInstructorWithUserAlreadyAssigned(
             EnrollmentDTO enrollmentDTO, Course course, User instructor, boolean isUserAssigned) {
-        when(courseService.findByName(enrollmentDTO.getCourseName())).thenReturn(course);
+        when(courseRepository.findByName(enrollmentDTO.getCourseName())).thenReturn(Optional.ofNullable(course));
         when(userRepository.findUserByEmail(enrollmentDTO.getUserEmail())).thenReturn(instructor);
         when(enrollmentRepository.isUserAssignedToCourse(course, instructor)).thenReturn(isUserAssigned);
 
@@ -157,7 +165,7 @@ class EnrollmentServiceImplTest {
                 .userEmail("user@email.com")
                 .courseName("Course 1")
                 .build();
-        when(courseService.findByName(enrollmentDTO.getCourseName())).thenThrow(new EnrollmentException());
+        when(courseRepository.findByName(enrollmentDTO.getCourseName())).thenThrow(new EnrollmentException());
 
         EnrollmentException exception = assertThrows(EnrollmentException.class,
                 () -> enrollmentService.assignInstructor(enrollmentDTO));
@@ -328,7 +336,7 @@ class EnrollmentServiceImplTest {
         EnrollmentGetByNameDTO expectedDTO = new EnrollmentGetByNameDTO("name", "firstName", "lastName", "email.com", RoleEnum.INSTRUCTOR);
 
         when(userRepository.findById(updateDTO.getUserId())).thenReturn(Optional.of(mock(User.class)));
-        when(courseService.findById(updateDTO.getCourseId())).thenReturn(mockCourse);
+        when(courseRepository.findById(updateDTO.getCourseId())).thenReturn(Optional.ofNullable(mockCourse));
         when(enrollmentRepository.update(any(Enrollment.class))).thenReturn(mockEnrollment);
         when(enrollmentMapper.mapToDTO(mockEnrollment)).thenReturn(expectedDTO);
 
@@ -373,7 +381,7 @@ class EnrollmentServiceImplTest {
 
         when(userRepository.findUserByEmail(userEmail)).thenReturn(mockUser);
         when(enrollmentRepository.getUserRegisteredCourseCount(mockUser.getId())).thenReturn(3L);
-        when(courseService.findByName(applyForCourseDTO.getCourseName())).thenReturn(mockCourse);
+        when(courseRepository.findByName(applyForCourseDTO.getCourseName())).thenReturn(Optional.ofNullable(mockCourse));
         when(courseService.findAllLessonsByCourse(mockCourse.getId())).thenReturn(List.of(mockLesson));
 
         assertDoesNotThrow(() -> enrollmentService.applyForCourse(applyForCourseDTO, userEmail));
@@ -428,7 +436,7 @@ class EnrollmentServiceImplTest {
 
 
         when(userRepository.findUserByEmail(studentMail)).thenReturn(adminUser);
-        when(courseService.findByName(applyForCourseDTO.getCourseName())).thenReturn(mockCourse);
+        when(courseRepository.findByName(applyForCourseDTO.getCourseName())).thenReturn(Optional.ofNullable(mockCourse));
         when(courseService.findAllLessonsByCourse(mockCourse.getId())).thenReturn(List.of(mockLesson));
 
         assertDoesNotThrow(() -> enrollmentService.applyForCourse(applyForCourseDTO, studentMail));
@@ -471,7 +479,13 @@ class EnrollmentServiceImplTest {
                 .id(userId)
                 .build();
 
-        when(courseService.findCourseByHomeworkId(userId, homeworkId)).thenReturn(mockCourse);
+        CourseResponseDTO courseResponseDTO = CourseResponseDTO.builder()
+                .courseId(mockCourse.getId())
+                .courseName("Test course")
+                .build();
+
+        when(courseMapper.fromResponseDTO(courseResponseDTO)).thenReturn(mockCourse);
+        when(courseService.findCourseByHomeworkId(userId, homeworkId)).thenReturn(courseResponseDTO);
         when(userRepository.findById(userId)).thenReturn(Optional.ofNullable(mockUser));
         when(enrollmentRepository.isUserAssignedToCourse(mockCourse, mockUser)).thenReturn(true);
 
@@ -492,7 +506,13 @@ class EnrollmentServiceImplTest {
                 .id(userId)
                 .build();
 
-        when(courseService.findCourseByHomeworkId(userId, homeworkId)).thenReturn(mockCourse);
+        CourseResponseDTO courseResponseDTO = CourseResponseDTO.builder()
+                .courseId(mockCourse.getId())
+                .courseName("Test course")
+                .build();
+
+        when(courseMapper.fromResponseDTO(courseResponseDTO)).thenReturn(mockCourse);
+        when(courseService.findCourseByHomeworkId(userId, homeworkId)).thenReturn(courseResponseDTO);
         when(userRepository.findById(userId)).thenReturn(Optional.ofNullable(mockUser));
         when(enrollmentRepository.isUserAssignedToCourse(mockCourse, mockUser)).thenReturn(false);
 

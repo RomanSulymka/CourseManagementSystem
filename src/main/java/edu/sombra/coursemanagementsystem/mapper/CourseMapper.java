@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.mapper;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
@@ -45,6 +46,31 @@ public class CourseMapper {
                 .startDate(courseDTO.getStartDate())
                 .started(courseDTO.getStarted())
                 .status(courseDTO.getStatus())
+                .build();
+    }
+
+    public CourseResponseDTO mapToResponseDTO(Course course) {
+        return CourseResponseDTO.builder()
+                .courseId(course.getId())
+                .courseName(course.getName())
+                .startDate(course.getStartDate())
+                .started(course.getStarted())
+                .status(course.getStatus())
+                .build();
+    }
+
+    public List<CourseResponseDTO> mapToResponsesDTO(List<Course> courseList) {
+        return courseList.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
+
+    public Course fromResponseDTO(CourseResponseDTO courseResponseDTO) {
+        return Course.builder()
+                .id(courseResponseDTO.getCourseId())
+                .name(courseResponseDTO.getCourseName())
+                .startDate(courseResponseDTO.getStartDate())
+                .started(courseResponseDTO.getStarted())
                 .build();
     }
 }

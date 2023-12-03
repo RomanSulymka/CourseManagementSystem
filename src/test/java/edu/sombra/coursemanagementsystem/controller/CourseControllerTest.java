@@ -3,12 +3,14 @@ package edu.sombra.coursemanagementsystem.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
+import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +47,9 @@ class CourseControllerTest {
 
     @MockBean
     private CourseService courseService;
+
+    @MockBean
+    private CourseMapper courseMapper;
 
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
@@ -92,22 +97,25 @@ class CourseControllerTest {
     void testFindCourseByIdSuccess() throws Exception {
         Long courseId = 1L;
 
-        Course course = Course.builder()
-                .id(1L)
-                .name("Java Programming")
+        CourseResponseDTO course = CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2023, 1, 1))
                 .started(true)
                 .build();
 
+        List<Course> courses = List.of(Course.builder().id(1L).build());
+
+        when(courseMapper.mapToResponsesDTO(courses)).thenReturn(List.of(course));
         when(courseService.findById(courseId)).thenReturn(course);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/course/{id}", courseId));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(courseId))
-                .andExpect(jsonPath("$.name").exists())
+                .andExpect(jsonPath("$.courseId").value(courseId))
+                .andExpect(jsonPath("$.courseName").exists())
                 .andExpect(jsonPath("$.status").exists())
                 .andExpect(jsonPath("$.startDate").exists())
                 .andExpect(jsonPath("$.started").exists());
@@ -118,6 +126,23 @@ class CourseControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindAllCoursesSuccess() throws Exception {
+        List<CourseResponseDTO> courseResponseList = Arrays.asList(
+                CourseResponseDTO.builder()
+                        .courseId(1L)
+                        .courseName("Java Programming")
+                        .status(CourseStatus.STOP)
+                        .startDate(LocalDate.of(2023, 1, 1))
+                        .started(true)
+                        .build(),
+                CourseResponseDTO.builder()
+                        .courseId(2L)
+                        .courseName("Scala Programming")
+                        .status(CourseStatus.STARTED)
+                        .startDate(LocalDate.of(2023, 1, 2))
+                        .started(true)
+                        .build()
+        );
+
         List<Course> courses = Arrays.asList(
                 Course.builder()
                         .id(1L)
@@ -135,15 +160,16 @@ class CourseControllerTest {
                         .build()
         );
 
-        when(courseService.findAllCourses()).thenReturn(courses);
+        when(courseMapper.mapToResponsesDTO(courses)).thenReturn(courseResponseList);
+        when(courseService.findAllCourses()).thenReturn(courseResponseList);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/course/find-all")
                 .contentType(MediaType.APPLICATION_JSON));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").exists())
-                .andExpect(jsonPath("$[0].name").exists())
+                .andExpect(jsonPath("$[0].courseId").exists())
+                .andExpect(jsonPath("$[0].courseName").exists())
                 .andExpect(jsonPath("$[0].status").exists())
                 .andExpect(jsonPath("$[1].startDate").exists())
                 .andExpect(jsonPath("$[1].started").exists());
@@ -169,9 +195,9 @@ class CourseControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testStartOrStopCourseSuccess() throws Exception {
-        Course course = Course.builder()
-                .id(1L)
-                .name("Java Programming")
+        CourseResponseDTO course = CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Java Programming")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.of(2023, 1, 1))
                 .started(true)
@@ -190,9 +216,9 @@ class CourseControllerTest {
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(courseActionDTO.getCourseId()))
+                .andExpect(jsonPath("$.courseId").value(courseActionDTO.getCourseId()))
                 .andExpect(jsonPath("$.status").value("STARTED"))
-                .andExpect(jsonPath("$.name").value("Java Programming"));
+                .andExpect(jsonPath("$.courseName").value("Java Programming"));
 
         verify(courseService, times(1)).startOrStopCourse(courseActionDTO.getCourseId(), courseActionDTO.getAction());
     }
@@ -224,7 +250,12 @@ class CourseControllerTest {
     void testFindCoursesByInstructorIdSuccess() throws Exception {
         Long instructorId = 1L;
         given(courseService.findCoursesByInstructorId(instructorId)).willReturn(Collections.singletonList(
-                Course.builder().id(1L).name("Java Programming").status(CourseStatus.FINISHED).started(true).build()
+                CourseResponseDTO.builder()
+                        .courseId(1L)
+                        .courseName("Java Programming")
+                        .status(CourseStatus.FINISHED)
+                        .started(true)
+                        .build()
         ));
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/course/instructor/{instructorId}", instructorId)
@@ -232,8 +263,8 @@ class CourseControllerTest {
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].name").value("Java Programming"))
+                .andExpect(jsonPath("$[0].courseId").value(1))
+                .andExpect(jsonPath("$[0].courseName").value("Java Programming"))
                 .andExpect(jsonPath("$[0].status").value("FINISHED"))
                 .andExpect(jsonPath("$[0].started").value(true));
 
@@ -274,21 +305,24 @@ class CourseControllerTest {
     void testFindCoursesByStudentIdSuccess() throws Exception {
         Long studentId = 1L;
 
-        Course course = Course.builder()
-                .id(1L)
-                .name("Java Programming")
+        CourseResponseDTO course = CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Java Programming")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.of(2023, 1, 1))
                 .started(true)
                 .build();
 
+        List<Course> courses = List.of(Course.builder().id(1L).build());
+
+        when(courseMapper.mapToResponsesDTO(courses)).thenReturn(List.of(course));
         when(courseService.findCoursesByUserId(studentId)).thenReturn(List.of(course));
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/course/student/{studentId}", studentId));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].name").exists())
+                .andExpect(jsonPath("$[0].courseName").exists())
                 .andExpect(jsonPath("$[0].status").exists())
                 .andExpect(jsonPath("$[0].startDate").exists())
                 .andExpect(jsonPath("$[0].started").exists());

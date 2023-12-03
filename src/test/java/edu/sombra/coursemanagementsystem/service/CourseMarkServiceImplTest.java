@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.CourseMarkServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -35,13 +36,13 @@ class CourseMarkServiceImplTest {
     private CourseMarkServiceImpl courseMarkService;
 
     @Mock
-    private CourseService courseService;
-
-    @Mock
     private CourseMarkRepository courseMarkRepository;
 
     @Mock
     private UserRepository userService;
+
+    @Mock
+    private CourseRepository courseRepository;
 
     private static Stream<List<CourseMark>> provideCourseMarkTestData() {
         return Stream.of(
@@ -154,7 +155,7 @@ class CourseMarkServiceImplTest {
         Course course = new Course();
 
         when(userService.findById(userId)).thenReturn(Optional.of(user));
-        when(courseService.findById(courseId)).thenReturn(course);
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
         courseMarkService.saveTotalMark(userId, courseId, averageMark, isAllHomeworksGraded);
 
