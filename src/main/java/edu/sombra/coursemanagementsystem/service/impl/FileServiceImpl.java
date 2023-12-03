@@ -7,10 +7,10 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
+import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.FileService;
 import edu.sombra.coursemanagementsystem.service.HomeworkService;
-import edu.sombra.coursemanagementsystem.service.LessonService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
@@ -32,7 +32,7 @@ public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final HomeworkService homeworkService;
     private final UserRepository userRepository;
-    private final LessonService lessonService;
+    private final LessonRepository lessonRepository;
 
     @Override
     public void saveFile(MultipartFile uploadedFile, Long lessonId, Long userId) throws IOException {
@@ -40,7 +40,7 @@ public class FileServiceImpl implements FileService {
             validateInput(uploadedFile, lessonId, userId);
             if (!isUserAlreadyUploaded(userId, lessonId)) {
                 User user = userRepository.findById(userId).orElseThrow();
-                Lesson lesson = lessonService.findById(lessonId);
+                Lesson lesson = lessonRepository.findById(lessonId).orElseThrow();
 
                 File file = fileRepository.save(File.builder()
                         .fileName(uploadedFile.getOriginalFilename())

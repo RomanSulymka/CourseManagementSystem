@@ -1,8 +1,8 @@
 package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
-import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class LessonController {
     private final LessonService lessonService;
 
     @PostMapping("/create")
-    public ResponseEntity<Lesson> create(@RequestBody CreateLessonDTO lessonDTO) {
+    public ResponseEntity<LessonResponseDTO> create(@RequestBody CreateLessonDTO lessonDTO) {
         return ResponseEntity.ok(lessonService.save(lessonDTO));
     }
 
@@ -35,22 +35,22 @@ public class LessonController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Lesson> getLessonById(@PathVariable Long id) {
+    public ResponseEntity<LessonResponseDTO> getLessonById(@PathVariable Long id) {
         return ResponseEntity.ok(lessonService.findById(id));
     }
 
     @GetMapping("/find-all")
-    public ResponseEntity<List<Lesson>> getAllLessons() {
+    public ResponseEntity<List<LessonResponseDTO>> getAllLessons() {
         return ResponseEntity.ok(lessonService.findAllLessons());
     }
 
     @GetMapping("/find-all/{id}")
-    public ResponseEntity<List<Lesson>> getAllLessonsByCourseId(@PathVariable("id") Long courseId) {
+    public ResponseEntity<List<LessonResponseDTO>> getAllLessonsByCourseId(@PathVariable("id") Long courseId) {
         return ResponseEntity.ok(lessonService.findAllLessonsByCourse(courseId));
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<Lesson> editLesson(@RequestBody UpdateLessonDTO lessonDTO) {
+    public ResponseEntity<LessonResponseDTO> editLesson(@RequestBody UpdateLessonDTO lessonDTO) {
         return ResponseEntity.ok(lessonService.editLesson(lessonDTO));
     }
 }

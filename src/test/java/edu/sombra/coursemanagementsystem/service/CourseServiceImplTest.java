@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
@@ -89,19 +90,10 @@ class CourseServiceImplTest {
                 .build();
     }
 
-    private static List<Lesson> createLessonList(int size) {
+    private static List<LessonResponseDTO> createLessonResponseList(int size) {
         return Stream.iterate(1, i -> i <= size, i -> i + 1)
-                .map(i -> Lesson.builder().id((long) i).name("Lesson " + i).build())
+                .map(i -> LessonResponseDTO.builder().id((long) i).name("Lesson " + i).build())
                 .toList();
-    }
-
-    private CourseDTO createSampleCourseDTO() {
-        return CourseDTO.builder()
-                .name("Sample Course")
-                .startDate(LocalDate.now().plusDays(1))
-                .instructorEmail("instructor@example.com")
-                .numberOfLessons(5L)
-                .build();
     }
 
     private User createSampleInstructor(Long id, String email) {
@@ -263,8 +255,8 @@ class CourseServiceImplTest {
         coursesToStart.add(course2);
 
         when(courseRepository.findByStartDate(currentDate)).thenReturn(coursesToStart);
-        when(lessonService.findAllLessonsByCourse(course1.getId())).thenReturn(createLessonList(10));
-        when(lessonService.findAllLessonsByCourse(course2.getId())).thenReturn(createLessonList(5));
+        when(lessonService.findAllLessonsByCourse(course1.getId())).thenReturn(createLessonResponseList(10));
+        when(lessonService.findAllLessonsByCourse(course2.getId())).thenReturn(createLessonResponseList(5));
 
         courseService.startCoursesOnSchedule();
 
@@ -284,7 +276,7 @@ class CourseServiceImplTest {
         coursesToStart.add(course);
 
         when(courseRepository.findByStartDate(currentDate)).thenReturn(coursesToStart);
-        when(lessonService.findAllLessonsByCourse(course.getId())).thenReturn(createLessonList(3));
+        when(lessonService.findAllLessonsByCourse(course.getId())).thenReturn(createLessonResponseList(3));
 
         CourseException exception = assertThrows(CourseException.class,
                 () -> courseService.startCoursesOnSchedule());

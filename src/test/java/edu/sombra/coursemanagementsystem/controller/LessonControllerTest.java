@@ -1,10 +1,12 @@
 package edu.sombra.coursemanagementsystem.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
-import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
+import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +42,9 @@ class LessonControllerTest {
     @MockBean
     private LessonService lessonService;
 
+    @MockBean
+    private LessonMapper lessonMapper;
+
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testCreateLessonSuccess() throws Exception {
@@ -47,12 +52,13 @@ class LessonControllerTest {
         lessonDTO.setLessonName("Introduction to Spring");
         lessonDTO.setCourseId(1L);
 
-        Lesson lesson = Lesson.builder()
+        LessonResponseDTO lesson = LessonResponseDTO.builder()
                 .id(1L)
                 .name("Introduction to Spring")
-                .course(mock(Course.class))
+                .course(mock(CourseResponseDTO.class))
                 .build();
 
+        when(lessonMapper.mapToResponseDTO(mock(Lesson.class), mock(CourseResponseDTO.class))).thenReturn(lesson);
         when(lessonService.save(lessonDTO)).thenReturn(lesson);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/lesson/create")
@@ -86,12 +92,13 @@ class LessonControllerTest {
     void testGetLessonByIdSuccess() throws Exception {
         Long lessonId = 1L;
 
-        Lesson lesson = Lesson.builder()
+        LessonResponseDTO lesson = LessonResponseDTO.builder()
                 .id(1L)
                 .name("Introduction to Spring")
-                .course(mock(Course.class))
+                .course(mock(CourseResponseDTO.class))
                 .build();
 
+        when(lessonMapper.mapToResponseDTO(mock(Lesson.class), mock(CourseResponseDTO.class))).thenReturn(lesson);
         when(lessonService.findById(lessonId)).thenReturn(lesson);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/lesson/{id}", lessonId)
@@ -109,16 +116,16 @@ class LessonControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testGetAllLessonsSuccess() throws Exception {
-        List<Lesson> lessons = Arrays.asList(
-                Lesson.builder()
+        List<LessonResponseDTO> lessons = Arrays.asList(
+                LessonResponseDTO.builder()
                         .id(1L)
                         .name("Introduction to Spring")
-                        .course(mock(Course.class))
+                        .course(mock(CourseResponseDTO.class))
                         .build(),
-                Lesson.builder()
+                LessonResponseDTO.builder()
                         .id(2L)
                         .name("Introduction to Scala")
-                        .course(mock(Course.class))
+                        .course(mock(CourseResponseDTO.class))
                         .build()
         );
 
@@ -141,16 +148,16 @@ class LessonControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testGetAllLessonsByCourseIdSuccess() throws Exception {
         Long courseId = 1L;
-        List<Lesson> lessons = Arrays.asList(
-                Lesson.builder()
+        List<LessonResponseDTO> lessons = Arrays.asList(
+                LessonResponseDTO.builder()
                         .id(1L)
                         .name("Introduction to Spring")
-                        .course(mock(Course.class))
+                        .course(mock(CourseResponseDTO.class))
                         .build(),
-                Lesson.builder()
+                LessonResponseDTO.builder()
                         .id(2L)
                         .name("Introduction to Scala")
-                        .course(mock(Course.class))
+                        .course(mock(CourseResponseDTO.class))
                         .build()
         );
 
@@ -172,10 +179,10 @@ class LessonControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testEditLessonSuccess() throws Exception {
-        Lesson lesson = Lesson.builder()
+        LessonResponseDTO lesson = LessonResponseDTO.builder()
                 .id(1L)
                 .name("Introduction to Spring")
-                .course(Course.builder().id(2L).build())
+                .course(CourseResponseDTO.builder().courseId(2L).build())
                 .build();
 
         UpdateLessonDTO updateLessonDTO = UpdateLessonDTO.builder()
@@ -194,7 +201,7 @@ class LessonControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Introduction to Spring"))
-                .andExpect(jsonPath("$.course.id").value(2));
+                .andExpect(jsonPath("$.course.courseId").value(2));
 
         verify(lessonService, times(1)).editLesson(updateLessonDTO);
     }

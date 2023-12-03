@@ -1,11 +1,15 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
+import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
+import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.service.LessonService;
@@ -25,31 +29,47 @@ import java.util.stream.LongStream;
 public class LessonServiceImpl implements LessonService {
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
+    private final LessonMapper lessonMapper;
+    private final CourseMapper courseMapper;
 
     @Override
-    public Lesson save(CreateLessonDTO lessonDTO) {
+    public LessonResponseDTO save(CreateLessonDTO lessonDTO) {
         Course course = courseRepository.findById(lessonDTO.getCourseId())
                 .orElseThrow(EntityNotFoundException::new);
-        return lessonRepository.save(Lesson.builder()
+        Lesson lesson = lessonRepository.save(Lesson.builder()
                 .name(lessonDTO.getLessonName())
                 .course(course)
                 .build());
+        CourseResponseDTO courseResponse = courseMapper.mapToResponseDTO(course);
+        return lessonMapper.mapToResponseDTO(lesson, courseResponse);
     }
 
     @Override
-    public Lesson findById(Long id) {
-        return lessonRepository.findById(id)
+    public LessonResponseDTO findById(Long id) {
+        Lesson lesson = lessonRepository.findById(id)
                 .orElseThrow(EntityNotFoundException::new);
+        CourseResponseDTO courseResponse = courseMapper.mapToResponseDTO(lesson.getCourse());
+        return lessonMapper.mapToResponseDTO(lesson, courseResponse);
     }
 
     @Override
-    public List<Lesson> findAllLessons() {
-        return lessonRepository.findAll();
+    public List<LessonResponseDTO> findAllLessons() {
+        List<Lesson> lessons = lessonRepository.findAll();
+        List<CourseResponseDTO> courseResponseDTOS = lessons.stream()
+                .map(lesson -> courseMapper.mapToResponseDTO(lesson.getCourse()))
+                .toList();
+
+        return lessonMapper.mapToResponsesDTO(lessons, courseResponseDTOS);
     }
 
     @Override
-    public List<Lesson> findAllLessonsByCourse(Long courseId) {
-        return lessonRepository.findAllByCourseId(courseId);
+    public List<LessonResponseDTO> findAllLessonsByCourse(Long courseId) {
+        List<Lesson> lessons = lessonRepository.findAllByCourseId(courseId);
+        List<CourseResponseDTO> courseResponseDTOS = lessons.stream()
+                .map(lesson -> courseMapper.mapToResponseDTO(lesson.getCourse()))
+                .toList();
+
+        return lessonMapper.mapToResponsesDTO(lessons, courseResponseDTOS);
     }
 
     @Override
@@ -71,7 +91,8 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public void deleteLesson(Long id) {
         try {
-            Lesson lesson = findById(id);
+            Lesson lesson = lessonRepository.findById(id)
+                    .orElseThrow(EntityNotFoundException::new);
             lessonRepository.delete(lesson);
             log.info("Lesson deleted successfully");
         } catch (EntityDeletionException e) {
@@ -82,7 +103,7 @@ public class LessonServiceImpl implements LessonService {
 
     //TODO: test it
     @Override
-    public Lesson editLesson(UpdateLessonDTO lesson) {
+    public LessonResponseDTO editLesson(UpdateLessonDTO lesson) {
         findById(lesson.getId());
         Course course = courseRepository.findById(lesson.getId()).orElseThrow();
         Lesson editedLesson = Lesson.builder()
@@ -90,7 +111,9 @@ public class LessonServiceImpl implements LessonService {
                 .name(lesson.getName())
                 .course(course)
                 .build();
-        return lessonRepository.update(editedLesson);
+        Lesson updatedLesson = lessonRepository.update(editedLesson);
+        CourseResponseDTO courseResponse = courseMapper.mapToResponseDTO(updatedLesson.getCourse());
+        return lessonMapper.mapToResponseDTO(updatedLesson, courseResponse);
     }
 
     @Override

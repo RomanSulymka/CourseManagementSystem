@@ -1,12 +1,16 @@
 package edu.sombra.coursemanagementsystem.service;
 
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
+import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
+import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.service.impl.LessonServiceImpl;
@@ -25,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -48,10 +53,16 @@ class LessonServiceImplTest {
     @Mock
     private CourseRepository courseRepository;
 
+    @Mock
+    private LessonMapper lessonMapper;
+
+    @Mock
+    private CourseMapper courseMapper;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        lessonService = new LessonServiceImpl(lessonRepository, courseRepository);
+        lessonService = new LessonServiceImpl(lessonRepository, courseRepository, lessonMapper, courseMapper);
     }
 
     private static Stream<Arguments> provideTestDataForSaveLesson() {
@@ -85,17 +96,33 @@ class LessonServiceImplTest {
         );
     }
 
+    private CourseResponseDTO createCourseResponseDTO() {
+        return CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Sample Course")
+                .status(CourseStatus.STARTED)
+                .startDate(LocalDate.now().plusDays(1))
+                .started(true)
+                .build();
+    }
+
     @ParameterizedTest
     @MethodSource("provideTestDataForSaveLesson")
-    void testSaveLessonWithValidCourse(CreateLessonDTO lessonDTO, Course course, Lesson savedLesson) {
+    void testSaveLessonWithValidCourse(CreateLessonDTO lessonDTO, Course course, Lesson mockLesson) {
+        LessonResponseDTO lessonResponseDTO = LessonResponseDTO.builder()
+                .id(lessonDTO.getCourseId())
+                .name(lessonDTO.getLessonName())
+                .course(new CourseResponseDTO())
+                .build();
         when(courseRepository.findById(lessonDTO.getCourseId())).thenReturn(Optional.of(course));
-        when(lessonRepository.save(any())).thenReturn(savedLesson);
-
-        Lesson result = lessonService.save(lessonDTO);
+        when(lessonRepository.save(any())).thenReturn(mockLesson);
+        when(courseMapper.mapToResponseDTO(course)).thenReturn(new CourseResponseDTO());
+        when(lessonMapper.mapToResponseDTO(mockLesson, new CourseResponseDTO())).thenReturn(lessonResponseDTO);
+        LessonResponseDTO result = lessonService.save(lessonDTO);
 
         assertNotNull(result);
-        assertEquals(savedLesson.getName(), result.getName());
-        assertEquals(course, result.getCourse());
+        assertEquals(mockLesson.getName(), result.getName());
+        verify(lessonRepository, times(1)).save(mockLesson);
     }
 
     @ParameterizedTest
@@ -109,28 +136,42 @@ class LessonServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("provideTestDataForSaveLesson")
-    void testSaveLessonSuccessfully(CreateLessonDTO lessonDTO, Course course) {
+    void testSaveLessonSuccessfully(CreateLessonDTO lessonDTO, Course course, Lesson mockLesson) {
+        LessonResponseDTO lessonResponseDTO = LessonResponseDTO.builder()
+                .id(1L)
+                .name("Lesson 1")
+                .course(new CourseResponseDTO())
+                .build();
+
         when(courseRepository.findById(course.getId())).thenReturn(Optional.of(course));
 
-        Lesson lesson = new Lesson();
-        when(lessonRepository.save(any())).thenReturn(lesson);
-
-        Lesson savedLesson = lessonService.save(lessonDTO);
+        when(lessonRepository.save(any())).thenReturn(mockLesson);
+        when(courseMapper.mapToResponseDTO(course)).thenReturn(new CourseResponseDTO());
+        when(lessonMapper.mapToResponseDTO(mockLesson, new CourseResponseDTO())).thenReturn(lessonResponseDTO);
+        LessonResponseDTO savedLesson = lessonService.save(lessonDTO);
 
         assertNotNull(savedLesson);
-        assertEquals(lesson, savedLesson);
+        verify(lessonRepository, times(1)).save(mockLesson);
     }
 
     @Test
     void testFindLessonById_ExistingLesson_ReturnsLesson() {
         Long id = 1L;
         Lesson expectedLesson = mock(Lesson.class);
+        LessonResponseDTO expectedResponseLessonDTO = mock(LessonResponseDTO.class);
+        CourseResponseDTO expectedResponseCourseDTO = mock(CourseResponseDTO.class);
+
         when(lessonRepository.findById(id)).thenReturn(Optional.of(expectedLesson));
+        when(courseMapper.mapToResponseDTO(expectedLesson.getCourse())).thenReturn(expectedResponseCourseDTO);
 
-        Lesson result = lessonService.findById(id);
+        when(lessonMapper.mapToResponseDTO(expectedLesson, expectedResponseCourseDTO)).thenReturn(expectedResponseLessonDTO);
 
-        assertEquals(expectedLesson, result);
+        LessonResponseDTO result = lessonService.findById(id);
+
+        assertEquals(expectedResponseLessonDTO, result);
+        verify(lessonRepository, times(1)).findById(id);
     }
+
 
     @Test
     void testFindLessonById_NonExistingLesson_ThrowsEntityNotFoundException() {
@@ -144,20 +185,31 @@ class LessonServiceImplTest {
     void testFindAllLessonsReturnsEmptyList() {
         when(lessonRepository.findAll()).thenReturn(new ArrayList<>());
 
-        List<Lesson> lessons = lessonService.findAllLessons();
+        when(lessonMapper.mapToResponsesDTO(any(), any())).thenReturn(new ArrayList<>());
+
+        List<LessonResponseDTO> lessons = lessonService.findAllLessons();
 
         assertNotNull(lessons);
         assertTrue(lessons.isEmpty());
+
+        verify(lessonRepository, times(1)).findAll();
+
+        verify(courseMapper, never()).mapToResponseDTO(any());
+
+        verify(lessonMapper, times(1)).mapToResponsesDTO(eq(new ArrayList<>()), eq(new ArrayList<>()));
     }
 
     @Test
     void testFindAllLessonsReturnsNonEmptyList() {
-        List<Lesson> lessonList = new ArrayList<>();
-        lessonList.add(mock(Lesson.class));
-        lessonList.add(mock(Lesson.class));
+        List<Lesson> lessonList = Arrays.asList(mock(Lesson.class), mock(Lesson.class));
+        List<CourseResponseDTO> courseResponseDTOList = Arrays.asList(null, null);
+
+        when(lessonMapper.mapToResponsesDTO(eq(lessonList), eq(courseResponseDTOList)))
+                .thenReturn(Arrays.asList(mock(LessonResponseDTO.class), mock(LessonResponseDTO.class)));
+
         when(lessonRepository.findAll()).thenReturn(lessonList);
 
-        List<Lesson> lessons = lessonService.findAllLessons();
+        List<LessonResponseDTO> lessons = lessonService.findAllLessons();
 
         assertNotNull(lessons);
         assertEquals(2, lessons.size());
@@ -165,22 +217,27 @@ class LessonServiceImplTest {
 
     @Test
     void testFindAllLessonsByCourseIdSuccess() {
-        List<Lesson> lessonList = new ArrayList<>();
-        lessonList.add(mock(Lesson.class));
-        lessonList.add(mock(Lesson.class));
+        List<Lesson> lessonList = Arrays.asList(mock(Lesson.class), mock(Lesson.class));
+
+        when(lessonMapper.mapToResponsesDTO(
+                eq(lessonList),
+                anyList()
+        )).thenReturn(new ArrayList<>());
+
         when(lessonRepository.findAllByCourseId(1L)).thenReturn(lessonList);
 
-        List<Lesson> lessons = lessonService.findAllLessonsByCourse(1L);
+        List<LessonResponseDTO> lessons = lessonService.findAllLessonsByCourse(1L);
 
         assertNotNull(lessons);
-        assertEquals(2, lessons.size());
+        assertEquals(0, lessons.size());
+        verify(lessonRepository, times(1)).findAllByCourseId(1L);
     }
 
     @Test
     void testFindAllLessonsByCourseIdReturnsEmptyList() {
         when(lessonRepository.findAllByCourseId(1L)).thenReturn(Collections.emptyList());
 
-        List<Lesson> lessons = lessonService.findAllLessonsByCourse(1L);
+        List<LessonResponseDTO> lessons = lessonService.findAllLessonsByCourse(1L);
 
         assertNotNull(lessons);
         assertTrue(lessons.isEmpty());
@@ -262,12 +319,6 @@ class LessonServiceImplTest {
 
     @Test
     void testEditLesson_Success() {
-        Lesson originalLesson = Lesson.builder()
-                .id(1L)
-                .course(mock(Course.class))
-                .name("Original Lesson")
-                .build();
-
         UpdateLessonDTO updateLessonDTO = UpdateLessonDTO.builder()
                 .id(1L)
                 .name("Updated Lesson")
@@ -282,17 +333,48 @@ class LessonServiceImplTest {
                 .started(true)
                 .build();
 
+        Lesson originalLesson = Lesson.builder()
+                .id(1L)
+                .course(course)
+                .name("Original Lesson")
+                .build();
+
         Lesson updatedLesson = Lesson.builder()
                 .id(updateLessonDTO.getId())
                 .course(course)
                 .name(updateLessonDTO.getName())
                 .build();
 
+        LessonResponseDTO lessonResponseDTO = LessonResponseDTO.builder()
+                .id(updatedLesson.getId())
+                .name(updatedLesson.getName())
+                .course(new CourseResponseDTO())
+                .build();
+
+        CourseResponseDTO expectedResponseCourseDTO = CourseResponseDTO.builder()
+                .courseId(1L)
+                .courseName("Sample Course")
+                .status(CourseStatus.WAIT)
+                .startDate(LocalDate.now().plusDays(1))
+                .started(true)
+                .build();
+        Long id = 1L;
+        Lesson expectedLesson = mock(Lesson.class);
+        LessonResponseDTO expectedResponseLessonDTO = mock(LessonResponseDTO.class);
+
         when(lessonRepository.findById(1L)).thenReturn(Optional.of(originalLesson));
+
+        when(lessonRepository.findById(id)).thenReturn(Optional.of(expectedLesson));
+        when(courseMapper.mapToResponseDTO(expectedLesson.getCourse())).thenReturn(expectedResponseCourseDTO);
+
+        when(lessonMapper.mapToResponseDTO(expectedLesson, expectedResponseCourseDTO)).thenReturn(expectedResponseLessonDTO);
+
         when(courseRepository.findById(updateLessonDTO.getId())).thenReturn(Optional.of(course));
         when(lessonRepository.update(updatedLesson)).thenReturn(updatedLesson);
+        when(courseMapper.mapToResponseDTO(updatedLesson.getCourse())).thenReturn(expectedResponseCourseDTO);
+        when(lessonMapper.mapToResponseDTO(updatedLesson, expectedResponseCourseDTO)).thenReturn(lessonResponseDTO);
 
-        Lesson editedLesson = lessonService.editLesson(updateLessonDTO);
+        LessonResponseDTO editedLesson = lessonService.editLesson(updateLessonDTO);
 
         assertNotNull(editedLesson);
         assertEquals(updatedLesson.getId(), editedLesson.getId());

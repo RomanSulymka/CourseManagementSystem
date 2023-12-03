@@ -28,7 +28,6 @@ import java.util.List;
 public class CourseController {
     private final CourseService courseService;
 
-    //FIXME: should return DTO
     @PostMapping("/create")
     public ResponseEntity<CourseResponseDTO> createCourse(@RequestBody CourseDTO courseDTO) {
         return ResponseEntity.ok(courseService.create(courseDTO));

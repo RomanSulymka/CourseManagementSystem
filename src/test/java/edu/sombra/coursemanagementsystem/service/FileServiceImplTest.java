@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
+import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.FileServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,7 +40,7 @@ class FileServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
-    private LessonService lessonService;
+    private LessonRepository lessonRepository;
 
     @Mock
     private FileRepository fileRepository;
@@ -50,7 +51,7 @@ class FileServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        fileService = new FileServiceImpl(fileRepository, homeworkService, userRepository, lessonService);
+        fileService = new FileServiceImpl(fileRepository, homeworkService, userRepository, lessonRepository);
     }
 
     public static Object[][] provideFileTest() {
@@ -88,7 +89,7 @@ class FileServiceImplTest {
         User user = new User();
         Lesson lesson = new Lesson();
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(lessonService.findById(lessonId)).thenReturn(lesson);
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
 
 
         File file = new File();

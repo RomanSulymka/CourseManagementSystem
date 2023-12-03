@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
@@ -104,7 +105,7 @@ public class CourseServiceImpl implements CourseService {
         LocalDate currentDate = LocalDate.now();
         List<Course> coursesToStart = courseRepository.findByStartDate(currentDate);
         coursesToStart.forEach(course -> {
-            List<Lesson> lessons = lessonService.findAllLessonsByCourse(course.getId());
+            List<LessonResponseDTO> lessons = lessonService.findAllLessonsByCourse(course.getId());
             if (isCourseHasMoreLessons(lessons.size())) {
                 course.setStatus(CourseStatus.STARTED);
                 course.setStarted(true);
