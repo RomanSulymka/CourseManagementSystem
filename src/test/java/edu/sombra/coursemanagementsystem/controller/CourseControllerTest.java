@@ -239,8 +239,8 @@ class CourseControllerTest {
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].courseName").value("Lesson 1"))
-                .andExpect(jsonPath("$[1].courseName").value("Lesson 2"));
+                .andExpect(jsonPath("$[0].name").value("Lesson 1"))
+                .andExpect(jsonPath("$[1].name").value("Lesson 2"));
 
         verify(courseService, times(1)).findAllLessonsByCourse(courseId);
     }
