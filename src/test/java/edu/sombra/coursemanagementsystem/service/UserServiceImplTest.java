@@ -226,7 +226,7 @@ class UserServiceImplTest {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> userService.assignNewRole(userDTO));
 
-        assertEquals("User not found", exception.getMessage());
+        assertEquals("User not found: ", exception.getMessage());
     }
 
     @ParameterizedTest

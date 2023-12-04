@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
     public static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
     public static final String ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL = "Error assigning new role for user with email: ";
     public static final String FAILED_ASSIGN_NEW_ROLE_FOR_USER = "Failed assign new role for user";
-    public static final String USER_NOT_FOUND = "User not found";
+    public static final String USER_NOT_FOUND = "User not found: ";
     public static final String USER_SHOULD_HAS_THE_ROLE = "User should has the role: ";
     public static final String FAILED_TO_CREATE_USER = "Failed to create user";
     public static final String FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY = "Failed to create new User, the field is empty";
