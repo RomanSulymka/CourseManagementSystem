@@ -19,9 +19,9 @@ public class CourseMarkRepositoryImpl implements CourseMarkRepository {
     @Getter
     private EntityManager entityManager;
     public static final String SQL_UPSERT_USER_COURSE_MARK = "INSERT INTO user_course_marks (user_id, course_id, total_score, passed) " +
-            "VALUES (?, ?, ?, ?)" +
-            "ON CONFLICT (user_id, course_id) " +
-            "DO UPDATE " +
+            " VALUES (?, ?, ?, ?)" +
+            " ON CONFLICT (user_id, course_id) " +
+            " DO UPDATE " +
             "   SET total_score = EXCLUDED.total_score, " +
             "       passed = EXCLUDED.passed; ";
     private static final String GET_ELEMENTS_BY_USER_ID_AND_COURSE_ID = "SELECT u FROM user_course_marks u WHERE u.course.id = :courseId AND u.user.id = :userId";

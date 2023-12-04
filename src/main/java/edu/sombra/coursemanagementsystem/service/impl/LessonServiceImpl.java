@@ -27,6 +27,9 @@ import java.util.stream.LongStream;
 @Transactional
 @RequiredArgsConstructor
 public class LessonServiceImpl implements LessonService {
+    public static final String FAILED_TO_DELETE_LESSON = "Failed to delete lesson";
+    public static final String LESSON_DELETED_SUCCESSFULLY = "Lesson deleted successfully";
+    public static final String COURSE_SHOULD_HAVE_AT_LEAST_5_LESSONS = "Course should have at least 5 lessons";
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
     private final LessonMapper lessonMapper;
@@ -75,7 +78,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public List<Lesson> generateAndAssignLessons(Long numberOfLessons, Course course) {
         if (numberOfLessons < 5) {
-            throw new LessonException("Course should have at least 5 lessons");
+            throw new LessonException(COURSE_SHOULD_HAVE_AT_LEAST_5_LESSONS);
         }
 
         List<Lesson> generatedLessons = LongStream.rangeClosed(1, numberOfLessons)
@@ -94,10 +97,10 @@ public class LessonServiceImpl implements LessonService {
             Lesson lesson = lessonRepository.findById(id)
                     .orElseThrow(EntityNotFoundException::new);
             lessonRepository.delete(lesson);
-            log.info("Lesson deleted successfully");
+            log.info(LESSON_DELETED_SUCCESSFULLY);
         } catch (EntityDeletionException e) {
-            log.error("Error deletion lesson: {}", id);
-            throw new EntityDeletionException("Failed to delete lesson", e);
+            log.error(FAILED_TO_DELETE_LESSON + id);
+            throw new EntityDeletionException(FAILED_TO_DELETE_LESSON, e);
         }
     }
 

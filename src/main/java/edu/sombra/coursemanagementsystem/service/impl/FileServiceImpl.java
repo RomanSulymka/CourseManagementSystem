@@ -29,6 +29,15 @@ import java.util.List;
 @Service
 @Transactional
 public class FileServiceImpl implements FileService {
+    public static final String FILE_DELETED_SUCCESSFULLY_BY_ADMIN = "file deleted successfully by admin";
+    public static final String FILE_DELETED_SUCCESSFULLY = "file deleted successfully";
+    public static final String USER_HAS_NO_PERMISSION_TO_DELETE_THIS_HOMEWORK = "User has no permission to delete this homework";
+    public static final String FILE_NOT_FOUND = "File not found.";
+    public static final String FILE_WITH_ID_NOT_FOUND = "File with ID {} not found.";
+    public static final String USER_HAS_ALREADY_UPLOADED_THIS_HOMEWORK = "User has already uploaded this homework";
+    public static final String INVALID_INPUT_PARAMETERS = "Invalid input parameters";
+    public static final String FILE_UPLOADED_SUCCESSFULLY_WITH_NAME = "File uploaded successfully with name {}";
+
     private final FileRepository fileRepository;
     private final HomeworkService homeworkService;
     private final UserRepository userRepository;
@@ -46,7 +55,7 @@ public class FileServiceImpl implements FileService {
                         .fileName(uploadedFile.getOriginalFilename())
                         .fileData(uploadedFile.getBytes())
                         .build());
-                log.info("File uploaded successfully with name {}", uploadedFile.getOriginalFilename());
+                log.info(FILE_UPLOADED_SUCCESSFULLY_WITH_NAME, uploadedFile.getOriginalFilename());
 
                 homeworkService.save(Homework.builder()
                         .file(file)
@@ -61,7 +70,7 @@ public class FileServiceImpl implements FileService {
 
     private static void validateInput(MultipartFile uploadedFile, Long lessonId, Long userId) {
         if (uploadedFile == null || lessonId == null || userId == null || lessonId <= 0 || userId <= 0) {
-            throw new IllegalArgumentException("Invalid input parameters");
+            throw new IllegalArgumentException(INVALID_INPUT_PARAMETERS);
         }
     }
 
@@ -69,7 +78,7 @@ public class FileServiceImpl implements FileService {
         List<GetHomeworkDTO> homeworks = homeworkService.getAllHomeworksByUser(userId);
         for (GetHomeworkDTO homework : homeworks) {
             if (!homework.getLesson().getId().equals(lessonId)) {
-                throw new IllegalArgumentException("User has already uploaded this homework");
+                throw new IllegalArgumentException(USER_HAS_ALREADY_UPLOADED_THIS_HOMEWORK);
             }
         }
         return false;
@@ -92,8 +101,8 @@ public class FileServiceImpl implements FileService {
                 }
             };
         } else {
-            log.error("File with ID {} not found.", fileId);
-            throw new NoResultException("File not found.");
+            log.error(FILE_WITH_ID_NOT_FOUND, fileId);
+            throw new NoResultException(FILE_NOT_FOUND);
         }
     }
 
@@ -103,14 +112,14 @@ public class FileServiceImpl implements FileService {
         if (user.getRole().equals(RoleEnum.ADMIN)) {
             File file = findFileById(fileId);
             fileRepository.delete(file);
-            log.info("file deleted successfully by admin");
+            log.info(FILE_DELETED_SUCCESSFULLY_BY_ADMIN);
         } else {
             if (homeworkService.isUserUploadedThisHomework(fileId, user.getId())) {
                 File file = findFileById(fileId);
                 fileRepository.delete(file);
-                log.info("file deleted successfully");
+                log.info(FILE_DELETED_SUCCESSFULLY);
             } else {
-                throw new IllegalArgumentException("User has no permission to delete this homework");
+                throw new IllegalArgumentException(USER_HAS_NO_PERMISSION_TO_DELETE_THIS_HOMEWORK);
             }
         }
     }

@@ -37,6 +37,22 @@ import java.util.Objects;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+    public static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
+    public static final String ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL = "Error assigning new role for user with email: ";
+    public static final String FAILED_ASSIGN_NEW_ROLE_FOR_USER = "Failed assign new role for user";
+    public static final String USER_NOT_FOUND = "User not found";
+    public static final String USER_SHOULD_HAS_THE_ROLE = "User should has the role: ";
+    public static final String FAILED_TO_CREATE_USER = "Failed to create user";
+    public static final String FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY = "Failed to create new User, the field is empty";
+    public static final String FAILED_TO_UPDATE_USER = "Failed to update user ";
+    public static final String PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY = "Password has been changed successfully";
+    public static final String PASSWORD_CHANGED = "Password changed!";
+    public static final String USER_DELETED_SUCCESSFULLY = "User deleted successfully";
+    public static final String FAILED_TO_DELETE_USER = "Failed to delete user ";
+    public static final String PASSWORD_IS_EMPTY = "Password is empty!";
+    public static final String USERNAME_IS_EMPTY = "Username is empty!";
+    public static final String EMAIL_IS_EMPTY = "Email is empty!";
+    public static final String USER_ROLE_IS_EMPTY = "User Role is empty!";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper mapper;
@@ -45,8 +61,8 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO findUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.error("User not found with id: " + id);
-                    return new EntityNotFoundException("User not found with id: " + id);
+                    log.error(USER_NOT_FOUND_WITH_ID + id);
+                    return new EntityNotFoundException(USER_NOT_FOUND_WITH_ID + id);
                 });
         return mapper.mapToResponseDTO(user);
     }
@@ -58,8 +74,8 @@ public class UserServiceImpl implements UserService {
             userRepository.updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
             return userDTO.getRole().name();
         } catch (UserException ex) {
-            log.error("Error assigning new role for user with email: " + userDTO.getEmail());
-            throw new UserException("Failed assign new role for user", ex);
+            log.error(ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL + userDTO.getEmail());
+            throw new UserException(FAILED_ASSIGN_NEW_ROLE_FOR_USER, ex);
         }
     }
 
@@ -69,15 +85,15 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findUserByEmail(email);
             return mapper.mapToResponseDTO(user);
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException("User not found", e);
+            throw new EntityNotFoundException(USER_NOT_FOUND, e);
         }
     }
 
     @Override
     public void validateInstructor(User instructor, RoleEnum role) {
         if (instructor.getRole() != role) {
-            log.error("User should has the role: " + role.name());
-            throw new AccessDeniedException("User should has the role: " + role.name());
+            log.error(USER_SHOULD_HAS_THE_ROLE + role.name());
+            throw new AccessDeniedException(USER_SHOULD_HAS_THE_ROLE + role.name());
         }
     }
 
@@ -90,11 +106,11 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             return findUserByEmail(user.getEmail());
         } catch (UserCreationException ex) {
-            log.error("Error creating user: {}", ex.getMessage(), ex);
-            throw new UserCreationException("Failed to create user", ex);
+            log.error(FAILED_TO_CREATE_USER, ex.getMessage(), ex);
+            throw new UserCreationException(FAILED_TO_CREATE_USER, ex);
         } catch (NullPointerException ex) {
-            log.error("Failed to create new User, the field is empty");
-            throw new NullPointerException("Failed to create new User, the field is empty");
+            log.error(FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY);
+            throw new NullPointerException(FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY);
         }
     }
 
@@ -104,8 +120,8 @@ public class UserServiceImpl implements UserService {
         try {
             User existingUser = userRepository.findById(userDTO.getId())
                     .orElseThrow(() -> {
-                        log.error("User not found with id: " + userDTO.getId());
-                        return new EntityNotFoundException("User not found with id: " + userDTO.getId());
+                        log.error(USER_NOT_FOUND_WITH_ID + userDTO.getId());
+                        return new EntityNotFoundException(USER_NOT_FOUND_WITH_ID + userDTO.getId());
                     });
             if (userDTO.getRole() == null) {
                 userDTO.setRole(existingUser.getRole());
@@ -114,8 +130,8 @@ public class UserServiceImpl implements UserService {
             userRepository.update(existingUser);
             return mapper.mapToResponseDTO(existingUser);
         } catch (NullPointerException ex) {
-            log.error("Error updating user with id: {}", userDTO.getId(), ex);
-            throw new UserUpdateException("Failed to update user", ex);
+            log.error(FAILED_TO_UPDATE_USER + userDTO.getId() + ex);
+            throw new UserUpdateException(FAILED_TO_UPDATE_USER, ex);
         }
     }
 
@@ -125,10 +141,10 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findUserByEmail(resetPasswordDTO.getEmail());
             user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
             updateUser(mapper.mapToUpdateDTO(user));
-            log.info("Password has been changed successfully");
-            return "Password changed!";
+            log.info(PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY);
+            return PASSWORD_CHANGED;
         }
-        throw new EntityNotFoundException("User not found: " + resetPasswordDTO.getEmail());
+        throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDTO.getEmail());
     }
 
     @Override
@@ -136,15 +152,15 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findById(id)
                     .orElseThrow(() -> {
-                        log.error("User not found with id: " + id);
-                        return new EntityNotFoundException("User not found with id: " + id);
+                        log.error(USER_NOT_FOUND_WITH_ID + id);
+                        return new EntityNotFoundException(USER_NOT_FOUND_WITH_ID + id);
                     });
             userRepository.delete(user);
-            log.info("User deleted successfully");
-            return "User deleted successfully!";
+            log.info(USER_DELETED_SUCCESSFULLY);
+            return USER_DELETED_SUCCESSFULLY;
         } catch (EntityNotFoundException ex) {
-            log.error("Error deleting user with id: {}", id, ex);
-            throw new EntityDeletionException("Failed to delete user", ex);
+            log.error(FAILED_TO_DELETE_USER + id + ex);
+            throw new EntityDeletionException(FAILED_TO_DELETE_USER, ex);
         }
     }
 
@@ -163,9 +179,9 @@ public class UserServiceImpl implements UserService {
     public boolean isUserInstructor(Long instructorId) {
         User instructor = userRepository.findById(instructorId)
                 .orElseThrow(() -> {
-                    log.error("User not found with id: " + instructorId);
-                    return new EntityNotFoundException("User not found with id: " + instructorId);
-                });;
+                    log.error(USER_NOT_FOUND + instructorId);
+                    return new EntityNotFoundException(USER_NOT_FOUND_WITH_ID + instructorId);
+                });
         validateInstructor(instructor, RoleEnum.INSTRUCTOR);
         return true;
     }
@@ -182,14 +198,14 @@ public class UserServiceImpl implements UserService {
 
     private void validateUser(CreateUserDTO userDTO) {
         if (userDTO.getPassword().isEmpty() || userDTO.getPassword().isBlank()) {
-            throw new NullPointerException("Password is empty!");
+            throw new NullPointerException(PASSWORD_IS_EMPTY);
         } else if (userDTO.getFirstName().isEmpty() || userDTO.getLastName().isEmpty()
                 || userDTO.getFirstName().isBlank() || userDTO.getLastName().isBlank()) {
-            throw new NullPointerException("Username is empty!");
+            throw new NullPointerException(USERNAME_IS_EMPTY);
         } else if (userDTO.getEmail().isEmpty() || userDTO.getEmail().isBlank()) {
-            throw new NullPointerException("Email is empty!");
+            throw new NullPointerException(EMAIL_IS_EMPTY);
         } else if (userDTO.getRole() == null) {
-            throw new NullPointerException("User Role is empty!");
+            throw new NullPointerException(USER_ROLE_IS_EMPTY);
         }
     }
 }

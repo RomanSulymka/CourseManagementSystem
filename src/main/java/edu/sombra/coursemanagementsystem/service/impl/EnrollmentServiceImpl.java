@@ -36,6 +36,22 @@ import java.util.List;
 @Transactional
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
+    public static final String ENROLLMENT_IS_NULL = "Enrollment is null!";
+    public static final String FAILED_TO_CREATE_ENROLLMENT = "Failed to create enrollment ";
+    public static final String FAILED_TO_ASSIGN_INSTRUCTOR = "Failed to assign instructor";
+    public static final String ERROR_SAVING_INSTRUCTOR_TO_THE_COURSE_WITH_EMAIL = "Error saving instructor to the course with email: {}";
+    public static final String COURSE_SHOULD_HAVE_AT_LEAST_ONE_INSTRUCTOR_ASSIGNED_ON_THE_COURSE = "Course should have at least one instructor assigned on the course";
+    public static final String ENTITY_NOT_FOUND_WITH_ID = "Entity not found with ID: ";
+    public static final String ERROR_FINDING_ENROLLMENT_WITH_ID = "Error finding enrollment with id: {}";
+    public static final String ENROLLMENT_NOT_FOUND_WITH_ID = "Enrollment not found with id: ";
+    public static final String ERROR_FINDING_ENROLLMENT_WITH_NAME = "Error finding enrollment with name: {}";
+    public static final String FAILED_TO_FIND_ENROLLMENT_BY_NAME = "Failed to find enrollment by name";
+    public static final String ELEMENTS_ARE_EMPTY = "Elements are empty!";
+    public static final String USER_HAS_ALREADY_ASSIGNED_FOR_5_COURSES = "User has already assigned for 5 courses";
+    public static final String USER_IS_ALREADY_ASSIGNED_TO_THIS_COURSE = "User is already assigned to this course";
+    public static final String ERROR_FINDING_COURSES_FOR_USER_WITH_ID = "Error finding courses for user with id: {}";
+    public static final String FAILED_TO_FIND_COURSES_FOR_USER = "Failed to find courses for user";
+
     private final EnrollmentRepository enrollmentRepository;
     private final CourseService courseService;
     private final CourseMapper courseMapper;
@@ -51,12 +67,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public void save(Enrollment enrollment) {
         try {
             if (enrollment == null) {
-                throw new EnrollmentException("Enrollment is null!");
+                throw new EnrollmentException(ENROLLMENT_IS_NULL);
             }
             enrollmentRepository.save(enrollment);
         } catch (EnrollmentException ex) {
-            log.error("Error creating enrollment: {}", ex.getMessage(), ex);
-            throw new EnrollmentException("Failed to create enrollment", ex);
+            log.error(FAILED_TO_CREATE_ENROLLMENT + ex.getMessage(), ex);
+            throw new EnrollmentException(FAILED_TO_CREATE_ENROLLMENT, ex);
         }
     }
 
@@ -73,8 +89,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             Enrollment enrollment = buildEnrollment(course, instructor);
             enrollmentRepository.save(enrollment);
         } catch (EnrollmentException ex) {
-            log.error("Error saving instructor to the course with email: {}", enrollmentDTO.getUserEmail());
-            throw new EnrollmentException("Failed to assign instructor");
+            log.error(ERROR_SAVING_INSTRUCTOR_TO_THE_COURSE_WITH_EMAIL, enrollmentDTO.getUserEmail());
+            throw new EnrollmentException(FAILED_TO_ASSIGN_INSTRUCTOR);
         }
     }
 
@@ -86,13 +102,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 if (getListOfInstructorsForCourse(id).size() > 1) {
                     removeEnrollment(id);
                 } else {
-                    throw new EnrollmentException("Course should have at least one instructor assigned on the course");
+                    throw new EnrollmentException(COURSE_SHOULD_HAVE_AT_LEAST_ONE_INSTRUCTOR_ASSIGNED_ON_THE_COURSE);
                 }
             } else {
                 removeEnrollment(id);
             }
         } catch (NullPointerException ex) {
-            throw new EntityNotFoundException("Entity not found with ID: " + id);
+            throw new EntityNotFoundException(ENTITY_NOT_FOUND_WITH_ID + id);
         }
     }
 
@@ -100,13 +116,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         try {
             return enrollmentRepository.findUserByEnrollmentId(id);
         } catch (EntityNotFoundException ex) {
-            throw new EnrollmentException("Enrollment not found for id: " + id, ex);
+            throw new EnrollmentException(ENTITY_NOT_FOUND_WITH_ID + id, ex);
         }
     }
 
     private void removeEnrollment(Long id) {
         Enrollment enrollment = enrollmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Enrollment not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NOT_FOUND_WITH_ID + id));
 
         enrollmentRepository.delete(enrollment);
     }
@@ -125,8 +141,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                         .role(enrollment.getUser().getRole())
                         .build())
                 .orElseThrow(() -> {
-                    log.error("Error finding enrollment with id: {}", id);
-                    return new EntityNotFoundException("Enrollment not found with id: " + id);
+                    log.error(ERROR_FINDING_ENROLLMENT_WITH_ID, id);
+                    return new EntityNotFoundException(ENROLLMENT_NOT_FOUND_WITH_ID + id);
                 });
     }
 
@@ -138,15 +154,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     .map(this::mapTupleToEnrollmentGetByNameDTO)
                     .toList();
         } catch (RuntimeException ex) {
-            log.error("Error finding enrollment with name: {}", name, ex);
-            throw new EntityNotFoundException("Failed to find enrollment by name", ex);
+            log.error(ERROR_FINDING_ENROLLMENT_WITH_NAME, name, ex);
+            throw new EntityNotFoundException(FAILED_TO_FIND_ENROLLMENT_BY_NAME, ex);
         }
     }
 
     @Override
     public EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO) {
         if (updateDTO.getCourseId() == null && updateDTO.getUserId() == null & updateDTO.getId() == null) {
-            throw new EnrollmentException("Elements are empty!");
+            throw new EnrollmentException(ELEMENTS_ARE_EMPTY);
         }
         User user = userRepository.findById(updateDTO.getUserId()).orElseThrow();
         Course course = courseRepository.findById(updateDTO.getCourseId()).orElseThrow();
@@ -182,7 +198,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 homeworkRepository.assignUserForLesson(user.getId(), lesson.getId());
             }
         } else {
-            throw new EnrollmentException("User has already assigned for 5 courses");
+            throw new EnrollmentException(USER_HAS_ALREADY_ASSIGNED_FOR_5_COURSES);
         }
     }
 
@@ -190,8 +206,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public void isUserAlreadyAssigned(Course course, User user) {
         boolean userAssigned = enrollmentRepository.isUserAssignedToCourse(course, user);
         if (userAssigned) {
-            log.error("User is already assigned to this course");
-            throw new UserAlreadyAssignedException("User is already assigned to this course");
+            log.error(USER_IS_ALREADY_ASSIGNED_TO_THIS_COURSE);
+            throw new UserAlreadyAssignedException(USER_IS_ALREADY_ASSIGNED_TO_THIS_COURSE);
         }
     }
 
@@ -218,8 +234,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         try {
             return enrollmentRepository.findCoursesByUserId(id);
         } catch (EntityNotFoundException ex) {
-            log.error("Error finding courses for user with id: {}", id, ex);
-            throw new EntityNotFoundException("Failed to find courses for user", ex);
+            log.error(ERROR_FINDING_COURSES_FOR_USER_WITH_ID, id, ex);
+            throw new EntityNotFoundException(FAILED_TO_FIND_COURSES_FOR_USER, ex);
         }
     }
 
