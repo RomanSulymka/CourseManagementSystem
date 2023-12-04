@@ -128,7 +128,7 @@ class EnrollmentServiceImplTest {
     @Test
     void testSaveEnrollmentWithNullEnrollment() {
         EnrollmentException exception = assertThrows(EnrollmentException.class, () -> enrollmentService.save(null));
-        assertEquals("Failed to create enrollment", exception.getMessage());
+        assertEquals("Failed to create enrollment ", exception.getMessage());
         verify(enrollmentRepository, never()).save(any());
     }
 
@@ -261,7 +261,7 @@ class EnrollmentServiceImplTest {
         when(enrollmentRepository.findUserByEnrollmentId(enrollmentId)).thenThrow(new EntityNotFoundException());
 
         EnrollmentException exception = assertThrows(EnrollmentException.class, () -> enrollmentService.findUserByEnrollment(enrollmentId));
-        assertEquals("Enrollment not found for id: " + enrollmentId, exception.getMessage());
+        assertEquals("Entity not found with ID: " + enrollmentId, exception.getMessage());
     }
 
     @Test

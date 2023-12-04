@@ -438,7 +438,7 @@ class UserServiceImplTest {
         UserUpdateException exception = assertThrows(UserUpdateException.class,
                 () -> userService.updateUser(updateUser));
 
-        assertEquals("Failed to update user", exception.getMessage());
+        assertEquals("Failed to update user ", exception.getMessage());
     }
 
     @Test
@@ -502,7 +502,7 @@ class UserServiceImplTest {
 
         String result = userService.deleteUser(userId);
 
-        assertEquals("User deleted successfully!", result);
+        assertEquals("User deleted successfully", result);
         verify(userRepository, times(1)).delete(existingUser);
     }
 
@@ -514,7 +514,7 @@ class UserServiceImplTest {
         EntityDeletionException exception = assertThrows(EntityDeletionException.class,
                 () -> userService.deleteUser(userId));
 
-        assertEquals("Failed to delete user", exception.getMessage());
+        assertEquals("Failed to delete user ", exception.getMessage());
         verify(userRepository, never()).delete(any());
     }
 
@@ -523,7 +523,7 @@ class UserServiceImplTest {
         EntityDeletionException exception = assertThrows(EntityDeletionException.class,
                 () -> userService.deleteUser(null));
 
-        assertEquals("Failed to delete user", exception.getMessage());
+        assertEquals("Failed to delete user ", exception.getMessage());
         verify(userRepository, never()).delete(any());
     }
 

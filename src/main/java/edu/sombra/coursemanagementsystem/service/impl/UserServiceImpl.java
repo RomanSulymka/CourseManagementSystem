@@ -53,6 +53,7 @@ public class UserServiceImpl implements UserService {
     public static final String USERNAME_IS_EMPTY = "Username is empty!";
     public static final String EMAIL_IS_EMPTY = "Email is empty!";
     public static final String USER_ROLE_IS_EMPTY = "User Role is empty!";
+    public static final String ERROR_USER_NOT_FOUND = "User not found: ";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper mapper;
@@ -85,7 +86,7 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findUserByEmail(email);
             return mapper.mapToResponseDTO(user);
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(USER_NOT_FOUND, e);
+            throw new EntityNotFoundException(ERROR_USER_NOT_FOUND, e);
         }
     }
 
