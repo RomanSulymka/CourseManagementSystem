@@ -57,7 +57,7 @@ class FileControllerTest {
                         .file(file)
                         .param("userId", "1")
                         .param("lessonId", "2"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isBadRequest());
 
         verify(fileService, never()).saveFile(file, 2L, 1L);
     }
