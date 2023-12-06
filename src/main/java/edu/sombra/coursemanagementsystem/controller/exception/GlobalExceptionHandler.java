@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller.exception;
 
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
+import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.ErrorResponse;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
@@ -46,7 +47,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    //FIXME: check it
     @ExceptionHandler(value = {ExpiredJwtException.class})
     public ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
@@ -73,6 +73,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {IllegalArgumentException.class})
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {EnrollmentException.class})
+    public ResponseEntity<ErrorResponse> handleEnrollmentException(EnrollmentException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
