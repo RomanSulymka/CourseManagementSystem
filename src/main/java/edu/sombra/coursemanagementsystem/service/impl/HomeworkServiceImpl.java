@@ -3,6 +3,7 @@ package edu.sombra.coursemanagementsystem.service.impl;
 import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
+import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
@@ -103,8 +104,9 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public List<GetHomeworkDTO> getAllHomeworksByUser(Long userId) {
-        userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
-        List<Homework> homeworkList = homeworkRepository.findAllByUser(userId);
+        //todo: refactor this line to the validation method
+        User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
+        List<Homework> homeworkList = homeworkRepository.findAllByUser(user.getId());
         return homeworkMapper.mapToDTO(homeworkList);
     }
 

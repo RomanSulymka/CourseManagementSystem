@@ -15,9 +15,9 @@ import java.util.Optional;
 @AllArgsConstructor
 @Repository
 public class HomeworkRepositoryImpl implements HomeworkRepository {
-    public static final String GET_ALL_HOMEWORKS_BY_USER = "SELECT h FROM homework h where user.id =: userId";
     @PersistenceContext
     private EntityManager entityManager;
+    public static final String GET_ALL_HOMEWORKS_BY_USER = "SELECT h FROM homework h where user.id =: userId";
 
     private static final String GET_AVERAGE_MARK_BY_USER = "SELECT AVG(h.mark) FROM homework h INNER JOIN lessons l on l.id = h.lesson.id " +
             "INNER JOIN courses c on c.id = l.course.id WHERE h.user.id = :userId AND l.course.id = :courseId";

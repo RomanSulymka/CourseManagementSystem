@@ -1,10 +1,11 @@
 package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.entity.File;
-import edu.sombra.coursemanagementsystem.entity.Lesson;
+import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
+import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.FileServiceImpl;
@@ -24,7 +25,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,12 +46,12 @@ class FileServiceImplTest {
     private FileRepository fileRepository;
 
     @Mock
-    private HomeworkService homeworkService;
+    private HomeworkRepository homeworkRepository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        fileService = new FileServiceImpl(fileRepository, homeworkService, userRepository, lessonRepository);
+        fileService = new FileServiceImpl(fileRepository, homeworkRepository, userRepository, lessonRepository);
     }
 
     public static Object[][] provideFileTest() {
@@ -64,9 +64,9 @@ class FileServiceImplTest {
 
     public static Object[][] testFiles() {
         return new Object[][]{
-                {"testFile1.txt", new byte[] {1,2,3,4,5}, 1L, 11L},
-                {"testFile2.txt", new byte[] {6,7,8,9,1}, 2L, 12L},
-                {"testFile3.txt", new byte[] {5,2,1,6,9}, 2L, 13L},
+                {"testFile1.txt", new byte[]{1, 2, 3, 4, 5}, 1L, 11L},
+                {"testFile2.txt", new byte[]{6, 7, 8, 9, 1}, 2L, 12L},
+                {"testFile3.txt", new byte[]{5, 2, 1, 6, 9}, 2L, 13L},
         };
     }
 
@@ -82,15 +82,14 @@ class FileServiceImplTest {
     @MethodSource("testFiles")
     void testSaveFile_Successful(String fileName, byte[] fileData, Long userId, Long lessonId) throws IOException {
         MultipartFile uploadedFile = mock(MultipartFile.class);
+        Homework existingHomework = mock(Homework.class);
+
         when(uploadedFile.getOriginalFilename()).thenReturn(fileName);
         when(uploadedFile.getBytes()).thenReturn(fileData);
-        when(homeworkService.getAllHomeworksByUser(userId)).thenReturn(new ArrayList<>());
 
-        User user = new User();
-        Lesson lesson = new Lesson();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(lessonRepository.existsById(lessonId)).thenReturn(true);
+        when(homeworkRepository.findByUserAndLessonId(userId, lessonId)).thenReturn(Optional.ofNullable(existingHomework));
 
         File file = new File();
         when(fileRepository.save(any(File.class))).thenReturn(file);
@@ -99,11 +98,7 @@ class FileServiceImplTest {
 
         verify(fileRepository, times(1)).save(any(File.class));
 
-        verify(homeworkService, times(1)).save(argThat(savedHomework ->
-                savedHomework.getFile() == file &&
-                        savedHomework.getUser() == user &&
-                        savedHomework.getLesson() == lesson
-        ));
+        verify(homeworkRepository, times(1)).update(existingHomework);
     }
 
     @ParameterizedTest
@@ -181,7 +176,7 @@ class FileServiceImplTest {
         when(userRepository.findUserByEmail(userEmail)).thenReturn(normalUser);
         File file = new File();
         when(fileRepository.findById(fileId)).thenReturn(Optional.of(file));
-        when(homeworkService.isUserUploadedThisHomework(fileId, normalUser.getId())).thenReturn(true);
+        when(homeworkRepository.isUserUploadedHomework(fileId, normalUser.getId())).thenReturn(true);
 
         fileService.delete(fileId, userEmail);
 
@@ -197,7 +192,7 @@ class FileServiceImplTest {
                 .role(RoleEnum.STUDENT)
                 .build();
         when(userRepository.findUserByEmail(userEmail)).thenReturn(normalUser);
-        when(homeworkService.isUserUploadedThisHomework(fileId, normalUser.getId())).thenReturn(false);
+        //when(homeworkRepository.isUserUploadedThisHomework(fileId, normalUser.getId())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class, () -> fileService.delete(fileId, userEmail));
         verify(fileRepository, never()).delete(any());

@@ -19,6 +19,7 @@ import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
@@ -67,14 +68,14 @@ class CourseServiceImplTest {
     @Mock
     private CourseMapper courseMapper;
     @Mock
-    private CourseFeedbackService courseFeedbackService;
+    private CourseFeedbackRepository courseFeedbackRepository;
     @Mock
     private LessonMapper lessonMapper;
 
     @BeforeEach
     void setUp() {
-        courseService = new CourseServiceImpl(courseRepository, courseMarkRepository, userService, userRepository,
-                lessonService, userMapper, courseMapper, courseFeedbackService, lessonMapper);
+        courseService = new CourseServiceImpl(courseRepository, courseFeedbackRepository, courseMarkRepository, userService, userRepository,
+                lessonService, userMapper, courseMapper, lessonMapper);
     }
 
     private static Stream<Arguments> lessonListProvider() {
@@ -762,7 +763,7 @@ class CourseServiceImplTest {
         when(courseRepository.findById(courseId)).thenReturn(createSampleCourse(courseId));
         when(courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)).thenReturn(Optional.of(createSampleLessons()));
         when(courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)).thenReturn(Optional.of(createSampleCourseMark()));
-        when(courseFeedbackService.findFeedback(studentId, courseId)).thenReturn(createSampleCourseFeedback());
+        when(courseFeedbackRepository.findFeedback(studentId, courseId)).thenReturn(Optional.ofNullable(createSampleCourseFeedback()));
         when(courseMapper.toDTO(any(), any(), any(), any(), any())).thenReturn(mock(LessonsByCourseDTO.class));
 
         LessonsByCourseDTO resultDTO = courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId);
@@ -773,7 +774,7 @@ class CourseServiceImplTest {
         verify(courseRepository, times(1)).findById(courseId);
         verify(courseRepository, times(1)).findAllLessonsByCourseAssignedToUserId(studentId, courseId);
         verify(courseMarkRepository, times(1)).findCourseMarkByUserIdAndCourseId(studentId, courseId);
-        verify(courseFeedbackService, times(1)).findFeedback(studentId, courseId);
+        verify(courseFeedbackRepository, times(1)).findFeedback(studentId, courseId);
         verify(courseMapper, times(1)).toDTO(any(), any(), any(), any(), any());
     }
 

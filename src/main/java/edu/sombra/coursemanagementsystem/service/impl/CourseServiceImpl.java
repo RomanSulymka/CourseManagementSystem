@@ -19,10 +19,10 @@ import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
-import edu.sombra.coursemanagementsystem.service.CourseFeedbackService;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -55,13 +56,13 @@ public class CourseServiceImpl implements CourseService {
     public static final String INCORRECT_ACTION_PARAMETER = "Incorrect action parameter!";
     public static final String INSTRUCTOR_IS_NOT_ASSIGNED_TO_THIS_COURSE = "Instructor is not assigned to this course";
     private final CourseRepository courseRepository;
+    private final CourseFeedbackRepository courseFeedbackRepository;
     private final CourseMarkRepository courseMarkRepository;
     private final UserService userService;
     private final UserRepository userRepository;
     private final LessonService lessonService;
     private final UserMapper userMapper;
     private final CourseMapper courseMapper;
-    private final CourseFeedbackService courseFeedbackService;
     private final LessonMapper lessonMapper;
 
     private static final Long MIN_LESSONS = 5L;
@@ -247,7 +248,7 @@ public class CourseServiceImpl implements CourseService {
         List<Lesson> lessons = courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)
                 .orElseThrow(EntityNotFoundException::new);
 
-        CourseFeedback feedback = courseFeedbackService.findFeedback(studentId, courseId);
+        CourseFeedback feedback = courseFeedbackRepository.findFeedback(studentId, courseId).orElseThrow(NoSuchElementException::new);
         return courseMapper.toDTO(course, lessons, courseMark, studentId, feedback);
     }
 

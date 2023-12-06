@@ -7,6 +7,7 @@ import edu.sombra.coursemanagementsystem.dto.auth.RegisterDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.Token;
 import edu.sombra.coursemanagementsystem.entity.User;
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.enums.TokenType;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
@@ -49,7 +50,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
             user.setLastName(registerDTO.getLastName());
             user.setEmail(registerDTO.getEmail());
             user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
-            user.setRole(registerDTO.getRole());
+            user.setRole(registerDTO.getRole() != null ? registerDTO.getRole() : RoleEnum.STUDENT);
 
             var createUserDTO = userMapper.mapToDTO(user);
             var savedUserDTO = userService.createUser(createUserDTO);

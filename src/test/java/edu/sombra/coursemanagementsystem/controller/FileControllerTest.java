@@ -1,10 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.entity.File;
-import edu.sombra.coursemanagementsystem.repository.token.TokenRepository;
-import edu.sombra.coursemanagementsystem.security.jwt.JwtService;
 import edu.sombra.coursemanagementsystem.service.FileService;
-import edu.sombra.coursemanagementsystem.service.auth.AuthenticateService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +13,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,18 +30,6 @@ class FileControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private JwtService jwtService;
-
-    @MockBean
-    private UserDetailsService userDetailsService;
-
-    @MockBean
-    private TokenRepository tokenRepository;
-
-    @MockBean
-    private AuthenticateService authenticateService;
 
     @MockBean
     private FileService fileService;
