@@ -96,8 +96,22 @@ class CourseRepositoryImplTest {
         User instructor = User.builder().id(3L).email("instructor@gmail.com").role(RoleEnum.INSTRUCTOR).build();
         courseRepository.assignInstructor(course.getId(), instructor.getId());
 
-        User student1 = User.builder().id(1L).email("user1@example.com").role(RoleEnum.STUDENT).build();
-        User student2 = User.builder().id(2L).email("user2@example.com").role(RoleEnum.STUDENT).build();
+        User student1 = userRepository.save(User.builder()
+                .lastName("test")
+                .firstName("user")
+                .password("123")
+                .email("user1@example.com")
+                .role(RoleEnum.STUDENT)
+                .build());
+
+        User student2 = userRepository.save(User.builder()
+                .lastName("test")
+                .firstName("user")
+                .password("123")
+                .email("user2@example.com")
+                .role(RoleEnum.STUDENT)
+                .build());
+
         enrollmentRepository.save(Enrollment.builder()
                 .course(course)
                 .user(student1)
@@ -114,10 +128,9 @@ class CourseRepositoryImplTest {
         assertEquals(1, instructorsInCourse.size(), "There should be one instructor in the course");
         assertEquals(instructor.getUsername(), instructorsInCourse.get(0).getUsername(), "Instructor username should match");
 
-        //FIXME: should be 2
-        assertEquals(1, studentsInCourse.size(), "There should be two students in the course");
+        assertEquals(2, studentsInCourse.size(), "There should be two students in the course");
         assertTrue(studentsInCourse.stream().anyMatch(user -> user.getEmail().equals(student1.getEmail())), "Student1 should be in the course");
-        //assertTrue(studentsInCourse.stream().anyMatch(user -> user.getEmail().equals(student2.getEmail())), "Student2 should be in the course");
+        assertTrue(studentsInCourse.stream().anyMatch(user -> user.getEmail().equals(student2.getEmail())), "Student2 should be in the course");
     }
 
     @Test
