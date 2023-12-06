@@ -205,13 +205,19 @@ class UserServiceImplTest {
                 .build();
 
         User mockUser = mock(User.class);
+        UserResponseDTO expectedUserResponseDTO = UserResponseDTO.builder()
+                .id(1L)
+                .build();
 
         when(userRepository.findUserByEmail(userDTO.getEmail())).thenReturn(mockUser);
         doNothing().when(userRepository).updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
+        when(userRepository.findUserByEmail(userDTO.getEmail())).thenReturn(mockUser);
+        when(userMapper.mapToResponseDTO(mockUser)).thenReturn(expectedUserResponseDTO);
 
-        String assignedRole = userService.assignNewRole(userDTO);
+        UserResponseDTO assignedRoleResponse = userService.assignNewRole(userDTO);
 
-        assertEquals(userDTO.getRole().name(), assignedRole);
+        assertNotNull(assignedRoleResponse);
+        verify(userRepository, times(1)).updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
     }
 
     @Test

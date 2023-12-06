@@ -825,11 +825,17 @@ class CourseServiceImplTest {
         Long courseId = 1L;
         String action = "start";
         List<User> users = Collections.singletonList(User.builder().id(1L).role(RoleEnum.INSTRUCTOR).build());
+        List<Lesson> lessons = List.of(Lesson.builder().id(1L).build(),
+                Lesson.builder().id(2L).build(),
+                Lesson.builder().id(3L).build(),
+                Lesson.builder().id(4L).build(),
+                Lesson.builder().id(5L).build());
 
         when(courseMapper.mapToResponseDTO(createSampleCourse(1L, "Sample Course"))).thenReturn(createCourseResponseDTO());
         when(courseRepository.findById(courseId))
                 .thenReturn(Optional.of(createSampleCourse(courseId, "Sample Course")));
         when(courseRepository.findUsersInCourseByRole(courseId, RoleEnum.INSTRUCTOR)).thenReturn(users);
+        when(courseRepository.findAllLessonsInCourse(courseId)).thenReturn(Optional.of(lessons));
 
         CourseResponseDTO resultCourse = courseService.startOrStopCourse(courseId, action);
 

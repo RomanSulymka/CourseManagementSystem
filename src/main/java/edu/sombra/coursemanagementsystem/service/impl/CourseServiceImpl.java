@@ -35,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -47,7 +46,7 @@ public class CourseServiceImpl implements CourseService {
     public static final String USER_SHOULD_HAVE_INSTRUCTOR_ROLE_BUT_NOW_USER_HAS_ROLE = "User should have instructor role, but now user has role {}";
     public static final String INSTRUCTOR_SUCCESSFULLY_ASSIGNED = "Instructor successfully assigned!";
     public static final String SCHEDULER_SUCCESSFULLY_STARTED = "Scheduler successfully started";
-    public static final String FAILED_START_COURSE_COURSE_HAS_NOT_ENOUGH_LESSONS = "Failed start course, course has not enough lessons";
+    public static final String FAILED_START_COURSE_COURSE_HAS_NOT_ENOUGH_LESSONS = "Error, course has not enough lessons";
     public static final String COURSE_HAS_NOT_ENOUGH_LESSONS = "Course has not enough lessons";
     public static final String COURSE_NOT_FOUND_WITH_ID = "Course not found with id: ";
     public static final String COURSE_NOT_FOUND_WITH_NAME = "Course not found with name: ";
@@ -243,12 +242,12 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow();
 
         CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
-                .orElse(null);
+                .orElse(new CourseMark());
 
         List<Lesson> lessons = courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)
                 .orElseThrow(EntityNotFoundException::new);
 
-        CourseFeedback feedback = courseFeedbackRepository.findFeedback(studentId, courseId).orElseThrow(NoSuchElementException::new);
+        CourseFeedback feedback = courseFeedbackRepository.findFeedback(studentId, courseId).orElse(null);
         return courseMapper.toDTO(course, lessons, courseMark, studentId, feedback);
     }
 
@@ -264,6 +263,8 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseResponseDTO startOrStopCourse(Long courseId, String action) {
         if (action.equals("start")) {
+            List<Lesson> lessons = courseRepository.findAllLessonsInCourse(courseId).orElseThrow();
+            isCourseHasMoreLessons(lessons.size());
             return startCourse(courseId, CourseStatus.STARTED);
         } else if (action.equals("stop")) {
             return stopCourse(courseId, CourseStatus.STOP);

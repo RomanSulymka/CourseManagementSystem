@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller.exception;
 
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
+import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.ErrorResponse;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
@@ -24,7 +25,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({ UserAlreadyAssignedException.class, AccessDeniedException.class })
+    @ExceptionHandler({UserAlreadyAssignedException.class, AccessDeniedException.class})
     public ResponseEntity<String> handleException(Exception e) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         if (e instanceof UserAlreadyAssignedException) {
@@ -67,6 +68,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {LessonException.class})
     public ResponseEntity<ErrorResponse> handleLessonException(LessonException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {CourseException.class})
+    public ResponseEntity<ErrorResponse> handleCourseException(CourseException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

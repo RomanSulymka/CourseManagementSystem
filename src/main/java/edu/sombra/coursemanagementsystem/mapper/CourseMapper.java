@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -24,8 +25,8 @@ public class CourseMapper {
                 .courseId(course.getId())
                 .courseName(course.getName())
                 .feedback(feedback != null ? feedback.getFeedbackText() : null)
-                .totalScore(courseMark.getTotalScore())
-                .passed(courseMark.getPassed())
+                .totalScore(courseMark != null ? courseMark.getTotalScore() : null)
+                .passed(Optional.ofNullable(courseMark).map(CourseMark::getPassed).orElse(false))
                 .lessonDTO(lessonMapper.toDTO(lessons, studentId))
                 .build();
     }

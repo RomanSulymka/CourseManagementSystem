@@ -13,7 +13,7 @@ import java.util.List;
 public interface UserService {
     UserResponseDTO findUserById(Long id);
 
-    String assignNewRole(UserDTO userDTO);
+    UserResponseDTO assignNewRole(UserDTO userDTO);
 
     UserResponseDTO findUserByEmail(String email);
 

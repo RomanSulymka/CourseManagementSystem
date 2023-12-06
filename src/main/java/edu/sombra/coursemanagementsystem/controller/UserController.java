@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @PostMapping("/assign-role")
-    public ResponseEntity<String> assignNewRole(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserResponseDTO> assignNewRole(@RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.assignNewRole(userDTO));
     }
 

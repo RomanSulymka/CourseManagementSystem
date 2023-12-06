@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
     public static final String EMAIL_IS_EMPTY = "Email is empty!";
     public static final String USER_ROLE_IS_EMPTY = "User Role is empty!";
     public static final String ERROR_USER_NOT_FOUND = "User not found: ";
+    public static final String ROLE_NOT_FOUND = "Role not found: ";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper mapper;
@@ -69,11 +70,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String assignNewRole(UserDTO userDTO) {
+    public UserResponseDTO assignNewRole(UserDTO userDTO) {
         try {
             findUserByEmail(userDTO.getEmail());
+
+            if (!Arrays.asList(RoleEnum.values()).contains(userDTO.getRole())) {
+                throw new IllegalArgumentException(ROLE_NOT_FOUND + userDTO.getRole());
+            }
+
             userRepository.updateRoleByEmail(userDTO.getEmail(), userDTO.getRole());
-            return userDTO.getRole().name();
+
+            User user = userRepository.findUserByEmail(userDTO.getEmail());
+
+            return mapper.mapToResponseDTO(user);
         } catch (UserException ex) {
             log.error(ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL + userDTO.getEmail());
             throw new UserException(FAILED_ASSIGN_NEW_ROLE_FOR_USER, ex);
