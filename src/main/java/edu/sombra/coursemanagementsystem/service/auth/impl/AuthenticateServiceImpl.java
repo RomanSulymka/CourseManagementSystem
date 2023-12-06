@@ -49,7 +49,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
             user.setFirstName(registerDTO.getFirstName());
             user.setLastName(registerDTO.getLastName());
             user.setEmail(registerDTO.getEmail());
-            user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+            user.setPassword(registerDTO.getPassword());
             user.setRole(registerDTO.getRole() != null ? registerDTO.getRole() : RoleEnum.STUDENT);
 
             var createUserDTO = userMapper.mapToDTO(user);
