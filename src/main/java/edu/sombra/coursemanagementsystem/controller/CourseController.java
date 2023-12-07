@@ -2,12 +2,12 @@ package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseMarkResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
-import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -86,7 +86,7 @@ public class CourseController {
     }
 
     @GetMapping("/finish/{studentId}/{courseId}")
-    public ResponseEntity<CourseMark> finishCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
+    public ResponseEntity<CourseMarkResponseDTO> finishCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
         return ResponseEntity.ok(courseService.finishCourse(studentId, courseId));
     }
 }

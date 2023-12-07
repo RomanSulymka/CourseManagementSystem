@@ -61,8 +61,7 @@ jobs:
 
       - name: Build image
         run: |
-          ./mvnw flyway:migrate
-          mvn spring-boot:build-image -Dspring-boot.build-image.imageName=romansulymka/course-management-system:v1
+          mvn spring-boot:build-image -DskipTest -Dspring-boot.build-image.imageName=romansulymka/course-management-system:v1
 
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1

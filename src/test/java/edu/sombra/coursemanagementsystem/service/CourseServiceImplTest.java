@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseMarkResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
@@ -17,6 +18,7 @@ import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
+import edu.sombra.coursemanagementsystem.mapper.CourseMarkMapper;
 import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -71,11 +74,13 @@ class CourseServiceImplTest {
     private CourseFeedbackRepository courseFeedbackRepository;
     @Mock
     private LessonMapper lessonMapper;
+    @Mock
+    private CourseMarkMapper courseMarkMapper;
 
     @BeforeEach
     void setUp() {
         courseService = new CourseServiceImpl(courseRepository, courseFeedbackRepository, courseMarkRepository, userService, userRepository,
-                lessonService, userMapper, courseMapper, lessonMapper);
+                lessonService, userMapper, courseMapper, courseMarkMapper, lessonMapper);
     }
 
     private static Stream<Arguments> lessonListProvider() {
@@ -790,20 +795,43 @@ class CourseServiceImplTest {
         Course course = Course.builder()
                 .id(courseId)
                 .build();
-        CourseMark courseMark = CourseMark.builder().user(user).course(course).passed(false).build();
+
+        CourseMark courseMark = CourseMark.builder()
+                .id(2L)
+                .user(user)
+                .course(course)
+                .passed(true)
+                .build();
+
+        CourseMarkResponseDTO courseMarkDTO = CourseMarkResponseDTO.builder()
+                .userId(user.getId())
+                .course(courseMark.getCourse())
+                .passed(true)
+                .build();
 
         when(courseRepository.isUserAssignedToCourse(studentId, courseId)).thenReturn(true);
         when(courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)).thenReturn(Optional.of(courseMark));
-        when(courseMarkRepository.update(courseMark)).thenReturn(CourseMark.builder().passed(true).build());
 
-        CourseMark resultCourseMark = courseService.finishCourse(studentId, courseId);
+        ArgumentCaptor<CourseMark> courseMarkCaptor = ArgumentCaptor.forClass(CourseMark.class);
+        when(courseMarkRepository.update(courseMarkCaptor.capture())).thenReturn(courseMark);
+
+        when(courseMarkMapper.toDTO(courseMark)).thenReturn(courseMarkDTO);
+
+        CourseMarkResponseDTO resultCourseMark = courseService.finishCourse(studentId, courseId);
 
         assertNotNull(resultCourseMark);
         assertTrue(resultCourseMark.getPassed());
 
         verify(courseRepository, times(1)).isUserAssignedToCourse(studentId, courseId);
         verify(courseMarkRepository, times(1)).findCourseMarkByUserIdAndCourseId(studentId, courseId);
-        verify(courseMarkRepository, times(1)).update(courseMark);
+        verify(courseMarkRepository, times(1)).update(any());
+
+        CourseMark capturedCourseMark = courseMarkCaptor.getValue();
+        assertNotNull(capturedCourseMark);
+        assertEquals(courseMark.getId(), capturedCourseMark.getId());
+        assertEquals(courseMark.getUser(), capturedCourseMark.getUser());
+        assertEquals(courseMark.getCourse(), capturedCourseMark.getCourse());
+        assertTrue(capturedCourseMark.getPassed());
     }
 
     @Test

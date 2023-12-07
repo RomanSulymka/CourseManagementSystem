@@ -10,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -74,7 +73,6 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @Transactional
     void testUpdateRoleByEmail() {
         User user = User.builder()
                 .lastName("test")

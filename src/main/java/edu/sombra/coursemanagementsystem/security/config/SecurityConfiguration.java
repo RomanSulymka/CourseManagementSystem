@@ -62,7 +62,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET, "/api/v1/enrollment/user/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
 
                                 // File
-                                .requestMatchers(HttpMethod.POST, "/api/v1/files/upload/{userId}/{lessonId}").hasAnyRole("ADMIN", "STUDENT")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/files/upload").hasAnyRole("ADMIN", "STUDENT")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/files/download/{fileId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/files/{fileId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
 

@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseMarkResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
@@ -17,6 +18,7 @@ import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
+import edu.sombra.coursemanagementsystem.mapper.CourseMarkMapper;
 import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
@@ -62,6 +64,7 @@ public class CourseServiceImpl implements CourseService {
     private final LessonService lessonService;
     private final UserMapper userMapper;
     private final CourseMapper courseMapper;
+    private final CourseMarkMapper courseMarkMapper;
     private final LessonMapper lessonMapper;
 
     private static final Long MIN_LESSONS = 5L;
@@ -252,12 +255,13 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseMark finishCourse(Long studentId, Long courseId) {
+    public CourseMarkResponseDTO finishCourse(Long studentId, Long courseId) {
         isUserAssignedToCourse(studentId, courseId);
         CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
                 .orElseThrow(EntityNotFoundException::new);
         courseMark.setPassed(true);
-        return courseMarkRepository.update(courseMark);
+        CourseMark updatedCourseMark = courseMarkRepository.update(courseMark);
+        return courseMarkMapper.toDTO(updatedCourseMark);
     }
 
     @Override
