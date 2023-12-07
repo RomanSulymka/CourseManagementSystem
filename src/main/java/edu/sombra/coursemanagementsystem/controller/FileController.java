@@ -24,10 +24,10 @@ import java.io.IOException;
 public class FileController {
     private final FileService fileService;
 
-    @PostMapping("/upload/{userId}/{lessonId}")
+    @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,
-                                             @PathVariable Long lessonId,
-                                             @PathVariable Long userId) throws IOException {
+                                             @RequestParam("lessonId") Long lessonId,
+                                             @RequestParam("userId") Long userId) throws IOException {
         fileService.saveFile(file, lessonId, userId);
         return ResponseEntity.ok("File uploaded successfully");
     }

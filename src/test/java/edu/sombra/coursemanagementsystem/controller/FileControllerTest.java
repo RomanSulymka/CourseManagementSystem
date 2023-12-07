@@ -40,8 +40,10 @@ class FileControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.txt", "text/plain", "Hello, World!".getBytes());
 
-        mockMvc.perform(multipart("/api/v1/files/upload/{userId}/{lessonId}", 2, 5)
+        mockMvc.perform(multipart("/api/v1/files/upload")
                         .file(file)
+                        .param("userId", "2")
+                        .param("lessonId", "5")
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andExpect(content().string("File uploaded successfully"));
@@ -53,7 +55,7 @@ class FileControllerTest {
     void testUploadFileUnauthorized() throws Exception {
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Hello, World!".getBytes());
 
-        mockMvc.perform(multipart("/api/v1/files/upload/{userId}/{lessonId}", 1, 2)
+        mockMvc.perform(multipart("/api/v1/files/upload")
                         .file(file)
                         .param("userId", "1")
                         .param("lessonId", "2"))
