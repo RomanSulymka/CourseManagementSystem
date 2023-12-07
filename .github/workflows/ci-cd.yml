@@ -60,8 +60,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build image
-        run: |
-          mvn spring-boot:build-image -DskipTest -Dspring-boot.build-image.imageName=romansulymka/course-management-system:v1
+        run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=romansulymka/course-management-system:v1 -DskipTests
 
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
