@@ -170,7 +170,6 @@ class CourseFeedbackServiceImplTest {
     void createFeedbackWithInvalidInstructorEmail() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         String instructorEmail = "invalid@example.com";
-        //when(userService.findUserByEmail(instructorEmail)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> courseFeedbackService.create(courseFeedbackDTO, instructorEmail));
     }

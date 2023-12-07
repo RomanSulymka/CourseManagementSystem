@@ -47,7 +47,7 @@ public class CourseMarkServiceImpl implements CourseMarkService {
         courseMarkRepository.upsert(CourseMark.builder()
                 .user(user)
                 .course(course)
-                .totalScore(BigDecimal.valueOf(averageMark))
+                .totalScore(averageMark != null ? BigDecimal.valueOf(averageMark) : null)
                 .passed(isCoursePassed(averageMark, isAllHomeworksGraded))
                 .build());
         log.info(TOTAL_MARK_SAVED_SUCCESSFULLY);

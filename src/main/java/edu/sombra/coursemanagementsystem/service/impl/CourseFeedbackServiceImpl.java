@@ -26,6 +26,7 @@ import java.util.List;
 @Transactional
 @Service
 public class CourseFeedbackServiceImpl implements CourseFeedbackService {
+    public static final String USER_NOT_ASSIGNED_ERROR = "User isn't assigned to this course!";
     private final UserService userService;
     private final CourseFeedbackRepository courseFeedbackRepository;
     private final CourseRepository courseRepository;
@@ -38,7 +39,6 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     private static final String INSTRUCTOR_NOT_ASSIGNED = "Instructor is not assigned for this course";
 
 
-    @Override
     public String create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
         try {
             User instructor = userRepository.findUserByEmail(instructorEmail);
@@ -50,8 +50,8 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
             log.info(FEEDBACK_SAVED_SUCCESSFULLY);
             return FEEDBACK_SAVED_SUCCESSFULLY;
         } catch (Exception e) {
-            log.error(FAILED_TO_SAVE_FEEDBACK);
-            throw new IllegalArgumentException(FAILED_TO_SAVE_FEEDBACK);
+            log.error(USER_NOT_ASSIGNED_ERROR);
+            throw new IllegalArgumentException(USER_NOT_ASSIGNED_ERROR);
         }
     }
 

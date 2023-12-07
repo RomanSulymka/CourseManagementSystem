@@ -225,9 +225,20 @@ class HomeworkServiceImplTest {
     void testDeleteHomework() {
         Long homeworkId = 1L;
 
-        Homework homework = new Homework();
+        Homework homework = Homework.builder()
+                .id(1L)
+                .mark(95L)
+                .lesson(Lesson.builder()
+                        .id(1L)
+                        .course(Course.builder()
+                                .id(4L)
+                                .build())
+                        .build())
+                .user(User.builder()
+                        .id(1L)
+                        .build())
+                .build();
         when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(homework));
-
         String result = homeworkService.deleteHomework(homeworkId);
 
         assertEquals("Homework deleted successfully!", result);

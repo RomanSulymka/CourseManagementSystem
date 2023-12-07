@@ -92,6 +92,8 @@ public class HomeworkServiceImpl implements HomeworkService {
     public String deleteHomework(Long homeworkId) {
         Homework homework = findHomework(homeworkId);
         homeworkRepository.delete(homework);
+        Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(homework.getUser().getId(), homework.getLesson().getCourse().getId());
+        courseMarkService.saveTotalMark(homework.getUser().getId(), homework.getLesson().getCourse().getId(), averageMark, false);
         log.info(HOMEWORK_DELETED_SUCCESSFULLY);
         return HOMEWORK_DELETED_SUCCESSFULLY;
     }
@@ -104,7 +106,7 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public List<GetHomeworkDTO> getAllHomeworksByUser(Long userId) {
-        //todo: refactor this line to the validation method
+        //todo: refactor this line and add the validation method
         User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
         List<Homework> homeworkList = homeworkRepository.findAllByUser(user.getId());
         return homeworkMapper.mapToDTO(homeworkList);
