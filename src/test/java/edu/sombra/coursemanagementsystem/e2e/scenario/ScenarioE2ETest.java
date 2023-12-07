@@ -200,7 +200,7 @@ class ScenarioE2ETest {
 
         //start course
         CourseActionDTO startCourseDTO = CourseActionDTO.builder()
-                .courseId(3L)
+                .courseId(4L)
                 .action("start")
                 .build();
 
@@ -224,11 +224,13 @@ class ScenarioE2ETest {
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource("output.csv"));
+        body.add("userId", "8");
+        body.add("lessonId", "1");
 
         HttpEntity<MultiValueMap<String, Object>> uploadHomeworkRequestEntity = new HttpEntity<>(body, uploadHomeworkHeaders);
 
         ResponseEntity<String> uploadHomeworkResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/files/upload/{userId}/{lessonId}", 8, 1),
+                buildUrl("/api/v1/files/upload"),
                 HttpMethod.POST,
                 uploadHomeworkRequestEntity,
                 String.class
