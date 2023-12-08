@@ -706,6 +706,7 @@ class CourseServiceImplTest {
 
         List<User> userList = Collections.singletonList(createSampleUser(2L, "student@example.com"));
         when(courseRepository.findUsersInCourse(courseId)).thenReturn(userList);
+        when(courseRepository.isUserAssignedToCourse(instructorId, courseId)).thenReturn(true);
 
         List<UserAssignedToCourseDTO> userDTOList = Collections.singletonList(createSampleUserDTO(2L, "student@example.com"));
         when(userMapper.mapUsersToDTO(userList)).thenReturn(userDTOList);

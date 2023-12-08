@@ -56,6 +56,7 @@ public class CourseServiceImpl implements CourseService {
     public static final String COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY = "Course with id: {} changed status to {} successfully";
     public static final String INCORRECT_ACTION_PARAMETER = "Incorrect action parameter!";
     public static final String INSTRUCTOR_IS_NOT_ASSIGNED_TO_THIS_COURSE = "Instructor is not assigned to this course";
+
     private final CourseRepository courseRepository;
     private final CourseFeedbackRepository courseFeedbackRepository;
     private final CourseMarkRepository courseMarkRepository;
@@ -211,6 +212,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, Long courseId) {
         userService.isUserInstructor(instructorId);
+        isUserAssignedToCourse(instructorId, courseId);
         List<User> user = courseRepository.findUsersInCourse(courseId);
         return userMapper.mapUsersToDTO(user);
     }
