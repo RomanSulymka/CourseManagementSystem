@@ -37,6 +37,10 @@ jobs:
 
       - name: Run migration and build with Maven
         run: |
+          until nc -zv ${{ secrets.POSTGRES_HOST }} ${{ secrets.POSTGRES_PORT }}; do
+            echo "PostgreSQL is not ready - sleeping"
+            sleep 1
+          done
           ./mvnw flyway:migrate
           ./mvnw clean install
         env:
