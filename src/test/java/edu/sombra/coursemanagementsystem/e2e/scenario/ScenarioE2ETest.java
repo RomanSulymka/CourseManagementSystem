@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.e2e.scenario;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
+import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
@@ -155,7 +156,7 @@ class ScenarioE2ETest {
         assertNotNull(applyToCourseResponse.getBody());
 
         //start course
-/*        CourseActionDTO startCourseDTO = CourseActionDTO.builder()
+        CourseActionDTO startCourseDTO = CourseActionDTO.builder()
                 .courseId(4L)
                 .action("start")
                 .build();
@@ -170,7 +171,7 @@ class ScenarioE2ETest {
         );
 
         assertEquals(HttpStatus.OK, startCourseResponse.getStatusCode());
-        assertNotNull(startCourseResponse.getBody());*/
+        assertNotNull(startCourseResponse.getBody());
 
         //Upload homework file
 
