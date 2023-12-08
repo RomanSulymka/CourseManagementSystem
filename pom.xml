@@ -205,7 +205,7 @@
                 <configuration>
                     <user>romansulymka</user>
                     <password>admin</password>
-                    <url>jdbc:postgresql://localhost:5432/management-system</url>
+                    <url>jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/management-system</url>
                     <schemas>
                         <schema>public</schema>
                     </schemas>
