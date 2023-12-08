@@ -181,7 +181,7 @@
                         <exclude>edu/sombra/coursemanagementsystem/security/**</exclude>
                         <exclude>edu/sombra/coursemanagementsystem/controller/exception/**</exclude>
                         <exclude>edu/sombra/coursemanagementsystem/mapper/**</exclude>
-                        <exclude>edu/sombra/coursemanagementsystem/CourseManagementSystemApplication.class</exclude>
+                        <exclude>edu/sombra/coursemanagementsystem/repository/base/impl/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
