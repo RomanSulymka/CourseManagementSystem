@@ -43,7 +43,6 @@ jobs:
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
           POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 20
 
       - name: Cache Maven dependencies
         uses: actions/cache@v2
