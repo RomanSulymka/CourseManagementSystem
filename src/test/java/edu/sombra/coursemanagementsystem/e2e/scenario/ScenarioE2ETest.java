@@ -1,4 +1,3 @@
-/*
 package edu.sombra.coursemanagementsystem.e2e.scenario;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
@@ -49,54 +48,7 @@ class ScenarioE2ETest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-*/
-/*
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CourseRepository courseRepository;
-
-    @Autowired
-    private CourseFeedbackRepository courseFeedbackRepository;
-
-    @Autowired
-    private EnrollmentRepository enrollmentRepository;
-
-    @Autowired
-    private FileRepository fileRepository;
-
-    @Autowired
-    private HomeworkRepository homeworkRepository;
-
-    @Autowired
-    private LessonRepository lessonRepository;
-
-    @Autowired
-    private TokenRepository tokenRepository;
-
-    @Autowired
-    private CourseMarkRepository courseMarkRepository;
-*//*
-
-
-*/
-/*    @AfterEach
-    void cleanup() {
-        userRepository.deleteAll();
-        courseRepository.deleteAll();
-        courseFeedbackRepository.deleteAll();
-        enrollmentRepository.deleteAll();
-        fileRepository.deleteAll();
-        homeworkRepository.deleteAll();
-        lessonRepository.deleteAll();
-        tokenRepository.deleteAll();
-        courseMarkRepository.deleteAll();
-    }*//*
-
-
-    //@Sql({"/db/migration/V2.0__initial.sql"})
     @Test
     void test_CreateStudentAndAssignToTheCourse() {
         //login as Admin
@@ -135,11 +87,9 @@ class ScenarioE2ETest {
         assertEquals(HttpStatus.OK, createdUserResponse.getStatusCode());
         assertNotNull(createdUserResponse.getBody());
 
-        */
-/*
+        /*
          Create course
-         *//*
-
+         */
         CourseDTO createCourseDTO = CourseDTO.builder()
                 .name("Python learn")
                 .startDate(LocalDate.now())
@@ -161,21 +111,17 @@ class ScenarioE2ETest {
         assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
         assertNotNull(createdCourseResponse.getBody());
 
-*/
 /*        //Logout
         restTemplate.exchange(
                 buildUrl("/api/v1/auth/logout"),
                 HttpMethod.GET,
                 new HttpEntity(adminHeader),
                 Void.class
-        );*//*
+        );*/
 
-
-        */
-/*
+        /*
          login as student
-         *//*
-
+         */
         AuthenticationDTO studentAuthenticationDTO = new AuthenticationDTO("teststudent@example.com", "studentPass");
 
         ResponseEntity<AuthenticationResponse> studentResponseEntity = restTemplate.postForEntity(
@@ -370,4 +316,3 @@ class ScenarioE2ETest {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
 }
-*/
