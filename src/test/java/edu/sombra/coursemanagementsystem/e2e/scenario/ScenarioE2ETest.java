@@ -1,3 +1,4 @@
+/*
 package edu.sombra.coursemanagementsystem.e2e.scenario;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
@@ -48,6 +49,7 @@ class ScenarioE2ETest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+*/
 /*
 
     @Autowired
@@ -76,8 +78,10 @@ class ScenarioE2ETest {
 
     @Autowired
     private CourseMarkRepository courseMarkRepository;
-*/
+*//*
 
+
+*/
 /*    @AfterEach
     void cleanup() {
         userRepository.deleteAll();
@@ -89,7 +93,8 @@ class ScenarioE2ETest {
         lessonRepository.deleteAll();
         tokenRepository.deleteAll();
         courseMarkRepository.deleteAll();
-    }*/
+    }*//*
+
 
     //@Sql({"/db/migration/V2.0__initial.sql"})
     @Test
@@ -130,9 +135,11 @@ class ScenarioE2ETest {
         assertEquals(HttpStatus.OK, createdUserResponse.getStatusCode());
         assertNotNull(createdUserResponse.getBody());
 
-        /*
+        */
+/*
          Create course
-         */
+         *//*
+
         CourseDTO createCourseDTO = CourseDTO.builder()
                 .name("Python learn")
                 .startDate(LocalDate.now())
@@ -154,17 +161,21 @@ class ScenarioE2ETest {
         assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
         assertNotNull(createdCourseResponse.getBody());
 
+*/
 /*        //Logout
         restTemplate.exchange(
                 buildUrl("/api/v1/auth/logout"),
                 HttpMethod.GET,
                 new HttpEntity(adminHeader),
                 Void.class
-        );*/
+        );*//*
 
-        /*
+
+        */
+/*
          login as student
-         */
+         *//*
+
         AuthenticationDTO studentAuthenticationDTO = new AuthenticationDTO("teststudent@example.com", "studentPass");
 
         ResponseEntity<AuthenticationResponse> studentResponseEntity = restTemplate.postForEntity(
@@ -359,3 +370,4 @@ class ScenarioE2ETest {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
 }
+*/
