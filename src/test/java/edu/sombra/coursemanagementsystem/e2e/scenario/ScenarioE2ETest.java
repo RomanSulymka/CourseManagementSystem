@@ -7,11 +7,14 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.feedback.CourseFeedbackDTO;
+import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
+import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
+import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
-import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import org.junit.jupiter.api.Test;
@@ -101,11 +104,11 @@ class ScenarioE2ETest {
 
         HttpEntity<CourseDTO> createCourseRequestEntity = new HttpEntity<>(createCourseDTO, adminHeader);
 
-        ResponseEntity<Course> createdCourseResponse = restTemplate.exchange(
+        ResponseEntity<CourseResponseDTO> createdCourseResponse = restTemplate.exchange(
                 buildUrl("/api/v1/course/create"),
                 HttpMethod.POST,
                 createCourseRequestEntity,
-                Course.class
+                CourseResponseDTO.class
         );
 
         assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
@@ -145,11 +148,11 @@ class ScenarioE2ETest {
 
         HttpEntity<EnrollmentApplyForCourseDTO> studentRequestEntity = new HttpEntity<>(enrollmentDTO, studentHeader);
 
-        ResponseEntity<String> applyToCourseResponse = restTemplate.exchange(
+        ResponseEntity<EnrollmentResponseDTO> applyToCourseResponse = restTemplate.exchange(
                 buildUrl("/api/v1/enrollment/user/apply"),
                 HttpMethod.POST,
                 studentRequestEntity,
-                String.class
+                EnrollmentResponseDTO.class
         );
 
         assertEquals(HttpStatus.OK, applyToCourseResponse.getStatusCode());
@@ -157,7 +160,7 @@ class ScenarioE2ETest {
 
         //start course
         CourseActionDTO startCourseDTO = CourseActionDTO.builder()
-                .courseId(4L)
+                .courseId(createdCourseResponse.getBody().getCourseId())
                 .action("start")
                 .build();
 
@@ -174,27 +177,24 @@ class ScenarioE2ETest {
         assertNotNull(startCourseResponse.getBody());
 
         //Upload homework file
-
         HttpHeaders uploadHomeworkHeaders = new HttpHeaders();
         uploadHomeworkHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
         uploadHomeworkHeaders.setBearerAuth(studentJwtToken);
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource("output.csv"));
-        body.add("userId", "8");
+        body.add("userId", createdUserResponse.getBody().getId());
         body.add("lessonId", "1");
 
         HttpEntity<MultiValueMap<String, Object>> uploadHomeworkRequestEntity = new HttpEntity<>(body, uploadHomeworkHeaders);
 
-        ResponseEntity<String> uploadHomeworkResponseEntity = restTemplate.exchange(
+        ResponseEntity<FileResponseDTO> uploadHomeworkResponseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/files/upload"),
                 HttpMethod.POST,
                 uploadHomeworkRequestEntity,
-                String.class
+                FileResponseDTO.class
         );
-
         assertEquals(HttpStatus.OK, uploadHomeworkResponseEntity.getStatusCode());
-        assertEquals("File uploaded successfully", uploadHomeworkResponseEntity.getBody());
 
         //Login as instructor
         AuthenticationDTO instructorAuthenticationDTO = new AuthenticationDTO("instructor@gmail.com", "instructorPass");
@@ -216,32 +216,30 @@ class ScenarioE2ETest {
         HttpEntity<String> downloadFileRequestEntity = new HttpEntity<>(instructorHeaders);
 
         ResponseEntity<Resource> downloadFileResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/files/download/{lessonId}", 3),
+                buildUrl("/api/v1/files/download/{lessonId}", 1),
                 HttpMethod.GET,
                 downloadFileRequestEntity,
                 Resource.class
         );
-
         assertEquals(HttpStatus.OK, downloadFileResponseEntity.getStatusCode());
-        assertEquals("output.csv", Objects.requireNonNull(downloadFileResponseEntity.getBody()).getFilename());
+        assertEquals("file1.txt", Objects.requireNonNull(downloadFileResponseEntity.getBody()).getFilename());
 
         //Set mark for homework
         HomeworkDTO homeworkDTO = new HomeworkDTO();
-        homeworkDTO.setUserId(8L);
-        //homeworkDTO.setHomeworkId(3L);
-        homeworkDTO.setHomeworkId(4L);
+        homeworkDTO.setUserId(createdUserResponse.getBody().getId());
+        homeworkDTO.setHomeworkId(18L);
         homeworkDTO.setMark(90L);
 
         HttpEntity<HomeworkDTO> setMarkRequestEntity = new HttpEntity<>(homeworkDTO, instructorHeaders);
 
-        ResponseEntity<String> setMarkResponseEntity = restTemplate.exchange(
+        ResponseEntity<GetHomeworkDTO> setMarkResponseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/homework/mark"),
                 HttpMethod.PUT,
                 setMarkRequestEntity,
-                String.class
+                GetHomeworkDTO.class
         );
-
-        assertEquals("Mark saved successfully", setMarkResponseEntity.getBody());
+        assertEquals(homeworkDTO.getMark(), setMarkResponseEntity.getBody().getMark());
+        assertEquals(homeworkDTO.getUserId(), setMarkResponseEntity.getBody().getUserId());
 
         //Add feedback
         CourseFeedbackDTO feedbackDTO = new CourseFeedbackDTO();
@@ -251,14 +249,14 @@ class ScenarioE2ETest {
 
         HttpEntity<CourseFeedbackDTO> addFeedbackRequestEntity = new HttpEntity<>(feedbackDTO, instructorHeaders);
 
-        ResponseEntity<String> addFeedbackResponseEntity = restTemplate.exchange(
+        ResponseEntity<GetCourseFeedbackDTO> addFeedbackResponseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback"),
                 HttpMethod.POST,
                 addFeedbackRequestEntity,
-                String.class
+                GetCourseFeedbackDTO.class
         );
 
-        assertEquals("Feedback saved successfully", addFeedbackResponseEntity.getBody());
+        assertEquals(feedbackDTO.getFeedbackText(), Objects.requireNonNull(addFeedbackResponseEntity.getBody()).getFeedbackText());
 
         //Get list of instructor courses
         HttpEntity<Void> instructorCoursesRequestEntity = new HttpEntity<>(instructorHeaders);
@@ -300,9 +298,10 @@ class ScenarioE2ETest {
         assertEquals(HttpStatus.OK, getListOfStudentsCoursesResponseEntity.getStatusCode());
         assertNotNull(getListOfStudentsCoursesResponseEntity.getBody());
 
+        //TODO: change all request data and get data from another dtos
         //Get list of lessons on the course
         ResponseEntity<LessonsByCourseDTO> getListOfLessonsOnCourseResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/student/lessons/{studentId}/{courseId}", 8, 1),
+                buildUrl("/api/v1/course/student/lessons/{studentId}/{courseId}", 4, 1),
                 HttpMethod.GET,
                 studentsOnCoursesRequestEntity,
                 LessonsByCourseDTO.class

@@ -133,6 +133,8 @@ INSERT INTO homework (mark, user_id, lesson_id, file_id)
 VALUES
     (90, 1, 1, 1),
     (85, 2, 1, 2),
+    (85, 4, 1, NULL),
+    (NULL, 4, 2, NULL),
     (75, 3, 2, NULL);
 
 INSERT INTO course_feedback (feedback_text, course_id, instructor_id, student_id)
