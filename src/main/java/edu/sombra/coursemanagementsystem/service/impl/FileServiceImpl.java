@@ -1,9 +1,11 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
+import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.File;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
+import edu.sombra.coursemanagementsystem.mapper.FileMapper;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
@@ -38,9 +40,10 @@ public class FileServiceImpl implements FileService {
     private final HomeworkRepository homeworkRepository;
     private final UserRepository userRepository;
     private final LessonRepository lessonRepository;
+    private final FileMapper fileMapper;
 
     @Override
-    public void saveFile(MultipartFile uploadedFile, Long lessonId, Long userId) throws IOException {
+    public FileResponseDTO saveFile(MultipartFile uploadedFile, Long lessonId, Long userId) throws IOException {
         try {
             validateInput(uploadedFile, lessonId, userId);
             Homework existingHomework = findExistingHomework(lessonId, userId);
@@ -49,10 +52,10 @@ public class FileServiceImpl implements FileService {
                     .fileName(uploadedFile.getOriginalFilename())
                     .fileData(uploadedFile.getBytes())
                     .build());
-
             log.info(FILE_UPLOADED_SUCCESSFULLY_WITH_NAME, uploadedFile.getOriginalFilename());
 
             updateHomeworkWithFile(existingHomework, file);
+            return fileMapper.mapToResponseDTO(file);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(e.getMessage());
         }

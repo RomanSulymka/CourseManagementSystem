@@ -1,5 +1,6 @@
 package edu.sombra.coursemanagementsystem.controller;
 
+import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.File;
 import edu.sombra.coursemanagementsystem.service.FileService;
 import org.junit.jupiter.api.Test;
@@ -40,14 +41,21 @@ class FileControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.txt", "text/plain", "Hello, World!".getBytes());
 
+        FileResponseDTO fileResponseDTO = FileResponseDTO.builder()
+                .id(1L)
+                .name("test.txt")
+                .build();
+
+        when(fileService.saveFile(file, 5L, 2L)).thenReturn(fileResponseDTO);
+
         mockMvc.perform(multipart("/api/v1/files/upload")
                         .file(file)
                         .param("userId", "2")
                         .param("lessonId", "5")
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
-                .andExpect(content().string("File uploaded successfully"));
-
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.name").value(fileResponseDTO.getName()));
         verify(fileService, times(1)).saveFile(file, 5L, 2L);
     }
 

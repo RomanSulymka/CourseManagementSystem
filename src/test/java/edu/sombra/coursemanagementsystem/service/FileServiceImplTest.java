@@ -1,9 +1,11 @@
 package edu.sombra.coursemanagementsystem.service;
 
+import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.File;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
+import edu.sombra.coursemanagementsystem.mapper.FileMapper;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
@@ -48,10 +50,13 @@ class FileServiceImplTest {
     @Mock
     private HomeworkRepository homeworkRepository;
 
+    @Mock
+    private FileMapper fileMapper;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        fileService = new FileServiceImpl(fileRepository, homeworkRepository, userRepository, lessonRepository);
+        fileService = new FileServiceImpl(fileRepository, homeworkRepository, userRepository, lessonRepository, fileMapper);
     }
 
     public static Object[][] provideFileTest() {
@@ -83,6 +88,10 @@ class FileServiceImplTest {
     void testSaveFile_Successful(String fileName, byte[] fileData, Long userId, Long lessonId) throws IOException {
         MultipartFile uploadedFile = mock(MultipartFile.class);
         Homework existingHomework = mock(Homework.class);
+        FileResponseDTO fileResponseDTO = FileResponseDTO.builder()
+                .id(1L)
+                .name(fileName)
+                .build();
 
         when(uploadedFile.getOriginalFilename()).thenReturn(fileName);
         when(uploadedFile.getBytes()).thenReturn(fileData);
@@ -90,14 +99,16 @@ class FileServiceImplTest {
         when(userRepository.existsById(userId)).thenReturn(true);
         when(lessonRepository.existsById(lessonId)).thenReturn(true);
         when(homeworkRepository.findByUserAndLessonId(userId, lessonId)).thenReturn(Optional.ofNullable(existingHomework));
-
         File file = new File();
         when(fileRepository.save(any(File.class))).thenReturn(file);
+        when(fileMapper.mapToResponseDTO(file)).thenReturn(fileResponseDTO);
 
-        fileService.saveFile(uploadedFile, lessonId, userId);
+        FileResponseDTO response = fileService.saveFile(uploadedFile, lessonId, userId);
+
+        assertEquals(fileResponseDTO.getId(), response.getId());
+        assertEquals(fileResponseDTO.getName(), response.getName());
 
         verify(fileRepository, times(1)).save(any(File.class));
-
         verify(homeworkRepository, times(1)).update(existingHomework);
     }
 
