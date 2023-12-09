@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourse
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
@@ -370,14 +371,23 @@ class EnrollmentServiceImplTest {
                 .id(2L)
                 .course(mockCourse)
                 .build();
+        EnrollmentResponseDTO enrollmentResponse = EnrollmentResponseDTO.builder()
+                .courseId(mockCourse.getId())
+                .userId(mockUser.getId())
+                .userEmail(mockUser.getEmail())
+                .courseName(mockCourse.getName())
+                .role(mockUser.getRole())
+                .build();
 
         when(userRepository.findUserByEmail(userEmail)).thenReturn(mockUser);
         when(enrollmentRepository.getUserRegisteredCourseCount(mockUser.getId())).thenReturn(3L);
         when(courseRepository.findByName(applyForCourseDTO.getCourseName())).thenReturn(Optional.ofNullable(mockCourse));
         when(courseRepository.findAllLessonsInCourse(mockCourse.getId())).thenReturn(Optional.of(List.of(mockLesson)));
+        when(enrollmentMapper.mapToResponseDTO(mockEnrollment)).thenReturn(enrollmentResponse);
 
-        assertDoesNotThrow(() -> enrollmentService.applyForCourse(applyForCourseDTO, userEmail));
+        EnrollmentResponseDTO responseDTO = enrollmentService.applyForCourse(applyForCourseDTO, userEmail);
 
+        assertEquals(mockEnrollment.getCourse().getName(), responseDTO.getCourseName());
         verify(enrollmentRepository, times(1)).save(mockEnrollment);
         verify(homeworkRepository, times(1)).assignUserForLesson(mockUser.getId(), 2L);
     }

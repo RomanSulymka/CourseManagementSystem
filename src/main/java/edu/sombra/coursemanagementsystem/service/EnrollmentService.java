@@ -24,7 +24,7 @@ public interface EnrollmentService {
 
     EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO);
 
-    void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail);
+    EnrollmentResponseDTO applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail);
 
     void isUserAlreadyAssigned(Course course, User user);
 

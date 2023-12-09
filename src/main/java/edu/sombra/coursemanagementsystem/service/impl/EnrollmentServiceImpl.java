@@ -158,19 +158,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public void applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail) {
+    public EnrollmentResponseDTO applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail) {
         User user = userRepository.findUserByEmail(userEmail);
         if (!user.getRole().equals(RoleEnum.ADMIN)) {
             Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(user.getId());
-            assignUserForLesson(applyForCourseDTO, numberOfUserCourses, user);
+            return assignUserForLesson(applyForCourseDTO, numberOfUserCourses, user);
         } else {
             User student = userRepository.findUserByEmail(userEmail);
             Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(applyForCourseDTO.getUserId());
-            assignUserForLesson(applyForCourseDTO, numberOfUserCourses, student);
+            return assignUserForLesson(applyForCourseDTO, numberOfUserCourses, student);
         }
     }
 
-    private void assignUserForLesson(EnrollmentApplyForCourseDTO applyForCourseDTO, Long numberOfUserCourses, User user) {
+    private EnrollmentResponseDTO assignUserForLesson(EnrollmentApplyForCourseDTO applyForCourseDTO, Long numberOfUserCourses, User user) {
         if (numberOfUserCourses < COURSE_LIMIT) {
             Course course = courseRepository.findByName(applyForCourseDTO.getCourseName()).orElseThrow();
             isUserAlreadyAssigned(course, user);
@@ -180,6 +180,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             for (Lesson lesson : lessons) {
                 homeworkRepository.assignUserForLesson(user.getId(), lesson.getId());
             }
+            return enrollmentMapper.mapToResponseDTO(enrollment);
         } else {
             throw new EnrollmentException(USER_HAS_ALREADY_ASSIGNED_FOR_5_COURSES);
         }

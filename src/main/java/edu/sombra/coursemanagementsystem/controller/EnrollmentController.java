@@ -35,10 +35,9 @@ public class EnrollmentController {
     }
 
     @PostMapping("/user/apply")
-    public ResponseEntity<String> applyForCourse(@RequestBody EnrollmentApplyForCourseDTO applyForCourseDTO,
+    public ResponseEntity<EnrollmentResponseDTO> applyForCourse(@RequestBody EnrollmentApplyForCourseDTO applyForCourseDTO,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
-        enrollmentService.applyForCourse(applyForCourseDTO, userDetails.getUsername());
-        return ResponseEntity.ok("User assigned successfully");
+        return ResponseEntity.ok(enrollmentService.applyForCourse(applyForCourseDTO, userDetails.getUsername()));
     }
 
     @GetMapping("/{id}")

@@ -77,13 +77,20 @@ class EnrollmentControllerTest {
                 .courseName("test course")
                 .build();
 
+        EnrollmentResponseDTO enrollmentGetDTO = EnrollmentResponseDTO.builder()
+                .userEmail("admin@gmail.com")
+                .courseName(enrollmentDTO.getCourseName())
+                .build();
+
+        when(enrollmentService.applyForCourse(enrollmentDTO, "admin@gmail.com")).thenReturn(enrollmentGetDTO);
+
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/enrollment/user/apply")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(enrollmentDTO)));
 
         result.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(jsonPath("$").isString());
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.courseName").value(enrollmentGetDTO.getCourseName()));
 
         verify(enrollmentService, times(1)).applyForCourse(enrollmentDTO, "admin@gmail.com");
     }
