@@ -180,11 +180,11 @@ class EnrollmentRepositoryImplTest {
 
         enrollmentRepository.saveAll(List.of(enrollment1, enrollment2));
 
-        List<String> courses = enrollmentRepository.findCoursesByUserId(user.getId());
+        List<Course> courses = enrollmentRepository.findCoursesByUserId(user.getId());
 
         assertNotNull(courses);
-        assertTrue(courses.contains(course1.getName()));
-        assertTrue(courses.contains(course2.getName()));
+        assertTrue(courses.contains(course1));
+        assertTrue(courses.contains(course2));
     }
 
     @Test

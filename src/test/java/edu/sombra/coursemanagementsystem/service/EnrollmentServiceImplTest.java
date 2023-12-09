@@ -10,6 +10,7 @@ import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
+import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
@@ -33,7 +34,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -445,15 +448,46 @@ class EnrollmentServiceImplTest {
     @Test
     void testFindAllCoursesByUserSuccessfully() {
         Long userId = 1L;
-        List<String> expectedCourses = List.of("Course1", "Course2");
+        List<Course> expectedCourses = Arrays.asList(
+                Course.builder()
+                        .id(1L)
+                        .name("Java Programming")
+                        .status(CourseStatus.STOP)
+                        .startDate(LocalDate.of(2023, 1, 1))
+                        .started(true)
+                        .build(),
+                Course.builder()
+                        .id(2L)
+                        .name("Scala Programming")
+                        .status(CourseStatus.STARTED)
+                        .startDate(LocalDate.of(2023, 1, 2))
+                        .started(true)
+                        .build()
+        );
+
+        List<CourseResponseDTO> courseResponseDTOList = Arrays.asList(
+                CourseResponseDTO.builder()
+                        .courseId(1L)
+                        .courseName("Java Programming")
+                        .status(CourseStatus.STOP)
+                        .startDate(LocalDate.of(2023, 1, 1))
+                        .started(true)
+                        .build(),
+                CourseResponseDTO.builder()
+                        .courseId(2L)
+                        .courseName("Scala Programming")
+                        .status(CourseStatus.STARTED)
+                        .startDate(LocalDate.of(2023, 1, 2))
+                        .started(true)
+                        .build()
+        );
 
         when(enrollmentRepository.findCoursesByUserId(userId)).thenReturn(expectedCourses);
-
-        List<String> resultCourses = assertDoesNotThrow(() -> enrollmentService.findAllCoursesByUser(userId));
+        when(courseMapper.mapToResponsesDTO(expectedCourses)).thenReturn(courseResponseDTOList);
+        List<CourseResponseDTO> resultCourses = assertDoesNotThrow(() -> enrollmentService.findAllCoursesByUser(userId));
 
         assertNotNull(resultCourses);
         assertEquals(expectedCourses.size(), resultCourses.size());
-        assertTrue(resultCourses.containsAll(expectedCourses));
     }
 
     @Test

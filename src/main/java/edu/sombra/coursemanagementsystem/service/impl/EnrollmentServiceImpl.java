@@ -230,9 +230,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public List<String> findAllCoursesByUser(Long id) {
+    public List<CourseResponseDTO> findAllCoursesByUser(Long id) {
         try {
-            return enrollmentRepository.findCoursesByUserId(id);
+            List<Course> courses = enrollmentRepository.findCoursesByUserId(id);
+            return courseMapper.mapToResponsesDTO(courses);
         } catch (EntityNotFoundException ex) {
             log.error(ERROR_FINDING_COURSES_FOR_USER_WITH_ID, id, ex);
             throw new EntityNotFoundException(FAILED_TO_FIND_COURSES_FOR_USER, ex);

@@ -1,5 +1,6 @@
 package edu.sombra.coursemanagementsystem.controller;
 
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
@@ -62,7 +63,7 @@ public class EnrollmentController {
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<String>> listAllCoursesByUser(@PathVariable Long id) {
+    public ResponseEntity<List<CourseResponseDTO>> listAllCoursesByUser(@PathVariable Long id) {
         return ResponseEntity.ok(enrollmentService.findAllCoursesByUser(id));
     }
 }

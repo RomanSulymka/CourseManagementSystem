@@ -1,10 +1,12 @@
 package edu.sombra.coursemanagementsystem.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
+import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -137,7 +140,22 @@ class EnrollmentControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testGetListEnrollmentsByUserSuccess() throws Exception {
         Long userId = 1L;
-        List<String> courses = Arrays.asList("Course1", "Course2", "Course3");
+        List<CourseResponseDTO> courses = Arrays.asList(
+                CourseResponseDTO.builder()
+                        .courseId(1L)
+                        .courseName("Course1")
+                        .started(true)
+                        .status(CourseStatus.STOP)
+                        .startDate(LocalDate.of(2023, 1, 1))
+                        .build(),
+                CourseResponseDTO.builder()
+                        .courseId(2L)
+                        .courseName("Course2")
+                        .status(CourseStatus.STARTED)
+                        .startDate(LocalDate.of(2023, 1, 2))
+                        .started(true)
+                        .build()
+        );
 
         when(enrollmentService.findAllCoursesByUser(userId)).thenReturn(courses);
 
@@ -147,9 +165,8 @@ class EnrollmentControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0]").value("Course1"))
-                .andExpect(jsonPath("$[1]").value("Course2"))
-                .andExpect(jsonPath("$[2]").value("Course3"));
+                .andExpect(jsonPath("$[0].courseName").value("Course1"))
+                .andExpect(jsonPath("$[1].courseName").value("Course2"));
 
         verify(enrollmentService, times(1)).findAllCoursesByUser(userId);
     }

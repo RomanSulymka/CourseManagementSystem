@@ -16,7 +16,7 @@ import java.util.List;
 public class EnrollmentRepositoryImpl implements EnrollmentRepository {
     @PersistenceContext
     private EntityManager entityManager;
-    public static final String GET_COURSES_BY_USER_ID = "SELECT c.name FROM enrollments e INNER JOIN courses c on c.id = e.course.id WHERE e.user.id =:id";
+    public static final String GET_COURSES_BY_USER_ID = "SELECT c FROM enrollments e INNER JOIN courses c on c.id = e.course.id WHERE e.user.id =:id";
     public static final String GET_COURSES_BY_ENROLLMENT_ID = "SELECT e.course FROM enrollments e INNER JOIN users u on u.id = e.user.id where e.id =: id";
     public static final String GET_ASSIGNED_INSTRUCTOR_FOR_COURSE = "SELECT u FROM enrollments e INNER JOIN users u on u.id = e.user.id WHERE e.course.id =: id AND u.role = 'INSTRUCTOR'";
     public static final String GET_USER_BY_ENROLLMENT = "SELECT u FROM enrollments e INNER JOIN users u on u.id = e.user.id WHERE e.id =: id";
@@ -49,8 +49,8 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
     }
 
     @Override
-    public List<String> findCoursesByUserId(Long id) {
-        return getEntityManager().createQuery(GET_COURSES_BY_USER_ID, String.class)
+    public List<Course> findCoursesByUserId(Long id) {
+        return getEntityManager().createQuery(GET_COURSES_BY_USER_ID, Course.class)
                 .setParameter("id", id)
                 .getResultList();
     }
