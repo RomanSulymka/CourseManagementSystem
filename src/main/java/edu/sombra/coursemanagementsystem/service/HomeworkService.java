@@ -9,7 +9,7 @@ public interface HomeworkService {
 
     void save(Homework homework);
 
-    void setMark(Long userId, Long homeworkId, Long mark);
+    GetHomeworkDTO setMark(Long userId, Long homeworkId, Long mark);
 
     boolean isUserUploadedThisHomework(Long fileId, Long studentId);
 

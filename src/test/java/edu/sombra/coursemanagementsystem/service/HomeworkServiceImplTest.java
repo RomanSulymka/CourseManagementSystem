@@ -23,7 +23,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +81,6 @@ class HomeworkServiceImplTest {
         Long homeworkId = 2L;
         Long mark = 90L;
 
-        List<Homework> listWithOtherMarks = new ArrayList<>();
         Homework homeworkWithOtherMarks = Homework.builder()
                 .id(1L)
                 .mark(95L)
@@ -96,13 +94,18 @@ class HomeworkServiceImplTest {
                         .id(1L)
                         .build())
                 .build();
-        listWithOtherMarks.add(homeworkWithOtherMarks);
 
-        List<Homework> emptyList = new ArrayList<>();
+        GetHomeworkDTO homeworkDTO = GetHomeworkDTO.builder()
+                .id(homeworkWithOtherMarks.getId())
+                .mark(homeworkWithOtherMarks.getMark())
+                .userId(userId)
+                .userEmail("test@email.com")
+                .fileName("test.txt")
+                .lesson(homeworkWithOtherMarks.getLesson())
+                .build();
 
         return Stream.of(
-                Arguments.of(userId, homeworkId, mark, listWithOtherMarks),
-                Arguments.of(userId, homeworkId, mark, emptyList)
+                Arguments.of(userId, homeworkId, mark, homeworkWithOtherMarks, homeworkDTO)
         );
     }
 
@@ -156,7 +159,7 @@ class HomeworkServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("provideTestDataForSetMarkSuccessfully")
-    void testSetMarkSuccessfully(Long userId, Long homeworkId, Long mark, List<Homework> homeworkList) {
+    void testSetMarkSuccessfully(Long userId, Long homeworkId, Long mark, Homework homeworkWithOtherMarks, GetHomeworkDTO homeworkDTO) {
         when(enrollmentService.isUserAssignedToCourse(userId, homeworkId)).thenReturn(true);
         when(lessonService.findLessonByHomeworkId(homeworkId)).thenReturn(Lesson.builder()
                 .id(1L)
@@ -165,10 +168,15 @@ class HomeworkServiceImplTest {
                         .build())
                 .build());
         when(homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, 4L)).thenReturn(90.0);
-        when(homeworkRepository.findHomeworksByCourse(4L)).thenReturn(homeworkList);
+        when(homeworkRepository.findHomeworksByCourse(4L)).thenReturn(List.of(homeworkWithOtherMarks));
+        when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(homeworkWithOtherMarks));
+        when(homeworkMapper.mapToDTO(homeworkWithOtherMarks)).thenReturn(homeworkDTO);
 
-        assertDoesNotThrow(() -> homeworkService.setMark(userId, homeworkId, mark));
+        GetHomeworkDTO result = homeworkService.setMark(userId, homeworkId, mark);
 
+        assertEquals(homeworkDTO.getId(), result.getId());
+        assertEquals(homeworkDTO.getLesson(), result.getLesson());
+        assertEquals(homeworkDTO.getMark(), result.getMark());
         verify(homeworkRepository).setMark(homeworkId, mark);
         verify(courseMarkService).saveTotalMark(userId, 4L, 90.0, true);
     }

@@ -48,13 +48,24 @@ class HomeworkControllerTest {
         homeworkDTO.setUserId(2L);
         homeworkDTO.setMark(90L);
 
+        GetHomeworkDTO enrollmentGetDTO = GetHomeworkDTO.builder()
+                .id(homeworkDTO.getHomeworkId())
+                .userId(homeworkDTO.getUserId())
+                .userEmail("test@email.com")
+                .mark(homeworkDTO.getMark())
+                .build();
+
+        when(homeworkService.setMark(homeworkDTO.getUserId(), homeworkDTO.getHomeworkId(), homeworkDTO.getMark())).thenReturn(enrollmentGetDTO);
+
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/homework/mark")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(homeworkDTO)));
 
         result.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(content().string("Mark saved successfully"));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(enrollmentGetDTO.getId()))
+                .andExpect(jsonPath("$.mark").value(enrollmentGetDTO.getMark()))
+                .andExpect(jsonPath("$.userId").value(enrollmentGetDTO.getUserId()));
 
         verify(homeworkService, times(1)).setMark(homeworkDTO.getUserId(), homeworkDTO.getHomeworkId(), homeworkDTO.getMark());
     }

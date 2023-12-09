@@ -32,6 +32,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     public static final String INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100_BUT_NOW_MARK_IS = "Invalid mark value. Mark should be between 0 and 100. But now mark is {}";
     public static final String INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100 = "Invalid mark value. Mark should be between 0 and 100.";
     public static final String USER_ISN_T_ASSIGNED_TO_THIS_COURSE = "User isn't assigned to this course";
+
     private final HomeworkRepository homeworkRepository;
     private final CourseMarkService courseMarkService;
     private final LessonService lessonService;
@@ -49,7 +50,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     }
 
     @Override
-    public void setMark(Long userId, Long homeworkId, Long mark) {
+    public GetHomeworkDTO setMark(Long userId, Long homeworkId, Long mark) {
         if (enrollmentService.isUserAssignedToCourse(userId, homeworkId)) {
             if (mark >= 0 && mark <= 100) {
                 homeworkRepository.setMark(homeworkId, mark);
@@ -58,6 +59,7 @@ public class HomeworkServiceImpl implements HomeworkService {
                 Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, lesson.getCourse().getId());
                 boolean isAllHomeworksGraded = isAllHomeworksGraded(userId, lesson.getCourse().getId());
                 courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark, isAllHomeworksGraded);
+                return findHomeworkById(homeworkId);
             } else {
                 log.error(INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100_BUT_NOW_MARK_IS, mark);
                 throw new IllegalArgumentException(INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100);
