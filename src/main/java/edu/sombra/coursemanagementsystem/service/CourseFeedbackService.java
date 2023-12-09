@@ -7,7 +7,7 @@ import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
 import java.util.List;
 
 public interface CourseFeedbackService {
-    String create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail);
+    GetCourseFeedbackDTO create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail);
 
     CourseFeedback findFeedback(Long studentId, Long courseId);
 

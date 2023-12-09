@@ -117,24 +117,6 @@ class EnrollmentServiceImplTest {
         );
     }
 
-    @Test
-    void testSaveEnrollmentSuccessfully() {
-        Enrollment enrollment = Enrollment.builder()
-                .id(1L)
-                .build();
-
-        assertDoesNotThrow(() -> enrollmentService.save(enrollment));
-
-        verify(enrollmentRepository).save(enrollment);
-    }
-
-    @Test
-    void testSaveEnrollmentWithNullEnrollment() {
-        EnrollmentException exception = assertThrows(EnrollmentException.class, () -> enrollmentService.save(null));
-        assertEquals("Failed to create enrollment ", exception.getMessage());
-        verify(enrollmentRepository, never()).save(any());
-    }
-
     @ParameterizedTest
     @MethodSource("provideTestDataForAssignInstructorSuccessfully")
     void testAssignInstructorSuccessfully(EnrollmentDTO enrollmentDTO, Course course, User instructor, boolean isUserAssigned) {
@@ -283,7 +265,14 @@ class EnrollmentServiceImplTest {
                         .build())
                 .build();
 
+        EnrollmentGetDTO enrollmentGetDTO = EnrollmentGetDTO.builder()
+                .userEmail("XXXXXXXXXXXXXX")
+                .courseName("Course 1")
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
         when(enrollmentRepository.findById(enrollmentId)).thenReturn(Optional.of(expectedEnrollment));
+        when(enrollmentMapper.mapToEnrollmentGetDTO(expectedEnrollment)).thenReturn(enrollmentGetDTO);
 
         EnrollmentGetDTO resultDTO = assertDoesNotThrow(() -> enrollmentService.findEnrolmentById(enrollmentId));
 

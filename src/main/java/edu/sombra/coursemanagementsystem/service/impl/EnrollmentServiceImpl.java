@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourse
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Enrollment;
@@ -36,8 +37,6 @@ import java.util.List;
 @Transactional
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
-    public static final String ENROLLMENT_IS_NULL = "Enrollment is null!";
-    public static final String FAILED_TO_CREATE_ENROLLMENT = "Failed to create enrollment ";
     public static final String FAILED_TO_ASSIGN_INSTRUCTOR = "Failed to assign instructor";
     public static final String ERROR_SAVING_INSTRUCTOR_TO_THE_COURSE_WITH_EMAIL = "Error saving instructor to the course with email: {}";
     public static final String COURSE_SHOULD_HAVE_AT_LEAST_ONE_INSTRUCTOR_ASSIGNED_ON_THE_COURSE = "Course should have at least one instructor assigned on the course";
@@ -64,20 +63,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private static final Long COURSE_LIMIT = 5L;
 
     @Override
-    public void save(Enrollment enrollment) {
-        try {
-            if (enrollment == null) {
-                throw new EnrollmentException(ENROLLMENT_IS_NULL);
-            }
-            enrollmentRepository.save(enrollment);
-        } catch (EnrollmentException ex) {
-            log.error(FAILED_TO_CREATE_ENROLLMENT + ex.getMessage(), ex);
-            throw new EnrollmentException(FAILED_TO_CREATE_ENROLLMENT, ex);
-        }
-    }
-
-    @Override
-    public void assignInstructor(EnrollmentDTO enrollmentDTO) {
+    public EnrollmentResponseDTO assignInstructor(EnrollmentDTO enrollmentDTO) {
         try {
             Course course = courseRepository.findByName(enrollmentDTO.getCourseName())
                     .orElseThrow();
@@ -87,7 +73,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             isUserAlreadyAssigned(course, instructor);
 
             Enrollment enrollment = buildEnrollment(course, instructor);
-            enrollmentRepository.save(enrollment);
+            Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+            return enrollmentMapper.mapToResponseDTO(savedEnrollment);
         } catch (EnrollmentException ex) {
             log.error(ERROR_SAVING_INSTRUCTOR_TO_THE_COURSE_WITH_EMAIL, enrollmentDTO.getUserEmail());
             throw new EnrollmentException(FAILED_TO_ASSIGN_INSTRUCTOR);
@@ -135,11 +122,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public EnrollmentGetDTO findEnrolmentById(Long id) {
         return enrollmentRepository.findById(id)
-                .map(enrollment -> EnrollmentGetDTO.builder()
-                        .courseName(enrollment.getCourse().getName())
-                        .userEmail(enrollment.getUser().getEmail())
-                        .role(enrollment.getUser().getRole())
-                        .build())
+                .map(enrollmentMapper::mapToEnrollmentGetDTO)
                 .orElseThrow(() -> {
                     log.error(ERROR_FINDING_ENROLLMENT_WITH_ID, id);
                     return new EntityNotFoundException(ENROLLMENT_NOT_FOUND_WITH_ID + id);

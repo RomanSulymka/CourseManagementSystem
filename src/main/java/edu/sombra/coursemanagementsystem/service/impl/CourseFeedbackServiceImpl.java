@@ -39,7 +39,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     private static final String INSTRUCTOR_NOT_ASSIGNED = "Instructor is not assigned for this course";
 
 
-    public String create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
+    public GetCourseFeedbackDTO create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
         try {
             User instructor = userRepository.findUserByEmail(instructorEmail);
             CourseFeedback feedback = createOrUpdateFeedback(courseFeedbackDTO, instructor);
@@ -48,7 +48,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
             }
             courseFeedbackRepository.save(feedback);
             log.info(FEEDBACK_SAVED_SUCCESSFULLY);
-            return FEEDBACK_SAVED_SUCCESSFULLY;
+            return courseFeedbackMapper.mapToDTO(feedback);
         } catch (Exception e) {
             log.error(USER_NOT_ASSIGNED_ERROR);
             throw new IllegalArgumentException(USER_NOT_ASSIGNED_ERROR);

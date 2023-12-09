@@ -26,7 +26,7 @@ public class CourseFeedbackController {
     private final CourseFeedbackService courseFeedbackService;
 
     @PostMapping
-    public ResponseEntity<String> addFeedback(@RequestBody CourseFeedbackDTO courseFeedbackDTO,
+    public ResponseEntity<GetCourseFeedbackDTO> addFeedback(@RequestBody CourseFeedbackDTO courseFeedbackDTO,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(courseFeedbackService.create(courseFeedbackDTO, userDetails.getUsername()));
     }

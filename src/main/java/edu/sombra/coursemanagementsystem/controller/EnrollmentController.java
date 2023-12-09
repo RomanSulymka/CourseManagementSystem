@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourse
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import lombok.AllArgsConstructor;
@@ -29,9 +30,8 @@ public class EnrollmentController {
     private final EnrollmentService enrollmentService;
 
     @PostMapping("/instructor")
-    public ResponseEntity<String> assignInstructor(@RequestBody EnrollmentDTO enrollmentDTO) {
-        enrollmentService.assignInstructor(enrollmentDTO);
-        return ResponseEntity.ok("Instructor assigned successfully.");
+    public ResponseEntity<EnrollmentResponseDTO> assignInstructor(@RequestBody EnrollmentDTO enrollmentDTO) {
+        return ResponseEntity.ok(enrollmentService.assignInstructor(enrollmentDTO));
     }
 
     @PostMapping("/user/apply")

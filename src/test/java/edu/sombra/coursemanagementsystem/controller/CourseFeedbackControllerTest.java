@@ -45,15 +45,23 @@ class CourseFeedbackControllerTest {
         feedbackDTO.setStudentId(1L);
         feedbackDTO.setCourseId(5L);
 
-        when(courseFeedbackService.create(feedbackDTO, "admin@gmail.com")).thenReturn("Feedback saved successfully");
+        GetCourseFeedbackDTO getCourseFeedbackDTO = GetCourseFeedbackDTO.builder()
+                .id(3L)
+                .feedbackText("Great course!")
+                .studentId(1L)
+                .course(mock(Course.class))
+                .build();
+
+        when(courseFeedbackService.create(feedbackDTO, "admin@gmail.com")).thenReturn(getCourseFeedbackDTO);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(feedbackDTO)));
 
         result.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(jsonPath("$").isString());
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.feedbackText").value(getCourseFeedbackDTO.getFeedbackText()))
+                .andExpect(jsonPath("$.id").value(getCourseFeedbackDTO.getId()));
     }
 
     @Test

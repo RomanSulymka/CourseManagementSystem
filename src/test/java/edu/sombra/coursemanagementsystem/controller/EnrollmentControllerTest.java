@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
@@ -46,17 +47,24 @@ class EnrollmentControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testSetInstructorSuccess() throws Exception {
         EnrollmentDTO enrollmentDTO = EnrollmentDTO.builder()
-                .userEmail("instructo@email.com")
+                .userEmail("instructor@email.com")
                 .courseName("test course")
                 .build();
+
+        EnrollmentResponseDTO enrollmentGetDTO = EnrollmentResponseDTO.builder()
+                .userEmail(enrollmentDTO.getUserEmail())
+                .courseName(enrollmentDTO.getCourseName())
+                .build();
+
+        when(enrollmentService.assignInstructor(enrollmentDTO)).thenReturn(enrollmentGetDTO);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/enrollment/instructor")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(enrollmentDTO)));
 
         result.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(jsonPath("$").isString());
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.courseName").value(enrollmentDTO.getCourseName()));
 
         verify(enrollmentService, times(1)).assignInstructor(enrollmentDTO);
     }

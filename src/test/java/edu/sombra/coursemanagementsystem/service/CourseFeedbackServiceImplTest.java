@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -75,9 +76,19 @@ class CourseFeedbackServiceImplTest {
         dto2.setCourseId(2L);
         dto2.setStudentId(3L);
 
+        GetCourseFeedbackDTO expectedDTO = GetCourseFeedbackDTO.builder()
+                .id(1L)
+                .instructorId(3L)
+                .instructorEmail("instructor@example.com")
+                .studentId(2L)
+                .studentEmail("student@example.com")
+                .feedbackText("This is a great course.")
+                .course(new Course())
+                .build();
+
         return Stream.of(
-                Arguments.of(dto1, "instructor1@example.com"),
-                Arguments.of(dto2, "instructor2@example.com")
+                Arguments.of(dto1, "instructor1@example.com", expectedDTO),
+                Arguments.of(dto2, "instructor2@example.com", expectedDTO)
         );
     }
 
@@ -131,7 +142,7 @@ class CourseFeedbackServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("provideFeedbackTestData")
-    void testCreateFeedbackSuccess(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
+    void testCreateFeedbackSuccess(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail, GetCourseFeedbackDTO expectedDTO) {
         User instructor = User.builder()
                 .id(3L)
                 .role(RoleEnum.INSTRUCTOR)
@@ -159,11 +170,11 @@ class CourseFeedbackServiceImplTest {
         when(userRepository.findById(courseFeedbackDTO.getStudentId())).thenReturn(Optional.of(new User()));
         when(courseFeedbackService.createOrUpdateFeedback(courseFeedbackDTO, instructor)).thenReturn(any());
         when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
-
-        String response = courseFeedbackService.create(courseFeedbackDTO, instructorEmail);
+        when(courseFeedbackMapper.mapToDTO(Objects.requireNonNull(courseFeedback))).thenReturn(expectedDTO);
+        GetCourseFeedbackDTO response = courseFeedbackService.create(courseFeedbackDTO, instructorEmail);
 
         verify(courseFeedbackRepository, times(1)).save(any());
-        assertEquals("Feedback saved successfully", response);
+        assertEquals(expectedDTO, response);
     }
 
     @Test
