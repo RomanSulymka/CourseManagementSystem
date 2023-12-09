@@ -14,10 +14,12 @@ import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Generated;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+@Generated
 @Data
 @Builder
 @NoArgsConstructor

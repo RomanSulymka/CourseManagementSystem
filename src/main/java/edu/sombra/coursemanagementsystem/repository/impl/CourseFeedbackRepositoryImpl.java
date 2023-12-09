@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -33,7 +34,7 @@ public class CourseFeedbackRepositoryImpl implements CourseFeedbackRepository {
                 .findFirst();
     }
 
-
+    @Generated
     @Override
     public Class<CourseFeedback> getEntityClass() {
         return CourseFeedback.class;

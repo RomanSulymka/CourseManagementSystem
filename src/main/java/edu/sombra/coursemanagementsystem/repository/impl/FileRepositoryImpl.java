@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.repository.FileRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
+import lombok.Generated;
 import org.springframework.stereotype.Repository;
 
 @AllArgsConstructor
@@ -12,20 +13,14 @@ import org.springframework.stereotype.Repository;
 public class FileRepositoryImpl implements FileRepository {
     @PersistenceContext
     private EntityManager entityManager;
-    public static final String GET_FILE_NAME_BY_ID = "SELECT f.fileName FROM files f WHERE id =: id";
 
-    @Override
-    public String findFileNameById(Long fileId) {
-        return getEntityManager().createQuery(GET_FILE_NAME_BY_ID, String.class)
-                .setParameter("id", fileId)
-                .getSingleResult();
-    }
-
+    @Generated
     @Override
     public EntityManager getEntityManager() {
         return entityManager;
     }
 
+    @Generated
     @Override
     public Class<File> getEntityClass() {
         return File.class;

@@ -43,7 +43,7 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     private static final String ASSIGN_USER_TO_COURSE = "INSERT INTO enrollments (user_id, course_id) VALUES (:instructorId, :courseId )";
 
-    private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status WHERE id =:id";
+    private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status, start_date =:startDate WHERE id =:id";
 
     private static final String GET_USERS_IN_COURSE_BY_ROLE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE c.id =: id AND u.role =: role";
 
@@ -70,7 +70,8 @@ public class CourseRepositoryImpl implements CourseRepository {
     public void updateStatus(Long id, CourseStatus status) {
         getEntityManager()
                 .createNativeQuery(UPDATE_COURSE_STATUS)
-                .setParameter("status", status)
+                .setParameter("status", status.toString())
+                .setParameter("startDate", LocalDate.now())
                 .setParameter("id", id)
                 .executeUpdate();
     }
@@ -121,7 +122,7 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     @Override
-    public List<User> findUsersInCourse(String courseId) {
+    public List<User> findUsersInCourse(Long courseId) {
         return getEntityManager().createQuery(GET_ALL_USERS_IN_COURSE, User.class)
                 .setParameter("courseId", courseId)
                 .getResultList();

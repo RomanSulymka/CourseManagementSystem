@@ -3,7 +3,9 @@ package edu.sombra.coursemanagementsystem.dto.homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Generated;
 
+@Generated
 @Builder
 @Data
 public class GetHomeworkDTO {

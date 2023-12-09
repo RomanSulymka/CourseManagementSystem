@@ -2,8 +2,10 @@ package edu.sombra.coursemanagementsystem.dto.enrollment;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Generated;
 import lombok.NonNull;
 
+@Generated
 @Builder
 @Data
 public class EnrollmentDTO {

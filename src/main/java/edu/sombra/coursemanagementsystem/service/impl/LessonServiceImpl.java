@@ -1,17 +1,21 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.CreateLessonDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
+import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
+import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,44 +27,58 @@ import java.util.stream.LongStream;
 @Transactional
 @RequiredArgsConstructor
 public class LessonServiceImpl implements LessonService {
+    public static final String FAILED_TO_DELETE_LESSON = "Failed to delete lesson";
+    public static final String LESSON_DELETED_SUCCESSFULLY = "Lesson deleted successfully";
+    public static final String COURSE_SHOULD_HAVE_AT_LEAST_5_LESSONS = "Course should have at least 5 lessons";
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
+    private final LessonMapper lessonMapper;
+    private final CourseMapper courseMapper;
 
     @Override
-    public Lesson save(CreateLessonDTO lessonDTO) {
-        try {
-            Course course = courseRepository.findById(lessonDTO.getCourseId())
-                    .orElseThrow(EntityNotFoundException::new);
-            return lessonRepository.save(Lesson.builder()
-                    .name(lessonDTO.getLessonName())
-                    .course(course)
-                    .build());
-        } catch (DataAccessException ex) {
-            log.error("Error creating lesson: {}", ex.getMessage(), ex);
-            throw new LessonException("Failed to create lesson", ex);
-        }
-    }
-
-    @Override
-    public Lesson findById(Long id) {
-        return lessonRepository.findById(id)
+    public LessonResponseDTO save(CreateLessonDTO lessonDTO) {
+        Course course = courseRepository.findById(lessonDTO.getCourseId())
                 .orElseThrow(EntityNotFoundException::new);
+        Lesson lesson = lessonRepository.save(Lesson.builder()
+                .name(lessonDTO.getLessonName())
+                .course(course)
+                .build());
+        CourseResponseDTO courseResponse = courseMapper.mapToResponseDTO(course);
+        return lessonMapper.mapToResponseDTO(lesson, courseResponse);
     }
 
     @Override
-    public List<Lesson> findAllLessons() {
-        return lessonRepository.findAll();
+    public LessonResponseDTO findById(Long id) {
+        Lesson lesson = lessonRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
+        CourseResponseDTO courseResponse = courseMapper.mapToResponseDTO(lesson.getCourse());
+        return lessonMapper.mapToResponseDTO(lesson, courseResponse);
     }
 
     @Override
-    public List<Lesson> findAllLessonsByCourse(Long courseId) {
-        return lessonRepository.findAllByCourseId(courseId);
+    public List<LessonResponseDTO> findAllLessons() {
+        List<Lesson> lessons = lessonRepository.findAll();
+        List<CourseResponseDTO> courseResponseDTOS = lessons.stream()
+                .map(lesson -> courseMapper.mapToResponseDTO(lesson.getCourse()))
+                .toList();
+
+        return lessonMapper.mapToResponsesDTO(lessons, courseResponseDTOS);
+    }
+
+    @Override
+    public List<LessonResponseDTO> findAllLessonsByCourse(Long courseId) {
+        List<Lesson> lessons = lessonRepository.findAllByCourseId(courseId);
+        List<CourseResponseDTO> courseResponseDTOS = lessons.stream()
+                .map(lesson -> courseMapper.mapToResponseDTO(lesson.getCourse()))
+                .toList();
+
+        return lessonMapper.mapToResponsesDTO(lessons, courseResponseDTOS);
     }
 
     @Override
     public List<Lesson> generateAndAssignLessons(Long numberOfLessons, Course course) {
         if (numberOfLessons < 5) {
-            throw new LessonException("Course should have at least 5 lessons");
+            throw new LessonException(COURSE_SHOULD_HAVE_AT_LEAST_5_LESSONS);
         }
 
         List<Lesson> generatedLessons = LongStream.rangeClosed(1, numberOfLessons)
@@ -76,18 +94,29 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public void deleteLesson(Long id) {
         try {
-            Lesson lesson = findById(id);
+            Lesson lesson = lessonRepository.findById(id)
+                    .orElseThrow(EntityNotFoundException::new);
             lessonRepository.delete(lesson);
-            log.info("Lesson deleted successfully");
+            log.info(LESSON_DELETED_SUCCESSFULLY);
         } catch (EntityDeletionException e) {
-            log.error("Error deletion lesson: {}", id);
-            throw new EntityDeletionException("Failed to delete lesson", e);
+            log.error(FAILED_TO_DELETE_LESSON + id);
+            throw new EntityDeletionException(FAILED_TO_DELETE_LESSON, e);
         }
     }
 
+    //TODO: test it
     @Override
-    public Lesson editLesson(Lesson lesson) {
-        return lessonRepository.update(lesson);
+    public LessonResponseDTO editLesson(UpdateLessonDTO lesson) {
+        findById(lesson.getId());
+        Course course = courseRepository.findById(lesson.getId()).orElseThrow();
+        Lesson editedLesson = Lesson.builder()
+                .id(lesson.getId())
+                .name(lesson.getName())
+                .course(course)
+                .build();
+        Lesson updatedLesson = lessonRepository.update(editedLesson);
+        CourseResponseDTO courseResponse = courseMapper.mapToResponseDTO(updatedLesson.getCourse());
+        return lessonMapper.mapToResponseDTO(updatedLesson, courseResponse);
     }
 
     @Override

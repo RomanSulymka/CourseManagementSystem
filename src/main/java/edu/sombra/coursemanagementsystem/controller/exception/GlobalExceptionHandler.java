@@ -1,12 +1,15 @@
 package edu.sombra.coursemanagementsystem.controller.exception;
 
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
+import edu.sombra.coursemanagementsystem.exception.CourseException;
+import edu.sombra.coursemanagementsystem.exception.EnrollmentException;
 import edu.sombra.coursemanagementsystem.exception.ErrorResponse;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyAssignedException;
 import edu.sombra.coursemanagementsystem.exception.UserAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +25,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({ UserAlreadyAssignedException.class, AccessDeniedException.class })
+    @ExceptionHandler({UserAlreadyAssignedException.class, AccessDeniedException.class})
     public ResponseEntity<String> handleException(Exception e) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         if (e instanceof UserAlreadyAssignedException) {
@@ -39,7 +42,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    //FIXME: check it
+    @ExceptionHandler(value = {EntityExistsException.class})
+    public ResponseEntity<ErrorResponse> handleEntityExistsException(EntityExistsException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(value = {ExpiredJwtException.class})
     public ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
@@ -60,6 +68,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {LessonException.class})
     public ResponseEntity<ErrorResponse> handleLessonException(LessonException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {CourseException.class})
+    public ResponseEntity<ErrorResponse> handleCourseException(CourseException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {IllegalArgumentException.class})
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {EnrollmentException.class})
+    public ResponseEntity<ErrorResponse> handleEnrollmentException(EnrollmentException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

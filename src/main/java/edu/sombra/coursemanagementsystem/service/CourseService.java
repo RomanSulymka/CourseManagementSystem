@@ -1,43 +1,44 @@
 package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseMarkResponseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
-import edu.sombra.coursemanagementsystem.entity.Course;
-import edu.sombra.coursemanagementsystem.entity.CourseMark;
-import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 
 import java.util.List;
 
 public interface CourseService {
-    Course create(CourseDTO courseDTO);
+    CourseResponseDTO create(CourseDTO courseDTO);
 
-    Course findByName(String courseName);
+    CourseResponseDTO findByName(String courseName);
 
-    Course update(Course course);
+    CourseResponseDTO update(UpdateCourseDTO course);
 
-    Course findById(Long courseId);
+    CourseResponseDTO findById(Long courseId);
 
     boolean delete(Long id);
 
-    List<Course> findAllCourses();
+    List<CourseResponseDTO> findAllCourses();
 
-    Course updateStatus(Long id, CourseStatus status);
+    CourseResponseDTO updateStatus(Long id, CourseStatus status);
 
-    List<Lesson> findAllLessonsByCourse(Long id);
+    List<LessonResponseDTO> findAllLessonsByCourse(Long id);
 
-    Course findCourseByHomeworkId(Long userId, Long homeworkId);
+    CourseResponseDTO findCourseByHomeworkId(Long userId, Long homeworkId);
 
-    List<Course> findCoursesByInstructorId(Long instructorId);
+    List<CourseResponseDTO> findCoursesByInstructorId(Long instructorId);
 
-    List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, String courseId);
+    List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, Long courseId);
 
-    List<Course> findCoursesByUserId(Long userId);
+    List<CourseResponseDTO> findCoursesByUserId(Long userId);
 
     LessonsByCourseDTO findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId);
 
-    CourseMark finishCourse(Long studentId, Long courseId);
+    CourseMarkResponseDTO finishCourse(Long studentId, Long courseId);
 
-    Course startOrStopCourse(Long courseId, String action);
+    CourseResponseDTO startOrStopCourse(Long courseId, String action);
 }

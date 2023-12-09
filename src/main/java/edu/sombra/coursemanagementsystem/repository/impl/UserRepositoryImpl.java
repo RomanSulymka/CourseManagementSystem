@@ -5,13 +5,12 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Generated;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Slf4j
 @Repository
 @Transactional
 public class UserRepositoryImpl implements UserRepository {
@@ -56,11 +55,13 @@ public class UserRepositoryImpl implements UserRepository {
                 .getResultList();
     }
 
+    @Generated
     @Override
     public EntityManager getEntityManager() {
         return entityManager;
     }
 
+    @Generated
     @Override
     public Class<User> getEntityClass() {
         return User.class;

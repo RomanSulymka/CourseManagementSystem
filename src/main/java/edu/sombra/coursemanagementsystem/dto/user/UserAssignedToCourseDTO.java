@@ -2,7 +2,9 @@ package edu.sombra.coursemanagementsystem.dto.user;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Generated;
 
+@Generated
 @Builder
 @Data
 public class UserAssignedToCourseDTO {

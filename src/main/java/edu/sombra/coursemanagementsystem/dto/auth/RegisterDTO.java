@@ -4,12 +4,16 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Generated;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@Generated
 public class RegisterDTO {
     private String firstName;
     private String lastName;

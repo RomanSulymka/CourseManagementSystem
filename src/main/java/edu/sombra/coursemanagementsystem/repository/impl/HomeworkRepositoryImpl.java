@@ -6,18 +6,18 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Generated;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @AllArgsConstructor
 @Repository
 public class HomeworkRepositoryImpl implements HomeworkRepository {
     @PersistenceContext
     private EntityManager entityManager;
+    public static final String GET_ALL_HOMEWORKS_BY_USER = "SELECT h FROM homework h where user.id =: userId";
 
     private static final String GET_AVERAGE_MARK_BY_USER = "SELECT AVG(h.mark) FROM homework h INNER JOIN lessons l on l.id = h.lesson.id " +
             "INNER JOIN courses c on c.id = l.course.id WHERE h.user.id = :userId AND l.course.id = :courseId";
@@ -88,10 +88,19 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
     }
 
     @Override
+    public List<Homework> findAllByUser(Long userId) {
+        return getEntityManager().createQuery(GET_ALL_HOMEWORKS_BY_USER, Homework.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
+    @Generated
+    @Override
     public EntityManager getEntityManager() {
         return entityManager;
     }
 
+    @Generated
     @Override
     public Class<Homework> getEntityClass() {
         return Homework.class;

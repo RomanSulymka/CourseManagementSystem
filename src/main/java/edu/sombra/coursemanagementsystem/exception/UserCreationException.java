@@ -1,10 +1,11 @@
 package edu.sombra.coursemanagementsystem.exception;
 
-import org.springframework.dao.DataAccessException;
+import lombok.Generated;
 
+@Generated
 public class UserCreationException extends RuntimeException {
 
-    public UserCreationException(String message, DataAccessException ex) {
+    public UserCreationException(String message, UserCreationException ex) {
         super(message, ex);
     }
 }

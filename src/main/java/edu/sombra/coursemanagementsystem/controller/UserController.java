@@ -1,8 +1,10 @@
 package edu.sombra.coursemanagementsystem.controller;
 
+import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UpdateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
-import edu.sombra.coursemanagementsystem.entity.User;
+import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,17 +26,17 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/create")
-    public ResponseEntity<User> create(@RequestBody User user) {
-        return ResponseEntity.ok(userService.createUser(user));
+    public ResponseEntity<UserResponseDTO> create(@RequestBody CreateUserDTO userDTO) {
+        return ResponseEntity.ok(userService.createUser(userDTO));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<User> update(@RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(user));
+    public ResponseEntity<UserResponseDTO> update(@RequestBody UpdateUserDTO userDTO) {
+        return ResponseEntity.ok(userService.updateUser(userDTO));
     }
 
     @PostMapping("/assign-role")
-    public ResponseEntity<String> assignNewRole(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserResponseDTO> assignNewRole(@RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.assignNewRole(userDTO));
     }
 
@@ -43,18 +45,18 @@ public class UserController {
         return ResponseEntity.ok(userService.resetPassword(resetPasswordDTO));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> findUserById(@PathVariable Long id) {
+    @GetMapping("/id/{id}")
+    public ResponseEntity<UserResponseDTO> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id));
     }
 
-    @GetMapping("/{email}")
-    public ResponseEntity<User> findUserByEmail(@PathVariable String email) {
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserResponseDTO> findUserByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.findUserByEmail(email));
     }
 
     @GetMapping("/find-all")
-    public ResponseEntity<List<User>> findAll() {
+    public ResponseEntity<List<UserResponseDTO>> findAll() {
         return ResponseEntity.ok(userService.findAllUsers());
     }
 

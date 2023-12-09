@@ -1,10 +1,11 @@
 package edu.sombra.coursemanagementsystem.controller;
 
+import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
-import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentRequest;
+import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentUpdateDTO;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import lombok.AllArgsConstructor;
@@ -29,16 +30,14 @@ public class EnrollmentController {
     private final EnrollmentService enrollmentService;
 
     @PostMapping("/instructor")
-    public ResponseEntity<String> setInstructor(@RequestBody EnrollmentDTO enrollmentDTO) {
-        enrollmentService.  assignInstructor(enrollmentDTO);
-        return ResponseEntity.ok("Instructor assigned successfully.");
+    public ResponseEntity<EnrollmentResponseDTO> assignInstructor(@RequestBody EnrollmentDTO enrollmentDTO) {
+        return ResponseEntity.ok(enrollmentService.assignInstructor(enrollmentDTO));
     }
 
     @PostMapping("/user/apply")
-    public ResponseEntity<String> applyForCourse(@RequestBody EnrollmentApplyForCourseDTO applyForCourseDTO,
+    public ResponseEntity<EnrollmentResponseDTO> applyForCourse(@RequestBody EnrollmentApplyForCourseDTO applyForCourseDTO,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
-        enrollmentService.applyForCourse(applyForCourseDTO, userDetails.getUsername());
-        return ResponseEntity.ok("User assigned successfully");
+        return ResponseEntity.ok(enrollmentService.applyForCourse(applyForCourseDTO, userDetails.getUsername()));
     }
 
     @GetMapping("/{id}")
@@ -46,9 +45,9 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollmentService.findEnrolmentById(id));
     }
 
-    @PostMapping("/by-name")
-    public ResponseEntity<List<EnrollmentGetByNameDTO>> getByName(@RequestBody EnrollmentRequest request)  {
-        return ResponseEntity.ok(enrollmentService.findEnrolmentByCourseName(request.getName()));
+    @GetMapping("/by-name/{name}")
+    public ResponseEntity<List<EnrollmentGetByNameDTO>> getByName(@PathVariable String name)  {
+        return ResponseEntity.ok(enrollmentService.findEnrolmentByCourseName(name));
     }
 
     @PutMapping
@@ -57,13 +56,13 @@ public class EnrollmentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<String> removeUserFromCourse(@PathVariable Long id) {
         enrollmentService.removeUserFromCourse(id);
         return ResponseEntity.ok("Instructor removed successfully");
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<String>> listOfCourseByUser(@PathVariable Long id) {
+    public ResponseEntity<List<CourseResponseDTO>> listAllCoursesByUser(@PathVariable Long id) {
         return ResponseEntity.ok(enrollmentService.findAllCoursesByUser(id));
     }
 }

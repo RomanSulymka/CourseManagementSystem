@@ -22,9 +22,8 @@ public class HomeworkController {
     private final HomeworkService homeworkService;
 
     @PutMapping("/mark")
-    public ResponseEntity<String> setMark(@RequestBody HomeworkDTO homeworkDTO) {
-        homeworkService.setMark(homeworkDTO.getUserId(), homeworkDTO.getHomeworkId(), homeworkDTO.getMark());
-        return ResponseEntity.ok("Mark saved successfully");
+    public ResponseEntity<GetHomeworkDTO> setMark(@RequestBody HomeworkDTO homeworkDTO) {
+        return ResponseEntity.ok(homeworkService.setMark(homeworkDTO.getUserId(), homeworkDTO.getHomeworkId(), homeworkDTO.getMark()));
     }
 
     @GetMapping("/{homeworkId}")
@@ -35,6 +34,11 @@ public class HomeworkController {
     @GetMapping
     public ResponseEntity<List<GetHomeworkDTO>> getAllHomeworks() {
         return ResponseEntity.ok(homeworkService.getAllHomeworks());
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<GetHomeworkDTO>> getAllHomeworksByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(homeworkService.getAllHomeworksByUser(userId));
     }
 
     @DeleteMapping("/{homeworkId}")

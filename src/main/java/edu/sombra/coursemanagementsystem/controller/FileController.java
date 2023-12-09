@@ -1,5 +1,6 @@
 package edu.sombra.coursemanagementsystem.controller;
 
+import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
 import edu.sombra.coursemanagementsystem.service.FileService;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -24,12 +25,11 @@ import java.io.IOException;
 public class FileController {
     private final FileService fileService;
 
-    @PostMapping("/upload/{userId}/{lessonId}")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,
-                                             @PathVariable Long lessonId,
-                                             @PathVariable Long userId) throws IOException {
-        fileService.saveFile(file, lessonId, userId);
-        return ResponseEntity.ok("File uploaded successfully");
+    @PostMapping("/upload")
+    public ResponseEntity<FileResponseDTO> uploadFile(@RequestParam("file") MultipartFile file,
+                                                      @RequestParam("lessonId") Long lessonId,
+                                                      @RequestParam("userId") Long userId) throws IOException {
+        return ResponseEntity.ok(fileService.saveFile(file, lessonId, userId));
     }
 
     @GetMapping("/download/{fileId}")

@@ -12,7 +12,7 @@ public interface EnrollmentRepository extends BaseRepository<Enrollment, Long> {
     boolean isUserAssignedToCourse(Course course, User user);
     List<Tuple> findEnrollmentByCourseName(String name);
     Long getUserRegisteredCourseCount(Long userId);
-    List<String> findCoursesByUserId(Long id);
+    List<Course> findCoursesByUserId(Long id);
     Course findCourseByEnrollmentId(Long id);
     List<User> findAssignedInstructorsForCourse(Long id);
     User findUserByEnrollmentId(Long id);

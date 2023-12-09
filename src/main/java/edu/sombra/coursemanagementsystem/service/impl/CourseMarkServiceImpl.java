@@ -4,9 +4,9 @@ import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseMarkService;
-import edu.sombra.coursemanagementsystem.service.CourseService;
-import edu.sombra.coursemanagementsystem.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,8 +22,8 @@ import java.util.List;
 public class CourseMarkServiceImpl implements CourseMarkService {
     public static final String TOTAL_MARK_SAVED_SUCCESSFULLY = "Total mark saved successfully";
     private final CourseMarkRepository courseMarkRepository;
-    private final CourseService courseService;
-    private final UserService userService;
+    private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
 
     @Override
     public void save(CourseMark courseMark) {
@@ -42,18 +42,19 @@ public class CourseMarkServiceImpl implements CourseMarkService {
 
     @Override
     public void saveTotalMark(Long userId, Long courseId, Double averageMark, Boolean isAllHomeworksGraded) {
-        User user = userService.findUserById(userId);
-        Course course = courseService.findById(courseId);
+        User user = userRepository.findById(userId).orElseThrow();
+        Course course = courseRepository.findById(courseId).orElseThrow();
         courseMarkRepository.upsert(CourseMark.builder()
                 .user(user)
                 .course(course)
-                .totalScore(BigDecimal.valueOf(averageMark))
+                .totalScore(averageMark != null ? BigDecimal.valueOf(averageMark) : null)
                 .passed(isCoursePassed(averageMark, isAllHomeworksGraded))
                 .build());
         log.info(TOTAL_MARK_SAVED_SUCCESSFULLY);
     }
 
-    private boolean isCoursePassed(Double averageMark, boolean isAllHomeworksGraded) {
+    @Override
+    public boolean isCoursePassed(Double averageMark, boolean isAllHomeworksGraded) {
         return isAllHomeworksGraded && averageMark >= 80;
     }
 }

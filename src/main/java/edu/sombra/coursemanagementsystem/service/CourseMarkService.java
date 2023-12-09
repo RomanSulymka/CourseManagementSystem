@@ -12,4 +12,6 @@ public interface CourseMarkService {
     List<CourseMark> findAll();
 
     void saveTotalMark(Long userId, Long courseId, Double averageMark, Boolean isAllHomeworksGraded);
+
+    boolean isCoursePassed(Double averageMark, boolean isAllHomeworksGraded);
 }

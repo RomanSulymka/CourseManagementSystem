@@ -1,10 +1,11 @@
 package edu.sombra.coursemanagementsystem.exception;
 
-import org.springframework.dao.DataAccessException;
+import lombok.Generated;
 
+@Generated
 public class UserUpdateException extends RuntimeException {
 
-    public UserUpdateException(String message, DataAccessException ex) {
+    public UserUpdateException(String message, NullPointerException ex) {
         super(message, ex);
     }
 }

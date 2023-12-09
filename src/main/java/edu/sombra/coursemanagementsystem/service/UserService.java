@@ -1,30 +1,33 @@
 package edu.sombra.coursemanagementsystem.service;
 
+import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UpdateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 
 import java.util.List;
 
 public interface UserService {
-    User findUserById(Long id);
+    UserResponseDTO findUserById(Long id);
 
-    String assignNewRole(UserDTO userDTO);
+    UserResponseDTO assignNewRole(UserDTO userDTO);
 
-    User findUserByEmail(String email);
+    UserResponseDTO findUserByEmail(String email);
 
     void validateInstructor(User instructor, RoleEnum role);
 
-    User createUser(User user);
+    UserResponseDTO createUser(CreateUserDTO userDTO);
 
-    User updateUser(User user);
+    UserResponseDTO updateUser(UpdateUserDTO userDTO);
 
     String resetPassword(ResetPasswordDTO resetPasswordDTO);
 
     String deleteUser(Long id);
 
-    List<User> findAllUsers();
+    List<UserResponseDTO> findAllUsers();
 
     boolean existsUserByEmail(String email);
 
