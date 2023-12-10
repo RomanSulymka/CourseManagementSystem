@@ -170,7 +170,7 @@ class StudentCourseFeedbackControllerE2ETest {
                 String.class
         );
 
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
     }
 
     @Test
