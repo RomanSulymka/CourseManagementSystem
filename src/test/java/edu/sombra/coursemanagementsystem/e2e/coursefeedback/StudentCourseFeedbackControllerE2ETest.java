@@ -1,4 +1,3 @@
-/*
 package edu.sombra.coursemanagementsystem.e2e.coursefeedback;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
@@ -22,7 +21,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,6 +67,7 @@ class StudentCourseFeedbackControllerE2ETest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         HttpEntity<CourseFeedbackDTO> requestEntity = new HttpEntity<>(courseFeedbackDTO, headers);
 
@@ -80,12 +79,13 @@ class StudentCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        assertEquals("Access Denied", responseEntity.getBody());
     }
 
     @Test
     void testEditFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setId(3L);
+        courseFeedbackDTO.setId(2L);
         courseFeedbackDTO.setFeedbackText("Great!!");
         courseFeedbackDTO.setCourseId(2L);
         courseFeedbackDTO.setStudentId(4L);
@@ -95,36 +95,36 @@ class StudentCourseFeedbackControllerE2ETest {
 
         HttpEntity<CourseFeedbackDTO> requestEntity = new HttpEntity<>(courseFeedbackDTO, headers);
 
-        ResponseEntity<GetCourseFeedbackDTO> responseEntity = restTemplate.exchange(
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback"),
                 HttpMethod.PUT,
                 requestEntity,
-                GetCourseFeedbackDTO.class
+                String.class
         );
 
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        assertEquals("Access Denied", responseEntity.getBody());
     }
 
     @Test
     void testGetAllFeedbacks() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        ResponseEntity<List> responseEntity = restTemplate.exchange(
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback"),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                List.class
+                String.class
         );
 
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
     }
 
 
     @Test
     void testGetFeedbackById() {
-        Long feedbackId = 3L;
+        Long feedbackId = 2L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -158,7 +158,7 @@ class StudentCourseFeedbackControllerE2ETest {
 
     @Test
     void testDeleteFeedback() {
-        Long feedbackId = 3L;
+        Long feedbackId = 2L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -194,4 +194,3 @@ class StudentCourseFeedbackControllerE2ETest {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
 }
-*/

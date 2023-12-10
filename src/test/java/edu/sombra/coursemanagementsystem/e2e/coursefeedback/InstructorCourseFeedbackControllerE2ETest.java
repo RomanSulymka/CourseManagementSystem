@@ -1,4 +1,3 @@
-/*
 package edu.sombra.coursemanagementsystem.e2e.coursefeedback;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
@@ -16,10 +15,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Collections;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -101,8 +102,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
-*/
-/*    @Test
+    @Test
     void testEditFeedback() {
         CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
         courseFeedbackDTO.setId(5L);
@@ -123,24 +123,23 @@ class InstructorCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }*//*
+    }
 
-*/
-/*    @Test
+    @Test
     void testGetAllFeedbacks() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        ResponseEntity<List> responseEntity = restTemplate.exchange(
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
                 "http://localhost:" + port + "/api/v1/feedback",
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                List.class
+                String.class
         );
 
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-    }*//*
+    }
 
 
     @Test
@@ -177,8 +176,7 @@ class InstructorCourseFeedbackControllerE2ETest {
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
-*/
-/*    @Test
+    @Test
     void testDeleteFeedback() {
         Long feedbackId = 5L;
 
@@ -193,11 +191,10 @@ class InstructorCourseFeedbackControllerE2ETest {
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }*//*
+    }
 
 
     private String buildUrl(String path, Object... uriVariables) {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
 }
-*/
