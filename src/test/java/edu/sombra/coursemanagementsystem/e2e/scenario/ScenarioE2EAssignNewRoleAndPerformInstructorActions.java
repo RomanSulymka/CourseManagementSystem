@@ -113,13 +113,13 @@ class ScenarioE2EAssignNewRoleAndPerformInstructorActions {
     }
 
     private FileResponseDTO uploadHomework(String studentJwtToken, UserResponseDTO foundStudentResponse, GetHomeworkDTO homeworkDTO) {
-        studentHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
         studentHeaders.setBearerAuth(studentJwtToken);
+        studentHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource("output.csv"));
         body.add("userId", foundStudentResponse.getId());
-        body.add("lessonId", homeworkDTO.getLesson());
+        body.add("lessonId", homeworkDTO.getLesson().getId());
 
         HttpEntity<MultiValueMap<String, Object>> uploadHomeworkRequestEntity = new HttpEntity<>(body, studentHeaders);
 
