@@ -141,7 +141,7 @@ class StudentCourseFeedbackControllerE2ETest {
 
     @Test
     void testGetFeedbackByIdThrowNotFoundException() {
-        Long feedbackId = 1L;
+        Long feedbackId = 10000L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);

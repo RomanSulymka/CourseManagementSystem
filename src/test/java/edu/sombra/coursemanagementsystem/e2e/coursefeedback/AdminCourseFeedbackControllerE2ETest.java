@@ -131,7 +131,7 @@ class AdminCourseFeedbackControllerE2ETest {
         headers.setBearerAuth(jwtToken);
         headers.setAccept(List.of(org.springframework.http.MediaType.APPLICATION_JSON));
 
-        ResponseEntity<List<GetCourseFeedbackDTO>> responseEntity = restTemplate.exchange(
+        ResponseEntity<List> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback"),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
@@ -147,6 +147,7 @@ class AdminCourseFeedbackControllerE2ETest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
+        headers.setAccept(List.of(org.springframework.http.MediaType.APPLICATION_JSON));
 
         ResponseEntity<GetCourseFeedbackDTO> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback/{id}", feedbackId),

@@ -149,11 +149,11 @@ class InstructorCourseFeedbackControllerE2ETest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
-        ResponseEntity<GetCourseFeedbackDTO> responseEntity = restTemplate.exchange(
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback/{id}", feedbackId),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                GetCourseFeedbackDTO.class
+                String.class
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
