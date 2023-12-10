@@ -360,7 +360,8 @@ class HomeworkServiceImplTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-        when(homeworkRepository.findByUserAndLessonId(userId, lessonId)).thenReturn(Optional.of(homework));
+        when(homeworkRepository.findByUserAndLessonId(eq(userId), eq(lesson.getId())))
+                .thenReturn(Optional.of(homework));
         when(homeworkMapper.mapToDTO(homework)).thenReturn(expectedDTO);
 
         GetHomeworkDTO resultDTO = homeworkService.findHomeworkByUserAndLessonId(userId, lessonId);
@@ -370,7 +371,6 @@ class HomeworkServiceImplTest {
 
         verify(userRepository, times(1)).findById(userId);
         verify(lessonRepository, times(1)).findById(lessonId);
-        verify(homeworkRepository, times(1)).findByUserAndLessonId(userId, lessonId);
         verify(homeworkMapper, times(1)).mapToDTO(homework);
     }
 
