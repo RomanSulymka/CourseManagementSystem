@@ -96,11 +96,11 @@ public class SecurityConfiguration {
                 .sessionManagement(authorizeRequests ->
                         authorizeRequests.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-/*                .exceptionHandling(exceptionHandling ->
+                .exceptionHandling(exceptionHandling ->
                         exceptionHandling
                                 .accessDeniedHandler(accessDeniedHandler())
                                 .authenticationEntryPoint(authenticationEntryPoint())
-                )*/
+                )
                 .logout(logout ->
                         logout.deleteCookies("remove")
                                 .logoutUrl("/api/v1/auth/logout")
