@@ -40,8 +40,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -113,14 +112,6 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
         assertNotNull(createdCourseResponse.getBody());
-
-/*        //Logout
-        restTemplate.exchange(
-                buildUrl("/api/v1/auth/logout"),
-                HttpMethod.GET,
-                new HttpEntity(adminHeader),
-                Void.class
-        );*/
 
         /*
          login as student
@@ -309,6 +300,25 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, getListOfLessonsOnCourseResponseEntity.getStatusCode());
         assertNotNull(getListOfLessonsOnCourseResponseEntity.getBody());
+
+        //Admin Logout
+        logoutUserUsingHeader(adminHeader);
+        //Instructor logout
+        logoutUserUsingHeader(instructorHeaders);
+        //Student logout
+        logoutUserUsingHeader(studentHeader);
+    }
+
+    private void logoutUserUsingHeader(HttpHeaders headers) {
+        ResponseEntity<Void> logout = restTemplate.exchange(
+                buildUrl("/api/v1/auth/logout"),
+                HttpMethod.GET,
+                new HttpEntity(headers),
+                Void.class
+        );
+
+        assertEquals(HttpStatus.OK, logout.getStatusCode());
+        assertNull(logout.getBody());
     }
 
     private String buildUrl(String path, Object... uriVariables) {
