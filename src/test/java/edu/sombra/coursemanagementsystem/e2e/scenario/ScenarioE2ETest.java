@@ -155,7 +155,7 @@ class ScenarioE2ETest {
                 .action("start")
                 .build();
 
-        HttpEntity<CourseActionDTO> startCourseRequestEntity = new HttpEntity<>(startCourseDTO, studentHeader);
+        HttpEntity<CourseActionDTO> startCourseRequestEntity = new HttpEntity<>(startCourseDTO, adminHeader);
 
         ResponseEntity<CourseResponseDTO> startCourseResponse = restTemplate.exchange(
                 buildUrl("/api/v1/course"),

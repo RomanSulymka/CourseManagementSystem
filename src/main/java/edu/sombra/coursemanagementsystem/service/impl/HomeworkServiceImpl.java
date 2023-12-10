@@ -7,11 +7,11 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
+import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseMarkService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.HomeworkService;
-import edu.sombra.coursemanagementsystem.service.LessonService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     private final HomeworkRepository homeworkRepository;
     private final CourseMarkService courseMarkService;
-    private final LessonService lessonService;
+    private final LessonRepository lessonRepository;
     private final EnrollmentService enrollmentService;
     private final HomeworkMapper homeworkMapper;
     private final UserRepository userRepository;
@@ -55,7 +55,9 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (mark >= 0 && mark <= 100) {
                 homeworkRepository.setMark(homeworkId, mark);
                 log.info(MARK_SAVED_SUCCESSFULLY);
-                Lesson lesson = lessonService.findLessonByHomeworkId(homeworkId);
+                Lesson lesson = lessonRepository.findLessonByHomeworkId(homeworkId)
+                        .orElseThrow(EntityNotFoundException::new);
+
                 Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, lesson.getCourse().getId());
                 boolean isAllHomeworksGraded = isAllHomeworksGraded(userId, lesson.getCourse().getId());
                 courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark, isAllHomeworksGraded);
@@ -108,10 +110,20 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public List<GetHomeworkDTO> getAllHomeworksByUser(Long userId) {
-        //todo: refactor this line and add the validation method
         User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
         List<Homework> homeworkList = homeworkRepository.findAllByUser(user.getId());
         return homeworkMapper.mapToDTO(homeworkList);
+    }
+
+    @Override
+    public GetHomeworkDTO findHomeworkByUserAndLessonId(Long userId, Long lessonId) {
+        userRepository.findById(userId);
+        var lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Homework homework = homeworkRepository.findByUserAndLessonId(userId, lesson.getId())
+                .orElseThrow(EntityNotFoundException::new);
+        return homeworkMapper.mapToDTO(homework);
     }
 
     public Homework findHomework(Long homeworkId) {
