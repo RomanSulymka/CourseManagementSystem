@@ -158,7 +158,7 @@ class StudentCourseFeedbackControllerE2ETest {
 
     @Test
     void testDeleteFeedback() {
-        Long feedbackId = 2L;
+        Long feedbackId = 6L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
