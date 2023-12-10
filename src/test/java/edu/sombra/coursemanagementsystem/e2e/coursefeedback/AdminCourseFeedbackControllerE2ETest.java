@@ -141,7 +141,7 @@ class AdminCourseFeedbackControllerE2ETest {
 
     @Test
     void testGetFeedbackById() {
-        Long feedbackId = 1L;
+        Long feedbackId = 2L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
