@@ -144,7 +144,7 @@ class InstructorCourseFeedbackControllerE2ETest {
 
     @Test
     void testGetFeedbackById() {
-        Long feedbackId = 2L;
+        Long feedbackId = 5L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
@@ -166,11 +166,11 @@ class InstructorCourseFeedbackControllerE2ETest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
-        ResponseEntity<GetCourseFeedbackDTO> responseEntity = restTemplate.exchange(
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback/{id}", feedbackId),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                GetCourseFeedbackDTO.class
+                String.class
         );
 
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
@@ -178,7 +178,7 @@ class InstructorCourseFeedbackControllerE2ETest {
 
     @Test
     void testDeleteFeedback() {
-        Long feedbackId = 6L;
+        Long feedbackId = 5L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
