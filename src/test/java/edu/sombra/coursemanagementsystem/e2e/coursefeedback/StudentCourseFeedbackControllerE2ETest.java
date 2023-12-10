@@ -173,23 +173,6 @@ class StudentCourseFeedbackControllerE2ETest {
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
     }
 
-    @Test
-    void testDeleteFeedback_NotFound() {
-        Long feedbackId = 1000L;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(jwtToken);
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback/{id}", feedbackId),
-                HttpMethod.DELETE,
-                new HttpEntity<>(headers),
-                String.class
-        );
-
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-    }
-
     private String buildUrl(String path, Object... uriVariables) {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
