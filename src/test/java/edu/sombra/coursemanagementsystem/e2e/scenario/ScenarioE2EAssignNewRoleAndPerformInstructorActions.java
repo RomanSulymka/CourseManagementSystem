@@ -6,10 +6,14 @@ import edu.sombra.coursemanagementsystem.dto.auth.RegisterDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
+import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
+import edu.sombra.coursemanagementsystem.dto.feedback.CourseFeedbackDTO;
+import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
+import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
@@ -22,6 +26,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,8 +42,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -102,14 +106,142 @@ class ScenarioE2EAssignNewRoleAndPerformInstructorActions {
         List<LessonResponseDTO> lessonsInCourse = findAllLessonsByCourseId(enrollmentResponseDTO, studentJwtToken);
 
         //find all homework by studentId and courseId
-        GetHomeworkDTO homeworkDTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(0).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework1DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(0).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework2DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(1).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework3DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(2).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework4DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(3).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework5DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(4).getId(), foundStudentResponse.getId(), studentJwtToken);
 
         //Upload homework
-        FileResponseDTO uploadedHomework = uploadHomework(studentJwtToken, foundStudentResponse, homeworkDTO);
-
+        FileResponseDTO uploadedHomework1 = uploadHomework(studentJwtToken, foundStudentResponse, homework1DTO);
+        FileResponseDTO uploadedHomework2 = uploadHomework(studentJwtToken, foundStudentResponse, homework2DTO);
 
         //Authenticate as instructor
         String instructorJwtToken = authenticate("steve@gmail.com", "123");
+
+        //Download homework
+        downloadHomework(instructorJwtToken, uploadedHomework1);
+        downloadHomework(instructorJwtToken, uploadedHomework2);
+
+        //Set mark for the homework
+        setMarkForHomework(foundStudentResponse, instructorJwtToken, homework1DTO, 85L);
+        setMarkForHomework(foundStudentResponse, instructorJwtToken, homework2DTO, 65L);
+
+        //Get total marks
+        LessonsByCourseDTO lessonsWithTotalMarks = getLessonsWithTotalMarks(foundStudentResponse, createdCourse);
+
+        //check is user passed course
+        assertFalse(lessonsWithTotalMarks.isPassed());
+
+        //user passed all homeworks
+        FileResponseDTO uploadedHomework3 = uploadHomework(studentJwtToken, foundStudentResponse, homework3DTO);
+        FileResponseDTO uploadedHomework4 = uploadHomework(studentJwtToken, foundStudentResponse, homework4DTO);
+        FileResponseDTO uploadedHomework5 = uploadHomework(studentJwtToken, foundStudentResponse, homework5DTO);
+
+        //Instructor set marks for each homework
+        downloadHomework(instructorJwtToken, uploadedHomework3);
+        downloadHomework(instructorJwtToken, uploadedHomework4);
+        downloadHomework(instructorJwtToken, uploadedHomework5);
+
+        setMarkForHomework(foundStudentResponse, instructorJwtToken, homework3DTO, 95L);
+        setMarkForHomework(foundStudentResponse, instructorJwtToken, homework4DTO, 80L);
+        setMarkForHomework(foundStudentResponse, instructorJwtToken, homework5DTO, 75L);
+
+        //Get total marks
+        LessonsByCourseDTO allLessonsWithTotalMarks = getLessonsWithTotalMarks(foundStudentResponse, createdCourse);
+
+        //Course should be successfully passed
+        assertTrue(allLessonsWithTotalMarks.isPassed());
+
+        //Set feedback for course
+        addFeedbackForCourse(createdCourse, foundStudentResponse);
+
+        //Logout
+        logoutUserUsingHeader(adminHeaders);
+        //Logout
+        logoutUserUsingHeader(studentHeaders);
+        //Logout
+        logoutUserUsingHeader(instructorHeaders);
+    }
+
+    private void logoutUserUsingHeader(HttpHeaders headers) {
+        ResponseEntity<Void> logout = restTemplate.exchange(
+                buildUrl("/api/v1/auth/logout"),
+                HttpMethod.GET,
+                new HttpEntity(headers),
+                Void.class
+        );
+
+        assertEquals(HttpStatus.OK, logout.getStatusCode());
+        assertNull(logout.getBody());
+    }
+
+    private void addFeedbackForCourse(CourseResponseDTO createdCourse, UserResponseDTO foundStudentResponse) {
+        CourseFeedbackDTO feedbackDTO = new CourseFeedbackDTO();
+        feedbackDTO.setCourseId(createdCourse.getCourseId());
+        feedbackDTO.setStudentId(foundStudentResponse.getId());
+        feedbackDTO.setFeedbackText("Looks good, thanks!");
+
+        HttpEntity<CourseFeedbackDTO> addFeedbackRequestEntity = new HttpEntity<>(feedbackDTO, instructorHeaders);
+
+        ResponseEntity<GetCourseFeedbackDTO> addFeedbackResponseEntity = restTemplate.exchange(
+                buildUrl("/api/v1/feedback"),
+                HttpMethod.POST,
+                addFeedbackRequestEntity,
+                GetCourseFeedbackDTO.class
+        );
+
+        assertEquals(feedbackDTO.getFeedbackText(), Objects.requireNonNull(addFeedbackResponseEntity.getBody()).getFeedbackText());
+    }
+
+    private LessonsByCourseDTO getLessonsWithTotalMarks(UserResponseDTO foundStudentResponse, CourseResponseDTO createdCourse) {
+        HttpEntity<Void> studentsOnCoursesRequestEntity = new HttpEntity<>(instructorHeaders);
+        ResponseEntity<LessonsByCourseDTO> getListOfLessonsOnCourseResponseEntity = restTemplate.exchange(
+                buildUrl("/api/v1/course/student/lessons/{studentId}/{courseId}", foundStudentResponse.getId(), createdCourse.getCourseId()),
+                HttpMethod.GET,
+                studentsOnCoursesRequestEntity,
+                LessonsByCourseDTO.class
+        );
+
+        assertEquals(HttpStatus.OK, getListOfLessonsOnCourseResponseEntity.getStatusCode());
+        assertNotNull(getListOfLessonsOnCourseResponseEntity.getBody());
+        return getListOfLessonsOnCourseResponseEntity.getBody();
+    }
+
+    private void downloadHomework(String instructorJwtToken, FileResponseDTO uploadedHomework) {
+        instructorHeaders.setBearerAuth(instructorJwtToken);
+
+        HttpEntity<String> downloadFileRequestEntity = new HttpEntity<>(instructorHeaders);
+
+        ResponseEntity<Resource> downloadFileResponseEntity = restTemplate.exchange(
+                buildUrl("/api/v1/files/download/{lessonId}", uploadedHomework.getId()),
+                HttpMethod.GET,
+                downloadFileRequestEntity,
+                Resource.class
+        );
+        assertEquals(HttpStatus.OK, downloadFileResponseEntity.getStatusCode());
+        assertEquals(uploadedHomework.getName(), Objects.requireNonNull(downloadFileResponseEntity.getBody()).getFilename());
+    }
+
+    private GetHomeworkDTO setMarkForHomework(UserResponseDTO foundStudentResponse, String instructorJwtToken,
+                                              GetHomeworkDTO existedHomework, Long mark) {
+        HomeworkDTO homeworkDTO = new HomeworkDTO();
+        homeworkDTO.setUserId(foundStudentResponse.getId());
+        homeworkDTO.setHomeworkId(existedHomework.getId());
+        homeworkDTO.setMark(mark);
+
+        instructorHeaders.setBearerAuth(instructorJwtToken);
+        HttpEntity<HomeworkDTO> setMarkRequestEntity = new HttpEntity<>(homeworkDTO, instructorHeaders);
+
+        ResponseEntity<GetHomeworkDTO> setMarkResponseEntity = restTemplate.exchange(
+                buildUrl("/api/v1/homework/mark"),
+                HttpMethod.PUT,
+                setMarkRequestEntity,
+                GetHomeworkDTO.class
+        );
+        assertEquals(homeworkDTO.getMark(), setMarkResponseEntity.getBody().getMark());
+        assertEquals(homeworkDTO.getUserId(), setMarkResponseEntity.getBody().getUserId());
+        return setMarkResponseEntity.getBody();
     }
 
     private FileResponseDTO uploadHomework(String studentJwtToken, UserResponseDTO foundStudentResponse, GetHomeworkDTO homeworkDTO) {
@@ -215,7 +347,7 @@ class ScenarioE2EAssignNewRoleAndPerformInstructorActions {
                 .status(CourseStatus.WAIT)
                 .started(false)
                 .instructorEmail("steve@gmail.com")
-                .numberOfLessons(10L)
+                .numberOfLessons(5L)
                 .build();
 
         adminHeaders.setBearerAuth(adminJwtToken);
