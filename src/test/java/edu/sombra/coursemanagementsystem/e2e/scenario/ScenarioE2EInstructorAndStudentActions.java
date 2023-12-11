@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class ScenarioE2EAssignNewRoleAndPerformInstructorActions {
+class ScenarioE2EInstructorAndStudentActions {
     @LocalServerPort
     private int port;
 
@@ -58,7 +58,7 @@ class ScenarioE2EAssignNewRoleAndPerformInstructorActions {
     private static final HttpHeaders instructorHeaders = new HttpHeaders();
 
     @Test
-    void test_PerformInstructorScenario() {
+    void test_PerformInstructorAndUserScenario() {
         //Register user without role
         RegisterDTO registerUserDTO = RegisterDTO.builder()
                 .firstName("Steve")
