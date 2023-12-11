@@ -103,7 +103,7 @@ class ScenarioAdminE2ETest {
                 .courseName(createdCourse.getCourseName())
                 .userId(foundStudentResponse.getId())
                 .build();
-        EnrollmentResponseDTO enrollmentResponseDTO = assignUserToCourse(applyForCourseDTO);
+        assignUserToCourse(applyForCourseDTO);
 
         //Change course name
         editCourseName(createdCourse, adminJwtToken);
@@ -112,7 +112,7 @@ class ScenarioAdminE2ETest {
         List<LessonResponseDTO> lessonsResponse = findLessonsByCourse(createdCourse);
 
         //Change lesson name
-        LessonResponseDTO lessonResponseDTO = changeLessonName(lessonsResponse, adminJwtToken);
+        changeLessonName(lessonsResponse, adminJwtToken);
 
         //remove lesson from the course
         deleteLessonById(lessonsResponse);
@@ -121,7 +121,7 @@ class ScenarioAdminE2ETest {
         GetHomeworkDTO homework1DTO = findHomeworkByStudentAndCourse(lessonsResponse.get(0).getId(), foundStudentResponse.getId(), adminJwtToken);
 
         //upload homework
-        FileResponseDTO uploadedHomework1 = uploadHomework(adminJwtToken, foundStudentResponse, homework1DTO);
+        uploadHomework(adminJwtToken, foundStudentResponse, homework1DTO);
 
         //Set mark
         setMarkForHomework(foundStudentResponse, adminJwtToken, homework1DTO, 85L);
