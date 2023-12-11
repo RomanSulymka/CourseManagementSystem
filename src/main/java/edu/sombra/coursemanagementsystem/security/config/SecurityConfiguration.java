@@ -50,7 +50,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/feedback").hasAnyRole("ADMIN", "INSTRUCTOR")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/feedback").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/feedback/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/feedback/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/feedback/{id}").hasAnyRole("ADMIN", "INSTRUCTOR")
 
                                 // Enrollment
                                 .requestMatchers("/api/v1/enrollment/instructor").hasRole("ADMIN")
@@ -70,6 +70,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/homework/mark").hasAnyRole("ADMIN", "INSTRUCTOR")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/homework/{lessonId}/{userId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework/user/{userId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR")
 

@@ -1,10 +1,13 @@
 /*
-package edu.sombra.coursemanagementsystem.e2e.coursefeedback;
+package edu.sombra.coursemanagementsystem.e2e.user;
+
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
-import edu.sombra.coursemanagementsystem.dto.feedback.CourseFeedbackDTO;
-import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
+import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
+import edu.sombra.coursemanagementsystem.entity.User;
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,19 +19,19 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class InstructorCourseFeedbackControllerE2ETest {
+class AdminUserControllerE2ETest {
 
     @LocalServerPort
     private int port;
@@ -40,7 +43,7 @@ class InstructorCourseFeedbackControllerE2ETest {
 
     @BeforeEach
     void login() {
-        AuthenticationDTO authenticationDTO = new AuthenticationDTO("instructor@gmail.com", "instructorPass");
+        AuthenticationDTO authenticationDTO = new AuthenticationDTO("admin@gmail.com", "adminPAss");
 
         ResponseEntity<AuthenticationResponse> responseEntity = restTemplate.postForEntity(
                 "/api/v1/auth/authenticate",
@@ -58,102 +61,69 @@ class InstructorCourseFeedbackControllerE2ETest {
         restTemplate.getForEntity("/api/v1/auth/logout", Void.class);
     }
 
-
     @Test
-    void testAddFeedback() {
-        CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setFeedbackText("This is a great course.");
-        courseFeedbackDTO.setCourseId(1L);
-        courseFeedbackDTO.setStudentId(5L);
+    void testCreateUser() {
+        User user = new User();
+        user.setLastName("testUser");
+        user.setFirstName("testUser");
+        user.setEmail("testinstructor@example.com");
+        user.setPassword("password");
+        user.setRole(RoleEnum.INSTRUCTOR);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
-        HttpEntity<CourseFeedbackDTO> requestEntity = new HttpEntity<>(courseFeedbackDTO, headers);
+        HttpEntity<User> requestEntity = new HttpEntity<>(user, headers);
 
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback"),
+        ResponseEntity<User> responseEntity = restTemplate.exchange(
+                buildUrl("/api/v1/user/create"),
                 HttpMethod.POST,
                 requestEntity,
-                String.class
+                User.class
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getBody());
     }
 
     @Test
-    void testAddFeedback_EntityExistException() {
-        CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setFeedbackText("This is a great course.");
-        courseFeedbackDTO.setCourseId(1L);
-        courseFeedbackDTO.setStudentId(5L);
+    void testUpdateUser() {
+        User user = User.builder()
+                .id(3L)
+                .lastName("instructor1")
+                .firstName("user3 last name")
+                .password("password3")
+                .email("instructor1@example.com")
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
-        HttpEntity<CourseFeedbackDTO> requestEntity = new HttpEntity<>(courseFeedbackDTO, headers);
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback"),
-                HttpMethod.POST,
-                requestEntity,
-                String.class
-        );
-
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-    }
-
-    @Test
-    void testEditFeedback() {
-        CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setId(5L);
-        courseFeedbackDTO.setFeedbackText("Amazing!!");
-        courseFeedbackDTO.setCourseId(1L);
-        courseFeedbackDTO.setStudentId(5L);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(jwtToken);
-
-        HttpEntity<CourseFeedbackDTO> requestEntity = new HttpEntity<>(courseFeedbackDTO, headers);
-
-        ResponseEntity<GetCourseFeedbackDTO> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback"),
+        ResponseEntity<User> responseEntity = restTemplate.exchange(
+                "/api/v1/user/update",
                 HttpMethod.PUT,
-                requestEntity,
-                GetCourseFeedbackDTO.class
+                new HttpEntity<>(user, headers),
+                User.class
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
-    void testGetAllFeedbacks() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(jwtToken);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                "http://localhost:" + port + "/api/v1/feedback",
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                String.class
-        );
-
-        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-    }
-
-
-    @Test
-    void testGetFeedbackById() {
-        Long feedbackId = 5L;
+    void testAssignNewRole() {
+        UserDTO userDTO = UserDTO.builder()
+                .email("user2@example.com")
+                .role(RoleEnum.ADMIN)
+                .build();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback/{id}", feedbackId),
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
+                "/api/v1/user/assign-role",
+                HttpMethod.POST,
+                new HttpEntity<>(userDTO, headers),
                 String.class
         );
 
@@ -161,31 +131,83 @@ class InstructorCourseFeedbackControllerE2ETest {
     }
 
     @Test
-    void testGetFeedbackByIdThrowNotFoundException() {
-        Long feedbackId = 10000L;
+    void testResetPassword() {
+        ResetPasswordDTO resetPasswordDTO = ResetPasswordDTO.builder()
+                .newPassword("12342")
+                .email("user2@example.com")
+                .build();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback/{id}", feedbackId),
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
+                "/api/v1/user/reset-password",
+                HttpMethod.PUT,
+                new HttpEntity<>(resetPasswordDTO, headers),
                 String.class
         );
 
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
-    void testDeleteFeedback() {
-        Long feedbackId = 5L;
+    void testFindUserById() {
+        Long userId = 1L;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+
+        ResponseEntity<User> responseEntity = restTemplate.exchange(
+                "/api/v1/user/id/" + userId,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                User.class
+        );
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void testFindUserByEmail() {
+        String userEmail = "user2@example.com";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+
+        ResponseEntity<User> responseEntity = restTemplate.exchange(
+                "/api/v1/user/email/" + userEmail,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                User.class
+        );
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void testFindAllUsers() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+
+        ResponseEntity<List> responseEntity = restTemplate.exchange(
+                "/api/v1/user/find-all",
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                List.class
+        );
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void testDeleteUser() {
+        long userId = 2;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback/{id}", feedbackId),
+                "/api/v1/user/" + userId,
                 HttpMethod.DELETE,
                 new HttpEntity<>(headers),
                 String.class

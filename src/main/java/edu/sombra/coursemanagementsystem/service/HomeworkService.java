@@ -20,4 +20,6 @@ public interface HomeworkService {
     List<GetHomeworkDTO> getAllHomeworks();
 
     List<GetHomeworkDTO> getAllHomeworksByUser(Long userId);
+
+    GetHomeworkDTO findHomeworkByUserAndLessonId(Long userId, Long lessonId);
 }

@@ -36,6 +36,11 @@ public class HomeworkController {
         return ResponseEntity.ok(homeworkService.getAllHomeworks());
     }
 
+    @GetMapping("/{lessonId}/{userId}")
+    public ResponseEntity<GetHomeworkDTO> getHomeworkByLessonId(@PathVariable Long lessonId, @PathVariable Long userId) {
+        return ResponseEntity.ok(homeworkService.findHomeworkByUserAndLessonId(userId, lessonId));
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<GetHomeworkDTO>> getAllHomeworksByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(homeworkService.getAllHomeworksByUser(userId));

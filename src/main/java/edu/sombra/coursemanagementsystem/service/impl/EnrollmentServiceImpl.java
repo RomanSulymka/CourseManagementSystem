@@ -164,7 +164,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(user.getId());
             return assignUserForLesson(applyForCourseDTO, numberOfUserCourses, user);
         } else {
-            User student = userRepository.findUserByEmail(userEmail);
+            User student = userRepository.findById(applyForCourseDTO.getUserId())
+                    .orElseThrow(EntityNotFoundException::new);
             Long numberOfUserCourses = enrollmentRepository.getUserRegisteredCourseCount(applyForCourseDTO.getUserId());
             return assignUserForLesson(applyForCourseDTO, numberOfUserCourses, student);
         }

@@ -439,6 +439,7 @@ class EnrollmentServiceImplTest {
 
         when(userRepository.findUserByEmail(studentMail)).thenReturn(adminUser);
         when(courseRepository.findByName(applyForCourseDTO.getCourseName())).thenReturn(Optional.ofNullable(mockCourse));
+        when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(studentUser));
         when(courseRepository.findAllLessonsInCourse(mockCourse.getId())).thenReturn(Optional.of(List.of(mockLesson)));
 
         assertDoesNotThrow(() -> enrollmentService.applyForCourse(applyForCourseDTO, studentMail));

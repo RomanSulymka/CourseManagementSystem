@@ -4,10 +4,10 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
-import edu.sombra.coursemanagementsystem.entity.Lesson;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,17 +17,16 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class CourseMapper {
-    private final LessonMapper lessonMapper;
 
-    public LessonsByCourseDTO toDTO(Course course, List<Lesson> lessons, CourseMark courseMark,
-                                    Long studentId, CourseFeedback feedback) {
+    public LessonsByCourseDTO toDTO(Course course, CourseMark courseMark,
+                                    CourseFeedback feedback, List<LessonDTO> lessonDTO) {
         return LessonsByCourseDTO.builder()
                 .courseId(course.getId())
                 .courseName(course.getName())
                 .feedback(feedback != null ? feedback.getFeedbackText() : null)
                 .totalScore(courseMark != null ? courseMark.getTotalScore() : null)
                 .passed(Optional.ofNullable(courseMark).map(CourseMark::getPassed).orElse(false))
-                .lessonDTO(lessonMapper.toDTO(lessons, studentId))
+                .lessonDTO(lessonDTO)
                 .build();
     }
 

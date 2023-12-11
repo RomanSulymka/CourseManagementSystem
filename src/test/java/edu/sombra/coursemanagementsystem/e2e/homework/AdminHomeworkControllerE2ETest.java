@@ -1,10 +1,10 @@
 /*
-package edu.sombra.coursemanagementsystem.e2e.coursefeedback;
+package edu.sombra.coursemanagementsystem.e2e.homework;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
-import edu.sombra.coursemanagementsystem.dto.feedback.CourseFeedbackDTO;
-import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
+import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
+import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,23 +12,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class StudentCourseFeedbackControllerE2ETest {
+class AdminHomeworkControllerE2ETest {
 
     @LocalServerPort
     private int port;
@@ -40,7 +39,7 @@ class StudentCourseFeedbackControllerE2ETest {
 
     @BeforeEach
     void login() {
-        AuthenticationDTO authenticationDTO = new AuthenticationDTO("student@gmail.com", "studentPass");
+        AuthenticationDTO authenticationDTO = new AuthenticationDTO("admin@gmail.com", "adminPAss");
 
         ResponseEntity<AuthenticationResponse> responseEntity = restTemplate.postForEntity(
                 "/api/v1/auth/authenticate",
@@ -58,124 +57,114 @@ class StudentCourseFeedbackControllerE2ETest {
         restTemplate.getForEntity("/api/v1/auth/logout", Void.class);
     }
 
-
     @Test
-    void testAddFeedback() {
-        CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setFeedbackText("This is a great course.");
-        courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(4L);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(jwtToken);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        HttpEntity<CourseFeedbackDTO> requestEntity = new HttpEntity<>(courseFeedbackDTO, headers);
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback"),
-                HttpMethod.POST,
-                requestEntity,
-                String.class
-        );
-
-        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-        assertEquals("Access Denied", responseEntity.getBody());
-    }
-
-    @Test
-    void testEditFeedback() {
-        CourseFeedbackDTO courseFeedbackDTO = new CourseFeedbackDTO();
-        courseFeedbackDTO.setId(2L);
-        courseFeedbackDTO.setFeedbackText("Great!!");
-        courseFeedbackDTO.setCourseId(2L);
-        courseFeedbackDTO.setStudentId(4L);
+    void testSetMark() {
+        HomeworkDTO homeworkDTO = new HomeworkDTO();
+        homeworkDTO.setHomeworkId(32L);
+        homeworkDTO.setUserId(2L);
+        homeworkDTO.setMark(90L);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
-        HttpEntity<CourseFeedbackDTO> requestEntity = new HttpEntity<>(courseFeedbackDTO, headers);
+        HttpEntity<HomeworkDTO> requestEntity = new HttpEntity<>(homeworkDTO, headers);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback"),
+                "http://localhost:" + port + "/api/v1/homework/mark",
                 HttpMethod.PUT,
                 requestEntity,
                 String.class
         );
 
-        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-        assertEquals("Access Denied", responseEntity.getBody());
+        assertEquals("Mark saved successfully", responseEntity.getBody());
     }
 
     @Test
-    void testGetAllFeedbacks() {
+    void testSetMarkWhenUserIsNotAssignedToCourse() {
+        HomeworkDTO homeworkDTO = new HomeworkDTO();
+        homeworkDTO.setHomeworkId(1L);
+        homeworkDTO.setUserId(2L);
+        homeworkDTO.setMark(90L);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
+        HttpEntity<HomeworkDTO> requestEntity = new HttpEntity<>(homeworkDTO, headers);
+
         ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback"),
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
+                "http://localhost:" + port + "/api/v1/homework/mark",
+                HttpMethod.PUT,
+                requestEntity,
                 String.class
         );
 
-        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        assertEquals("{\"statusCode\":400,\"message\":\"User isn't assigned to this course\"}", responseEntity.getBody());
     }
 
-
     @Test
-    void testGetFeedbackById() {
-        Long feedbackId = 2L;
+    void testGetHomework() {
+        Long homeworkId = 1L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
-        ResponseEntity<GetCourseFeedbackDTO> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback/{id}", feedbackId),
+        ResponseEntity<GetHomeworkDTO> responseEntity = restTemplate.exchange(
+                "http://localhost:" + port + "/api/v1/homework/" + homeworkId,
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                GetCourseFeedbackDTO.class
+                GetHomeworkDTO.class
         );
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
-    void testGetFeedbackByIdThrowNotFoundException() {
-        Long feedbackId = 10000L;
-
+    void testGetAllHomeworks() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback/{id}", feedbackId),
+        ResponseEntity<List<GetHomeworkDTO>> responseEntity = restTemplate.exchange(
+                "http://localhost:" + port + "/api/v1/homework",
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                String.class
+                new ParameterizedTypeReference<>() {
+                }
         );
 
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
-    void testDeleteFeedback() {
-        Long feedbackId = 6L;
+    void testGetAllHomeworksByUser() {
+        Long userId = 1L;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
 
+        ResponseEntity<List<GetHomeworkDTO>> responseEntity = restTemplate.exchange(
+                "http://localhost:" + port + "/api/v1/homework/user/" + userId,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void testDeleteHomework() {
+        Long homeworkId = 27L;
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/feedback/{id}", feedbackId),
+                "http://localhost:" + port + "/api/v1/homework/" + homeworkId,
                 HttpMethod.DELETE,
                 new HttpEntity<>(headers),
                 String.class
         );
 
-        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-    }
-
-    private String buildUrl(String path, Object... uriVariables) {
-        return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
+        assertEquals("Homework deleted successfully!", responseEntity.getBody());
     }
 }
 */

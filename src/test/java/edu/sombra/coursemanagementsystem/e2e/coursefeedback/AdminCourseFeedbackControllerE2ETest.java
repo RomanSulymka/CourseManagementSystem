@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -129,23 +130,25 @@ class AdminCourseFeedbackControllerE2ETest {
     void testGetAllFeedbacks() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
+        headers.setAccept(List.of(org.springframework.http.MediaType.APPLICATION_JSON));
 
         ResponseEntity<List> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback"),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                List.class
-        );
+                new ParameterizedTypeReference<>() {
+                });
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
     void testGetFeedbackById() {
-        Long feedbackId = 1L;
+        Long feedbackId = 2L;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
+        headers.setAccept(List.of(org.springframework.http.MediaType.APPLICATION_JSON));
 
         ResponseEntity<GetCourseFeedbackDTO> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback/{id}", feedbackId),
@@ -164,11 +167,11 @@ class AdminCourseFeedbackControllerE2ETest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(jwtToken);
 
-        ResponseEntity<GetCourseFeedbackDTO> responseEntity = restTemplate.exchange(
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
                 buildUrl("/api/v1/feedback/{id}", feedbackId),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                GetCourseFeedbackDTO.class
+                String.class
         );
 
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());

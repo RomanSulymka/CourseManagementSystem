@@ -5,11 +5,13 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseMarkResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
+import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
@@ -24,6 +26,7 @@ import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.CourseServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
@@ -65,6 +68,8 @@ class CourseServiceImplTest {
     @Mock
     private UserRepository userRepository;
     @Mock
+    private HomeworkRepository homeworkRepository;
+    @Mock
     private LessonService lessonService;
     @Mock
     private UserMapper userMapper;
@@ -80,7 +85,7 @@ class CourseServiceImplTest {
     @BeforeEach
     void setUp() {
         courseService = new CourseServiceImpl(courseRepository, courseFeedbackRepository, courseMarkRepository, userService, userRepository,
-                lessonService, userMapper, courseMapper, courseMarkMapper, lessonMapper);
+                homeworkRepository, lessonService, userMapper, courseMapper, courseMarkMapper, lessonMapper);
     }
 
     private static Stream<Arguments> lessonListProvider() {
@@ -247,6 +252,20 @@ class CourseServiceImplTest {
 
     private CourseMark createSampleCourseMark() {
         return CourseMark.builder().build();
+    }
+
+    private Homework createSampleHomework() {
+        return Homework.builder()
+                .id(1L)
+                .build();
+    }
+
+    private LessonsByCourseDTO createSampleLessonsByCourseDTO() {
+        return LessonsByCourseDTO.builder().build();
+    }
+
+    private LessonDTO createSampleLessonDTO() {
+        return LessonDTO.builder().build();
     }
 
     private CourseFeedback createSampleCourseFeedback() {
@@ -501,7 +520,7 @@ class CourseServiceImplTest {
         Long courseId = 1L;
         Course existingCourse = createSampleCourse();
 
-        when(courseRepository.findById(courseId)).thenReturn(java.util.Optional.of(existingCourse));
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(existingCourse));
 
         boolean result = assertDoesNotThrow(() -> courseService.delete(courseId));
 
@@ -515,7 +534,7 @@ class CourseServiceImplTest {
     void testDeleteCourseNotFound() {
         Long courseId = 1L;
 
-        when(courseRepository.findById(courseId)).thenReturn(java.util.Optional.empty());
+        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> courseService.delete(courseId));
@@ -729,7 +748,7 @@ class CourseServiceImplTest {
 
         when(courseMapper.mapToResponseDTO(createSampleCourse(1L, "Sample Course"))).thenReturn(createCourseResponseDTO());
         when(courseRepository.findById(courseId))
-                .thenReturn(java.util.Optional.of(createSampleCourse(courseId, "Sample Course")));
+                .thenReturn(Optional.of(createSampleCourse(courseId, "Sample Course")));
         when(courseRepository.findUsersInCourseByRole(courseId, RoleEnum.INSTRUCTOR))
                 .thenReturn(Collections.singletonList(createSampleInstructor(2L, "instructor@example.com")));
 
@@ -749,7 +768,7 @@ class CourseServiceImplTest {
         CourseStatus status = CourseStatus.STARTED;
 
         when(courseRepository.findById(courseId))
-                .thenReturn(java.util.Optional.of(createSampleCourse(courseId, "Sample Course")));
+                .thenReturn(Optional.of(createSampleCourse(courseId, "Sample Course")));
         when(courseRepository.findUsersInCourseByRole(courseId, RoleEnum.INSTRUCTOR))
                 .thenReturn(Collections.emptyList());
 
@@ -770,7 +789,10 @@ class CourseServiceImplTest {
         when(courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)).thenReturn(Optional.of(createSampleLessons()));
         when(courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)).thenReturn(Optional.of(createSampleCourseMark()));
         when(courseFeedbackRepository.findFeedback(studentId, courseId)).thenReturn(Optional.ofNullable(createSampleCourseFeedback()));
-        when(courseMapper.toDTO(any(), any(), any(), any(), any())).thenReturn(mock(LessonsByCourseDTO.class));
+        when(lessonMapper.toDTO(any(), any())).thenReturn(createSampleLessonDTO());
+        when(homeworkRepository.findByUserAndLessonId(eq(studentId), any())).thenReturn(Optional.ofNullable(createSampleHomework()));
+
+        when(courseMapper.toDTO(any(), any(), any(), any())).thenReturn(createSampleLessonsByCourseDTO());
 
         LessonsByCourseDTO resultDTO = courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId);
 
@@ -781,7 +803,7 @@ class CourseServiceImplTest {
         verify(courseRepository, times(1)).findAllLessonsByCourseAssignedToUserId(studentId, courseId);
         verify(courseMarkRepository, times(1)).findCourseMarkByUserIdAndCourseId(studentId, courseId);
         verify(courseFeedbackRepository, times(1)).findFeedback(studentId, courseId);
-        verify(courseMapper, times(1)).toDTO(any(), any(), any(), any(), any());
+        verify(courseMapper, times(1)).toDTO(any(), any(), any(), any());
     }
 
     @Test

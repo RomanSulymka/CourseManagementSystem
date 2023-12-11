@@ -8,6 +8,7 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
+import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.HomeworkServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
@@ -42,7 +43,7 @@ class HomeworkServiceImplTest {
     @Mock
     private CourseMarkService courseMarkService;
     @Mock
-    private LessonService lessonService;
+    private LessonRepository lessonRepository;
     @Mock
     private EnrollmentService enrollmentService;
     @Mock
@@ -53,7 +54,7 @@ class HomeworkServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        homeworkService = new HomeworkServiceImpl(homeworkRepository, courseMarkService, lessonService, enrollmentService, homeworkMapper, userRepository);
+        homeworkService = new HomeworkServiceImpl(homeworkRepository, courseMarkService, lessonRepository, enrollmentService, homeworkMapper, userRepository);
     }
 
     private static Stream<Arguments> provideTestDataForSetInvalidMark() {
@@ -161,12 +162,12 @@ class HomeworkServiceImplTest {
     @MethodSource("provideTestDataForSetMarkSuccessfully")
     void testSetMarkSuccessfully(Long userId, Long homeworkId, Long mark, Homework homeworkWithOtherMarks, GetHomeworkDTO homeworkDTO) {
         when(enrollmentService.isUserAssignedToCourse(userId, homeworkId)).thenReturn(true);
-        when(lessonService.findLessonByHomeworkId(homeworkId)).thenReturn(Lesson.builder()
+        when(lessonRepository.findLessonByHomeworkId(homeworkId)).thenReturn(Optional.ofNullable(Lesson.builder()
                 .id(1L)
                 .course(Course.builder()
                         .id(4L)
                         .build())
-                .build());
+                .build()));
         when(homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, 4L)).thenReturn(90.0);
         when(homeworkRepository.findHomeworksByCourse(4L)).thenReturn(List.of(homeworkWithOtherMarks));
         when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(homeworkWithOtherMarks));
@@ -346,5 +347,42 @@ class HomeworkServiceImplTest {
         when(homeworkRepository.findById(homeworkId)).thenReturn(java.util.Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> homeworkService.findHomework(homeworkId));
+    }
+
+    @Test
+    void testFindHomeworkByUserAndLessonId() {
+        Long userId = 1L;
+        Long lessonId = 2L;
+        User user = new User();
+        Lesson lesson = new Lesson();
+        Homework homework = new Homework();
+        GetHomeworkDTO expectedDTO = new GetHomeworkDTO();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
+        when(homeworkRepository.findByUserAndLessonId(eq(userId), eq(lesson.getId())))
+                .thenReturn(Optional.of(homework));
+        when(homeworkMapper.mapToDTO(homework)).thenReturn(expectedDTO);
+
+        GetHomeworkDTO resultDTO = homeworkService.findHomeworkByUserAndLessonId(userId, lessonId);
+
+        assertNotNull(resultDTO);
+        assertEquals(expectedDTO, resultDTO);
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(lessonRepository, times(1)).findById(lessonId);
+        verify(homeworkMapper, times(1)).mapToDTO(homework);
+    }
+
+    @Test
+    void testFindHomeworkByUserAndLessonIdWhenUserNotFound() {
+        Long userId = 1L;
+        Long lessonId = 2L;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> homeworkService.findHomeworkByUserAndLessonId(userId, lessonId));
+
+        verify(userRepository, times(1)).findById(userId);
     }
 }
