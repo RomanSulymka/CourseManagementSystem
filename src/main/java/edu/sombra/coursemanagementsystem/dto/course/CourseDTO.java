@@ -12,7 +12,6 @@ import lombok.NonNull;
 
 import java.time.LocalDate;
 
-@Generated
 @Data
 @Builder
 public class CourseDTO {

@@ -14,7 +14,6 @@ import lombok.Data;
 import lombok.Generated;
 import lombok.NoArgsConstructor;
 
-@Generated
 @Data
 @Builder
 @NoArgsConstructor

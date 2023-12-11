@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.Generated;
 import lombok.NonNull;
 
-@Generated
 @Builder
 @Data
 public class EnrollmentDTO {

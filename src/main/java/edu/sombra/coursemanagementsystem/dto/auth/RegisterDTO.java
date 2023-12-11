@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Generated
 public class RegisterDTO {
     private String firstName;
     private String lastName;

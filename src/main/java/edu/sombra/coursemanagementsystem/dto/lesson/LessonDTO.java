@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.Generated;
 
 @Builder
-@Generated
 @Data
 public class LessonDTO {
     private Long lessonId;

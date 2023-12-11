@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
 public class CourseMapper {
 
     public LessonsByCourseDTO toDTO(Course course, CourseMark courseMark,
