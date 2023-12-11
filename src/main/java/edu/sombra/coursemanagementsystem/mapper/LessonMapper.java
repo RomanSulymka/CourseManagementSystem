@@ -5,8 +5,6 @@ import edu.sombra.coursemanagementsystem.dto.lesson.LessonDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
-import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,19 +14,9 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 @Component
 public class LessonMapper {
-    private final HomeworkRepository homeworkRepository;
     private final HomeworkMapper homeworkMapper;
 
-    public List<LessonDTO> toDTO(List<Lesson> lessons, Long studentId) {
-        return lessons.stream()
-                .map(lesson -> toDTO(lesson, studentId))
-                .toList();
-    }
-
-    //FIXME
-    public LessonDTO toDTO(Lesson lesson, Long studentId) {
-        Homework homework = homeworkRepository.findByUserAndLessonId(studentId, lesson.getId())
-                .orElseThrow(EntityNotFoundException::new);
+    public LessonDTO toDTO(Lesson lesson, Homework homework) {
         return LessonDTO.builder()
                 .lessonId(lesson.getId())
                 .lessonName(lesson.getName())

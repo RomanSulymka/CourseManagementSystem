@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.dto.course.CourseMarkResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
@@ -24,6 +25,7 @@ import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseMarkRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
@@ -62,6 +64,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseMarkRepository courseMarkRepository;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final HomeworkRepository homeworkRepository;
     private final LessonService lessonService;
     private final UserMapper userMapper;
     private final CourseMapper courseMapper;
@@ -253,7 +256,13 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(EntityNotFoundException::new);
 
         CourseFeedback feedback = courseFeedbackRepository.findFeedback(studentId, courseId).orElse(null);
-        return courseMapper.toDTO(course, lessons, courseMark, studentId, feedback);
+
+        List<LessonDTO> lessonDTO = lessons.stream()
+                .map(lesson -> lessonMapper.toDTO(lesson, homeworkRepository.findByUserAndLessonId(studentId, lesson.getId())
+                        .orElseThrow(EntityNotFoundException::new)))
+                .toList();
+
+        return courseMapper.toDTO(course, courseMark, feedback, lessonDTO);
     }
 
     @Override
