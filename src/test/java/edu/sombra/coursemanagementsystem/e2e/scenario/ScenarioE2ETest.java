@@ -103,7 +103,6 @@ class ScenarioE2ETest {
         //Get list of student courses
         getListOfStudentCourses(studentsOnCoursesRequestEntity);
 
-        //TODO: change all request data and get data from another dtos
         //Get list of lessons on the course
         getListOfLessonsOnCourse(studentsOnCoursesRequestEntity);
 

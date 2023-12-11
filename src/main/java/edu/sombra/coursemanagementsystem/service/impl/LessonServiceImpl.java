@@ -108,7 +108,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public LessonResponseDTO editLesson(UpdateLessonDTO lesson) {
         findById(lesson.getId());
-        Course course = courseRepository.findById(lesson.getId()).orElseThrow();
+        Course course = courseRepository.findById(lesson.getCourseId()).orElseThrow();
         Lesson editedLesson = Lesson.builder()
                 .id(lesson.getId())
                 .name(lesson.getName())
