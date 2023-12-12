@@ -90,7 +90,6 @@ CREATE TABLE tokens
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
---fixme: decode password
 INSERT INTO users (first_name, last_name, password, email, role)
 VALUES
     ('user1', 'user1 last name', '$2a$10$dvj38BqK0Pnp24c3Bx3MYeN9GabMO5ZROwE4af6vFQvFvI/wSj3Aa', 'user1@example.com', 'STUDENT'),

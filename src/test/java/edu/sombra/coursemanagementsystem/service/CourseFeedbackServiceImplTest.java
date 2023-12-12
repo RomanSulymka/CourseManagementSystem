@@ -99,6 +99,14 @@ class CourseFeedbackServiceImplTest {
         );
     }
 
+    private static Stream<Arguments> provideTestDataWithDifferentUsers() {
+        return Stream.of(
+                Arguments.of(User.builder().role(RoleEnum.ADMIN).id(3L).build()),
+                Arguments.of(User.builder().role(RoleEnum.STUDENT).id(1L).build()),
+                Arguments.of(User.builder().role(RoleEnum.INSTRUCTOR).id(2L).build())
+        );
+    }
+
     private static Stream<Arguments> provideEditFeedbackTestData() {
         String instructorEmail = "instructor@example.com";
 
@@ -305,29 +313,34 @@ class CourseFeedbackServiceImplTest {
         assertEquals(expectedDTO, result);
     }
 
-    @Test
-    void testFindCourseFeedbackById() {
+    @ParameterizedTest
+    @MethodSource("provideTestDataWithDifferentUsers")
+    void testFindCourseFeedbackById(User user) {
         Long feedbackId = 1L;
-        CourseFeedback feedback = new CourseFeedback();
+        CourseFeedback feedback = CourseFeedback.builder().student(user).instructor(user).build();
         GetCourseFeedbackDTO expectedDTO = mock(GetCourseFeedbackDTO.class);
+
+        when(userRepository.findUserByEmail(anyString())).thenReturn(user);
 
         Mockito.when(courseFeedbackRepository.findById(feedbackId)).thenReturn(Optional.of(feedback));
 
         Mockito.when(courseFeedbackMapper.mapToDTO(feedback)).thenReturn(expectedDTO);
 
-        GetCourseFeedbackDTO resultDTO = courseFeedbackService.findCourseFeedbackById(feedbackId);
+        GetCourseFeedbackDTO resultDTO = courseFeedbackService.findCourseFeedbackById(feedbackId, anyString());
 
         assertEquals(expectedDTO, resultDTO);
     }
 
-    @Test
-    void testFindCourseFeedbackById_NegativeId() {
+    @ParameterizedTest
+    @MethodSource("provideTestDataWithDifferentUsers")
+    void testFindCourseFeedbackById_NegativeIdAndUserIsAdmin(User user) {
         Long negativeId = -1L;
 
+        when(userRepository.findUserByEmail(anyString())).thenReturn(user);
         when(courseFeedbackRepository.findById(negativeId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> {
-            courseFeedbackService.findCourseFeedbackById(negativeId);
+            courseFeedbackService.findCourseFeedbackById(negativeId, anyString());
         });
     }
 

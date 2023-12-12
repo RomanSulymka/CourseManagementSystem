@@ -45,14 +45,14 @@ public class UserController {
         return ResponseEntity.ok(userService.resetPassword(resetPasswordDTO));
     }
 
-    @GetMapping("/id/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id));
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<UserResponseDTO> findUserByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.findUserByEmail(email));
+    @PostMapping("/email")
+    public ResponseEntity<UserResponseDTO> findUserByEmail(@RequestBody UserDTO findUserDTO) {
+        return ResponseEntity.ok(userService.findUserByEmail(findUserDTO.getEmail()));
     }
 
     @GetMapping("/find-all")

@@ -136,7 +136,7 @@ class UserControllerTest {
         mockUser.setRole(RoleEnum.STUDENT);
         when(userService.findUserById(userId)).thenReturn(mockUser);
 
-        ResultActions result = mockMvc.perform(get("/api/v1/user/id/{id}", userId));
+        ResultActions result = mockMvc.perform(get("/api/v1/user/{id}", userId));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

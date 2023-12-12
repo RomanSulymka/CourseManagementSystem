@@ -33,8 +33,9 @@ public class FileController {
     }
 
     @GetMapping("/download/{fileId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) {
-        Resource fileResource = fileService.downloadFile(fileId);
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
+        Resource fileResource = fileService.downloadFile(fileId, userDetails.getUsername());
 
         if (fileResource != null) {
             return ResponseEntity.ok()

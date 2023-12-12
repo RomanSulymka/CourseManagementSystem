@@ -1,11 +1,13 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
+import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.File;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.mapper.FileMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
@@ -39,6 +41,7 @@ public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final HomeworkRepository homeworkRepository;
     private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
     private final LessonRepository lessonRepository;
     private final FileMapper fileMapper;
 
@@ -73,7 +76,7 @@ public class FileServiceImpl implements FileService {
             throw new EntityNotFoundException("Lesson with id not found: " + lessonId);
         }
         return homeworkRepository.findByUserAndLessonId(userId, lessonId)
-                .orElseThrow();
+                .orElseThrow(EntityNotFoundException::new);
     }
 
     private static void validateInput(MultipartFile uploadedFile, Long lessonId, Long userId) {
@@ -88,20 +91,38 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Resource downloadFile(Long fileId) {
+    public Resource downloadFile(Long fileId, String userEmail) {
         File file = getFileDataById(fileId);
+        User user = userRepository.findUserByEmail(userEmail);
 
-        if (file.getFileName() != null && file.getFileData() != null) {
-            return new ByteArrayResource(file.getFileData()) {
-                @Override
-                public String getFilename() {
-                    return file.getFileName();
-                }
-            };
+        if (canUserAccessFile(user, fileId)) {
+            if (file.getFileName() != null && file.getFileData() != null) {
+                return createFileResource(file);
+            } else {
+                log.error(FILE_WITH_ID_NOT_FOUND, fileId);
+                throw new NoResultException(FILE_NOT_FOUND);
+            }
         } else {
-            log.error(FILE_WITH_ID_NOT_FOUND, fileId);
-            throw new NoResultException(FILE_NOT_FOUND);
+            throw new IllegalArgumentException("User hasn't access to this file!");
         }
+    }
+
+    private boolean canUserAccessFile(User user, Long fileId) {
+        if (user.getRole().equals(RoleEnum.ADMIN)) {
+            return true;
+        } else {
+            Course course = courseRepository.findCourseByFileId(fileId).orElseThrow();
+            return courseRepository.isUserAssignedToCourse(user.getId(), course.getId());
+        }
+    }
+
+    private ByteArrayResource createFileResource(File file) {
+        return new ByteArrayResource(file.getFileData()) {
+            @Override
+            public String getFilename() {
+                return file.getFileName();
+            }
+        };
     }
 
     @Override

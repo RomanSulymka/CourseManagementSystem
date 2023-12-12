@@ -173,7 +173,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private EnrollmentResponseDTO assignUserForLesson(EnrollmentApplyForCourseDTO applyForCourseDTO, Long numberOfUserCourses, User user) {
         if (numberOfUserCourses < COURSE_LIMIT) {
-            Course course = courseRepository.findByName(applyForCourseDTO.getCourseName()).orElseThrow();
+            Course course = courseRepository.findByName(applyForCourseDTO.getCourseName()).orElseThrow(EntityNotFoundException::new);
             isUserAlreadyAssigned(course, user);
             Enrollment enrollment = buildEnrollment(course, user);
             enrollmentRepository.save(enrollment);

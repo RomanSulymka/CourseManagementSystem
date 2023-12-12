@@ -88,7 +88,7 @@ class FileControllerTest {
                 return file.getFileName();
             }
         };
-        when(fileService.downloadFile(fileId)).thenReturn(mockFileResource);
+        when(fileService.downloadFile(fileId, "admin@gmail.com")).thenReturn(mockFileResource);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/files/download/{fileId}", fileId))
                 .andExpect(status().isOk())
@@ -96,7 +96,7 @@ class FileControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().bytes(FileCopyUtils.copyToByteArray(mockFileResource.getInputStream())));
 
-        verify(fileService, times(1)).downloadFile(fileId);
+        verify(fileService, times(1)).downloadFile(fileId, "admin@gmail.com");
     }
 
     @Test
@@ -104,7 +104,7 @@ class FileControllerTest {
     void testDownloadFileNotFound() throws Exception {
         Long fileId = 2L;
 
-        when(fileService.downloadFile(fileId)).thenReturn(null);
+        when(fileService.downloadFile(fileId, "admin@gmail.com")).thenReturn(null);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/files/download/{fileId}", fileId))
                 .andExpect(status().isNotFound());

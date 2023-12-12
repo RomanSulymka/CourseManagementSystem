@@ -75,9 +75,19 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     }
 
     @Override
-    public GetCourseFeedbackDTO findCourseFeedbackById(Long id) {
+    public GetCourseFeedbackDTO findCourseFeedbackById(Long id, String userEmail) {
+        User user = userRepository.findUserByEmail(userEmail);
         CourseFeedback feedback = findById(id);
-        return courseFeedbackMapper.mapToDTO(feedback);
+        if (user.getRole().equals(RoleEnum.ADMIN)) {
+            return courseFeedbackMapper.mapToDTO(feedback);
+        } else {
+            if (feedback.getInstructor().getId().equals(user.getId())
+                    || feedback.getStudent().getId().equals(user.getId())) {
+                return courseFeedbackMapper.mapToDTO(feedback);
+            } else {
+                throw new IllegalArgumentException("Course feedback is not visible for this user!");
+            }
+        }
     }
 
     public CourseFeedback findById(Long id) {
