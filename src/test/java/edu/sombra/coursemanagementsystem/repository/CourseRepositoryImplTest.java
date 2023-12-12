@@ -69,7 +69,6 @@ class CourseRepositoryImplTest {
         assertTrue(doesExist, "Course should exist");
     }
 
-    //TODO: fixme
     @Test
     @Transactional
     void testUpdateStatus() {

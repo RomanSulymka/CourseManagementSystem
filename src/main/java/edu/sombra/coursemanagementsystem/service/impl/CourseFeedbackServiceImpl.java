@@ -27,17 +27,16 @@ import java.util.List;
 @Service
 public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     public static final String USER_NOT_ASSIGNED_ERROR = "User isn't assigned to this course!";
-    private final UserService userService;
-    private final CourseFeedbackRepository courseFeedbackRepository;
-    private final CourseRepository courseRepository;
-    private final CourseFeedbackMapper courseFeedbackMapper;
-    private final UserRepository userRepository;
-
     private static final String FEEDBACK_SAVED_SUCCESSFULLY = "Feedback saved successfully";
     private static final String FAILED_TO_SAVE_FEEDBACK = "Course feedback already exists";
     private static final String COURSE_FEEDBACK_DELETED_SUCCESSFULLY = "Course Feedback deleted successfully";
     private static final String INSTRUCTOR_NOT_ASSIGNED = "Instructor is not assigned for this course";
 
+    private final UserService userService;
+    private final CourseFeedbackRepository courseFeedbackRepository;
+    private final CourseRepository courseRepository;
+    private final CourseFeedbackMapper courseFeedbackMapper;
+    private final UserRepository userRepository;
 
     public GetCourseFeedbackDTO create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
         try {
