@@ -1,3 +1,5 @@
+version: '1.0'
+
 services:
   postgres:
     image: 'postgres:latest'
@@ -7,3 +9,16 @@ services:
       - 'POSTGRES_USER=romansulymka'
     ports:
       - '5432:5432'
+
+  app:
+    build:
+      context: .
+    image: romansulymka/course-management-system:v1
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=management-system
+      - JWT_SECRET_KEY=7134743777397A24432646294A404E635266556A586E3272357538782F412544
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
