@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UpdateUserDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -24,8 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.Collections;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -147,17 +147,23 @@ class UserControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindUserByEmail() throws Exception {
-        String userEmail = "johndoe@example.com";
+        String userEmail = "admin@gmail.com";
+
+        UserDTO userDTO = UserDTO.builder()
+                .email(userEmail)
+                .build();
+
         UserResponseDTO mockUser = new UserResponseDTO();
         mockUser.setId(1L);
         mockUser.setFirstName("John");
         mockUser.setLastName("Doe");
-        mockUser.setEmail("johndoe@example.com");
+        mockUser.setEmail("admin@gmail.com");
         mockUser.setPassword("password");
         mockUser.setRole(RoleEnum.STUDENT);
         when(userService.findUserByEmail(userEmail)).thenReturn(mockUser);
 
-        ResultActions result = mockMvc.perform(get("/api/v1/user/email/{email}", userEmail)
+        ResultActions result = mockMvc.perform(post("/api/v1/user/email", userEmail)
+                .content(objectMapper.writeValueAsString(userDTO))
                 .contentType(MediaType.APPLICATION_JSON));
 
         result.andExpect(status().isOk())
