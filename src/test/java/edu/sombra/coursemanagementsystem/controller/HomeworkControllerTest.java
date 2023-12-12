@@ -75,7 +75,7 @@ class HomeworkControllerTest {
     void testGetHomeworkByIdSuccess() throws Exception {
         Long homeworkId = 1L;
 
-        when(homeworkService.findHomeworkById(homeworkId)).thenReturn(GetHomeworkDTO.builder()
+        when(homeworkService.findHomeworkById(homeworkId, "admin@gmail.com")).thenReturn(GetHomeworkDTO.builder()
                 .userId(1L)
                 .id(1L)
                 .userEmail("test@email.com")
@@ -92,7 +92,7 @@ class HomeworkControllerTest {
                 .andExpect(jsonPath("$.userId").exists())
                 .andExpect(jsonPath("$.mark").exists());
 
-        verify(homeworkService, times(1)).findHomeworkById(homeworkId);
+        verify(homeworkService, times(1)).findHomeworkById(homeworkId, "admin@gmail.com");
     }
 
     @Test

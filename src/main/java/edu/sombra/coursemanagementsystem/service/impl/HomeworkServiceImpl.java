@@ -1,11 +1,14 @@
 package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
+import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
@@ -39,6 +42,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final EnrollmentService enrollmentService;
     private final HomeworkMapper homeworkMapper;
     private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
 
     @Override
     public void save(Homework homework) {
@@ -61,7 +65,7 @@ public class HomeworkServiceImpl implements HomeworkService {
                 Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, lesson.getCourse().getId());
                 boolean isAllHomeworksGraded = isAllHomeworksGraded(userId, lesson.getCourse().getId());
                 courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark, isAllHomeworksGraded);
-                return findHomeworkById(homeworkId);
+                return findAndMapToDTO(homeworkId);
             } else {
                 log.error(INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100_BUT_NOW_MARK_IS, mark);
                 throw new IllegalArgumentException(INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100);
@@ -87,7 +91,22 @@ public class HomeworkServiceImpl implements HomeworkService {
     }
 
     @Override
-    public GetHomeworkDTO findHomeworkById(Long homeworkId) {
+    public GetHomeworkDTO findHomeworkById(Long homeworkId, String userEmail) {
+        User user = userRepository.findUserByEmail(userEmail);
+        if (user.getRole().equals(RoleEnum.ADMIN)) {
+            return findAndMapToDTO(homeworkId);
+        } else {
+            Course course = courseRepository.findCourseByHomeworkId(homeworkId).orElseThrow(EntityNotFoundException::new);
+            boolean isUserAssignedToCourse = courseRepository.isUserAssignedToCourse(user.getId(), course.getId());
+            if (isUserAssignedToCourse) {
+                return findAndMapToDTO(homeworkId);
+            } else {
+                throw new IllegalArgumentException("User hasn't access to this homework!");
+            }
+        }
+    }
+
+    private GetHomeworkDTO findAndMapToDTO(Long homeworkId) {
         Homework homework = findHomework(homeworkId);
         return homeworkMapper.mapToDTO(homework);
     }
@@ -104,6 +123,7 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public List<GetHomeworkDTO> getAllHomeworks() {
+        //TODO: student and instructor can see just his homeworks || homeworks on the course
         List<Homework> homeworkList = homeworkRepository.findAll();
         return homeworkMapper.mapToDTO(homeworkList);
     }

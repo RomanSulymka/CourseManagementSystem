@@ -5,6 +5,8 @@ import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
 import edu.sombra.coursemanagementsystem.service.HomeworkService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,8 +29,9 @@ public class HomeworkController {
     }
 
     @GetMapping("/{homeworkId}")
-    public ResponseEntity<GetHomeworkDTO> getHomework(@PathVariable Long homeworkId) {
-        return ResponseEntity.ok(homeworkService.findHomeworkById(homeworkId));
+    public ResponseEntity<GetHomeworkDTO> getHomework(@PathVariable Long homeworkId,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(homeworkService.findHomeworkById(homeworkId, userDetails.getUsername()));
     }
 
     @GetMapping

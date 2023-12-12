@@ -5,8 +5,10 @@ import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
@@ -50,11 +52,13 @@ class HomeworkServiceImplTest {
     private HomeworkMapper homeworkMapper;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private CourseRepository courseRepository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        homeworkService = new HomeworkServiceImpl(homeworkRepository, courseMarkService, lessonRepository, enrollmentService, homeworkMapper, userRepository);
+        homeworkService = new HomeworkServiceImpl(homeworkRepository, courseMarkService, lessonRepository, enrollmentService, homeworkMapper, userRepository, courseRepository);
     }
 
     private static Stream<Arguments> provideTestDataForSetInvalidMark() {
@@ -203,7 +207,7 @@ class HomeworkServiceImplTest {
     }
 
     @Test
-    void testFindHomeworkByIdWhenHomeworkExists() {
+    void testFindHomeworkByIdAsAdminWhenHomeworkExists() {
         Long homeworkId = 1L;
         Homework homework = Homework.builder()
                 .id(1L)
@@ -212,22 +216,60 @@ class HomeworkServiceImplTest {
         GetHomeworkDTO homeworkDTO = GetHomeworkDTO.builder()
                 .id(1L)
                 .build();
-
+        when(userRepository.findUserByEmail("email@gmail.com")).thenReturn(User.builder().role(RoleEnum.ADMIN).build());
         when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.ofNullable(homework));
         when(homeworkMapper.mapToDTO(homework)).thenReturn(homeworkDTO);
 
-        GetHomeworkDTO result = homeworkService.findHomeworkById(homeworkId);
+        GetHomeworkDTO result = homeworkService.findHomeworkById(homeworkId, "email@gmail.com");
 
         assertNotNull(result);
     }
 
     @Test
-    void testFindHomeworkByIdWhenHomeworkDoesNotExist() {
+    void testFindHomeworkByIdAsStudentWhenHomeworkExists() {
+        Long homeworkId = 1L;
+        Long courseId = 1L;
+        Homework homework = Homework.builder()
+                .id(1L)
+                .build();
+
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        GetHomeworkDTO homeworkDTO = GetHomeworkDTO.builder()
+                .id(1L)
+                .build();
+        when(userRepository.findUserByEmail("email@gmail.com")).thenReturn(user);
+        when(courseRepository.findCourseByHomeworkId(homeworkId)).thenReturn(Optional.ofNullable(Course.builder().id(courseId).build()));  // Correct the courseId here
+        when(courseRepository.isUserAssignedToCourse(user.getId(), courseId)).thenReturn(true);
+        when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.ofNullable(homework));
+        when(homeworkMapper.mapToDTO(homework)).thenReturn(homeworkDTO);
+
+        GetHomeworkDTO result = homeworkService.findHomeworkById(homeworkId, "email@gmail.com");
+
+        assertNotNull(result);
+        verify(homeworkRepository, times(1)).findById(homeworkId);
+    }
+
+    @Test
+    void testFindHomeworkByIdAsInstructorWhenHomeworkExists() {
         Long homeworkId = 1L;
 
-        when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.empty());
+        when(userRepository.findUserByEmail("email@gmail.com")).thenReturn(User.builder().role(RoleEnum.INSTRUCTOR).build());
+        when(courseRepository.findCourseByHomeworkId(homeworkId)).thenReturn(Optional.ofNullable(Course.builder().id(1L).build()));
 
-        assertThrows(EntityNotFoundException.class, () -> homeworkService.findHomeworkById(homeworkId));
+        assertThrows(IllegalArgumentException.class, () -> homeworkService.findHomeworkById(homeworkId, "email@gmail.com"));
+    }
+
+    @Test
+    void testFindHomeworkByIdWhenHomeworkDoesNotExist() {
+        Long homeworkId = 1L;
+        when(userRepository.findUserByEmail("email@gmail.com")).thenReturn(User.builder().role(RoleEnum.INSTRUCTOR).build());
+        when(courseRepository.findCourseByHomeworkId(homeworkId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> homeworkService.findHomeworkById(homeworkId, "email@gmail.com"));
     }
 
     @Test

@@ -13,7 +13,7 @@ public interface HomeworkService {
 
     boolean isUserUploadedThisHomework(Long fileId, Long studentId);
 
-    GetHomeworkDTO findHomeworkById(Long homeworkId);
+    GetHomeworkDTO findHomeworkById(Long homeworkId, String userEmail);
 
     String deleteHomework(Long homeworkId);
 
