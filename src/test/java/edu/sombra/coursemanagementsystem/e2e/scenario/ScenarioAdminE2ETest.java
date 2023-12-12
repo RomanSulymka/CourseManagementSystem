@@ -287,10 +287,14 @@ class ScenarioAdminE2ETest {
     }
 
     private UserResponseDTO findUserByEmail(RegisterDTO registerStudentDTO) {
+        UserDTO userDTO = UserDTO.builder()
+                .email(registerStudentDTO.getEmail())
+                .build();
+
         ResponseEntity<UserResponseDTO> applyForCourseResponse = restTemplate.exchange(
-                buildUrl("/api/v1/user/email/{email}", registerStudentDTO.getEmail()),
-                HttpMethod.GET,
-                new HttpEntity<>(adminHeaders),
+                buildUrl("/api/v1/user/email"),
+                HttpMethod.POST,
+                new HttpEntity<>(userDTO, adminHeaders),
                 UserResponseDTO.class
         );
         assertEquals(HttpStatus.OK, applyForCourseResponse.getStatusCode());

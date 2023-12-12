@@ -45,7 +45,7 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     private static final String ASSIGN_USER_TO_COURSE = "INSERT INTO enrollments (user_id, course_id) VALUES (:instructorId, :courseId )";
 
-    private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status, start_date =:startDate, started =:started WHERE id =:id";
+    private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status, start_date =:startDate WHERE id =:id";
 
     private static final String GET_USERS_IN_COURSE_BY_ROLE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE c.id =: id AND u.role =: role";
 
