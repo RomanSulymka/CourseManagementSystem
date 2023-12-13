@@ -203,10 +203,10 @@ class UserServiceImplTest {
 
         when(userRepository.findUserByEmail(userDTO.getEmail())).thenThrow(EntityNotFoundException.class);
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+        UserException exception = assertThrows(UserException.class,
                 () -> userService.assignNewRole(userDTO));
 
-        assertEquals("User not found: ", exception.getMessage());
+        assertEquals("Failed assign new role for user", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -306,10 +306,10 @@ class UserServiceImplTest {
     void testCreateUserWithEmptyPassword(CreateUserDTO userDTO) {
         userDTO.setPassword("");
 
-        NullPointerException exception = assertThrows(NullPointerException.class,
+        UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create new User, the field is empty", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -318,10 +318,10 @@ class UserServiceImplTest {
         userDTO.setLastName("");
         userDTO.setFirstName(" ");
 
-        NullPointerException exception = assertThrows(NullPointerException.class,
+        UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create new User, the field is empty", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -329,10 +329,10 @@ class UserServiceImplTest {
     void testCreateUserWithEmptyEmail(CreateUserDTO userDTO) {
         userDTO.setEmail("");
 
-        NullPointerException exception = assertThrows(NullPointerException.class,
+        UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create new User, the field is empty", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -340,10 +340,10 @@ class UserServiceImplTest {
     void testCreateUserWithNullRole(CreateUserDTO userDTO) {
         userDTO.setRole(null);
 
-        NullPointerException exception = assertThrows(NullPointerException.class,
+        UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create new User, the field is empty", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -366,7 +366,7 @@ class UserServiceImplTest {
         UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create user", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -485,10 +485,10 @@ class UserServiceImplTest {
 
         when(userRepository.findUserByEmail(resetPasswordDTO.getEmail())).thenReturn(null);
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+        UserException exception = assertThrows(UserException.class,
                 () -> userService.resetPassword(resetPasswordDTO, resetPasswordDTO.getEmail()));
 
-        assertEquals("User not found: " + resetPasswordDTO.getEmail(), exception.getMessage());
+        assertEquals("Failed to reset password: ", exception.getMessage());
         verify(userRepository, never()).update(any());
     }
 

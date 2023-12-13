@@ -55,6 +55,7 @@ public class UserServiceImpl implements UserService {
     public static final String USER_ROLE_IS_EMPTY = "User Role is empty!";
     public static final String ERROR_USER_NOT_FOUND = "User not found: ";
     public static final String ROLE_NOT_FOUND = "Role not found: ";
+    public static final String FAILED_TO_RESET_PASSWORD = "Failed to reset password: ";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper mapper;
@@ -164,8 +165,8 @@ public class UserServiceImpl implements UserService {
             }
             throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDTO.getEmail());
         } catch (Exception ex) {
-            log.error(FAILED_TO_CREATE_USER + resetPasswordDTO.getEmail() + ex);
-            throw new UserException(FAILED_TO_CREATE_USER, ex);
+            log.error(FAILED_TO_RESET_PASSWORD + ex);
+            throw new UserException(FAILED_TO_RESET_PASSWORD, ex);
         }
     }
 
