@@ -12,6 +12,9 @@ import java.util.Optional;
 
 @Repository
 public class LessonRepositoryImpl implements LessonRepository {
+    public static final String GET_LESSONS_BY_USER = "SELECT l FROM lessons l INNER JOIN enrollments e on l.course.id = e.course.id" +
+            " INNER JOIN users u on e.user.id = u.id " +
+            " WHERE u.id =: userId";
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -43,5 +46,12 @@ public class LessonRepositoryImpl implements LessonRepository {
         return Optional.ofNullable(entityManager.createQuery(GET_LESSONS_BY_HOMEWORK_ID, Lesson.class)
                 .setParameter("homeworkId", homeworkId)
                 .getSingleResult());
+    }
+
+    @Override
+    public List<Lesson> findAllLessonsByUserId(Long userId) {
+        return getEntityManager().createQuery(GET_LESSONS_BY_USER, Lesson.class)
+                .setParameter("userId", userId)
+                .getResultList();
     }
 }

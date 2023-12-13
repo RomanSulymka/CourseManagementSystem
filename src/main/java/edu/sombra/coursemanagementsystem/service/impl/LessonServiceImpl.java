@@ -73,13 +73,40 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-    public List<LessonResponseDTO> findAllLessons() {
-        List<Lesson> lessons = lessonRepository.findAll();
-        List<CourseResponseDTO> courseResponseDTOS = lessons.stream()
-                .map(lesson -> courseMapper.mapToResponseDTO(lesson.getCourse()))
-                .toList();
+    public List<LessonResponseDTO> findAllLessons(String userEmail) {
+        User user = userRepository.findUserByEmail(userEmail);
+        if (user.getRole().equals(RoleEnum.ADMIN)) {
+            List<Lesson> lessons = lessonRepository.findAll();
+            List<CourseResponseDTO> courseResponseDTOS = lessons.stream()
+                    .map(lesson -> courseMapper.mapToResponseDTO(lesson.getCourse()))
+                    .toList();
 
-        return lessonMapper.mapToResponsesDTO(lessons, courseResponseDTOS);
+            return lessonMapper.mapToResponsesDTO(lessons, courseResponseDTOS);
+        } else {
+            List<Lesson> lessons = lessonRepository.findAllLessonsByUserId(user.getId());
+            List<CourseResponseDTO> courseResponseDTOS = lessons.stream()
+                    .map(lesson -> courseMapper.mapToResponseDTO(lesson.getCourse()))
+                    .toList();
+
+            return lessonMapper.mapToResponsesDTO(lessons, courseResponseDTOS);
+        }
+    }
+
+    @Override
+    public List<LessonResponseDTO> findAllLessonsByCourse(Long courseId, String userEmail) {
+        User user = userRepository.findUserByEmail(userEmail);
+        if (user.getRole().equals(RoleEnum.ADMIN)) {
+            return findAllLessonsByCourse(courseId);
+        } else {
+            Course course = courseRepository.findById(courseId)
+                    .orElseThrow(EntityNotFoundException::new);
+            boolean isUserAssignedToCourse = enrollmentRepository.isUserAssignedToCourse(course, user);
+            if (isUserAssignedToCourse) {
+                return findAllLessonsByCourse(courseId);
+            } else {
+                throw new IllegalArgumentException("User hasn't access to this course!");
+            }
+        }
     }
 
     @Override

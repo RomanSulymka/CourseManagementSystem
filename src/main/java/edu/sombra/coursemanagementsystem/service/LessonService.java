@@ -13,8 +13,9 @@ public interface LessonService {
 
     LessonResponseDTO findById(Long id, String userEmail);
 
-    List<LessonResponseDTO> findAllLessons();
+    List<LessonResponseDTO> findAllLessons(String userEmail);
 
+    List<LessonResponseDTO> findAllLessonsByCourse(Long courseId, String userEmail);
     List<LessonResponseDTO> findAllLessonsByCourse(Long courseId);
 
     List<Lesson> generateAndAssignLessons(Long numberOfLessons, Course course);

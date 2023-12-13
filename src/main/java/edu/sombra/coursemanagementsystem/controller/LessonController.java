@@ -43,13 +43,14 @@ public class LessonController {
     }
 
     @GetMapping("/find-all")
-    public ResponseEntity<List<LessonResponseDTO>> getAllLessons() {
-        return ResponseEntity.ok(lessonService.findAllLessons());
+    public ResponseEntity<List<LessonResponseDTO>> getAllLessons(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(lessonService.findAllLessons(userDetails.getUsername()));
     }
 
     @GetMapping("/find-all/{id}")
-    public ResponseEntity<List<LessonResponseDTO>> getAllLessonsByCourseId(@PathVariable("id") Long courseId) {
-        return ResponseEntity.ok(lessonService.findAllLessonsByCourse(courseId));
+    public ResponseEntity<List<LessonResponseDTO>> getAllLessonsByCourseId(@PathVariable("id") Long courseId,
+                                                                           @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(lessonService.findAllLessonsByCourse(courseId, userDetails.getUsername()));
     }
 
     @PutMapping("/edit")

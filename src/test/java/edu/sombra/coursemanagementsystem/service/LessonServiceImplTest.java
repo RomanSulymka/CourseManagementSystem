@@ -246,11 +246,18 @@ class LessonServiceImplTest {
 
     @Test
     void testFindAllLessonsReturnsEmptyList() {
+        User user = User.builder()
+                .email("user@email.com")
+                .role(RoleEnum.ADMIN)
+                .build();
+
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+
         when(lessonRepository.findAll()).thenReturn(new ArrayList<>());
 
         when(lessonMapper.mapToResponsesDTO(any(), any())).thenReturn(new ArrayList<>());
 
-        List<LessonResponseDTO> lessons = lessonService.findAllLessons();
+        List<LessonResponseDTO> lessons = lessonService.findAllLessons(user.getEmail());
 
         assertNotNull(lessons);
         assertTrue(lessons.isEmpty());
@@ -264,6 +271,13 @@ class LessonServiceImplTest {
 
     @Test
     void testFindAllLessonsReturnsNonEmptyList() {
+        User user = User.builder()
+                .email("user@email.com")
+                .role(RoleEnum.ADMIN)
+                .build();
+
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+
         List<Lesson> lessonList = Arrays.asList(mock(Lesson.class), mock(Lesson.class));
         List<CourseResponseDTO> courseResponseDTOList = Arrays.asList(null, null);
 
@@ -272,7 +286,30 @@ class LessonServiceImplTest {
 
         when(lessonRepository.findAll()).thenReturn(lessonList);
 
-        List<LessonResponseDTO> lessons = lessonService.findAllLessons();
+        List<LessonResponseDTO> lessons = lessonService.findAllLessons(user.getEmail());
+
+        assertNotNull(lessons);
+        assertEquals(2, lessons.size());
+    }
+
+    @Test
+    void testFindAllLessonsReturnsNonEmptyListAsInstructor() {
+        User user = User.builder()
+                .email("user@email.com")
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+
+        List<Lesson> lessonList = Arrays.asList(mock(Lesson.class), mock(Lesson.class));
+        List<CourseResponseDTO> courseResponseDTOList = Arrays.asList(null, null);
+
+        when(lessonMapper.mapToResponsesDTO(eq(lessonList), eq(courseResponseDTOList)))
+                .thenReturn(Arrays.asList(mock(LessonResponseDTO.class), mock(LessonResponseDTO.class)));
+
+        when(lessonRepository.findAllLessonsByUserId(user.getId())).thenReturn(lessonList);
+
+        List<LessonResponseDTO> lessons = lessonService.findAllLessons(user.getEmail());
 
         assertNotNull(lessons);
         assertEquals(2, lessons.size());

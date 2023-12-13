@@ -79,7 +79,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR")
 
                                 // Lesson
-                                .requestMatchers(HttpMethod.GET, "/api/v1/lesson/find-all").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/lesson/find-all").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.POST, "/api/v1/lesson/create").hasAnyRole("ADMIN", "INSTRUCTOR")
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/lesson/{id}").hasAnyRole("ADMIN", "INSTRUCTOR")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/lesson/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")

@@ -129,7 +129,7 @@ class LessonControllerTest {
                         .build()
         );
 
-        when(lessonService.findAllLessons()).thenReturn(lessons);
+        when(lessonService.findAllLessons("admin@gmail.com")).thenReturn(lessons);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/lesson/find-all")
                 .contentType(MediaType.APPLICATION_JSON));
@@ -141,7 +141,7 @@ class LessonControllerTest {
                 .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].name").value("Introduction to Scala"));
 
-        verify(lessonService, times(1)).findAllLessons();
+        verify(lessonService, times(1)).findAllLessons("admin@gmail.com");
     }
 
     @Test
@@ -161,7 +161,7 @@ class LessonControllerTest {
                         .build()
         );
 
-        given(lessonService.findAllLessonsByCourse(courseId)).willReturn(lessons);
+        given(lessonService.findAllLessonsByCourse(courseId, "admin@gmail.com")).willReturn(lessons);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/lesson/find-all/{id}", courseId)
                 .contentType(MediaType.APPLICATION_JSON));
@@ -173,7 +173,7 @@ class LessonControllerTest {
                 .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].name").value("Introduction to Scala"));
 
-        verify(lessonService, times(1)).findAllLessonsByCourse(courseId);
+        verify(lessonService, times(1)).findAllLessonsByCourse(courseId, "admin@gmail.com");
     }
 
     @Test
