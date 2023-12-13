@@ -41,8 +41,8 @@ public class UserServiceImpl implements UserService {
     public static final String ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL = "Error assigning new role for user with email: ";
     public static final String FAILED_ASSIGN_NEW_ROLE_FOR_USER = "Failed assign new role for user";
     public static final String USER_NOT_FOUND = "User not found: ";
-    public static final String USER_SHOULD_HAS_THE_ROLE = "User should has the role: ";
-    public static final String FAILED_TO_CREATE_USER  = "Failed to create user";
+    public static final String USER_SHOULD_HAVE_THE_ROLE = "User should have the role: ";
+    public static final String FAILED_TO_CREATE_USER = "Failed to create user";
     public static final String FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY = "Failed to create new User, the field is empty";
     public static final String FAILED_TO_UPDATE_USER = "Failed to update user ";
     public static final String PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY = "Password has been changed successfully";
@@ -102,8 +102,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateInstructor(User instructor, RoleEnum role) {
         if (instructor.getRole() != role) {
-            log.error(USER_SHOULD_HAS_THE_ROLE + role.name());
-            throw new AccessDeniedException(USER_SHOULD_HAS_THE_ROLE + role.name());
+            log.error(USER_SHOULD_HAVE_THE_ROLE + role.name());
+            throw new AccessDeniedException(USER_SHOULD_HAVE_THE_ROLE + role.name());
         }
     }
 
@@ -126,31 +126,41 @@ public class UserServiceImpl implements UserService {
 
     @Validated
     @Override
-    public UserResponseDTO updateUser(UpdateUserDTO userDTO) {
+    public UserResponseDTO updateUser(UpdateUserDTO userDTO, String userEmail) {
         try {
-            User existingUser = userRepository.findById(userDTO.getId())
-                    .orElseThrow(() -> {
-                        log.error(USER_NOT_FOUND_WITH_ID + userDTO.getId());
-                        return new EntityNotFoundException(USER_NOT_FOUND_WITH_ID + userDTO.getId());
-                    });
-            if (userDTO.getRole() == null) {
-                userDTO.setRole(existingUser.getRole());
+            User loggedUser = userRepository.findUserByEmail(userEmail);
+            if (loggedUser.getRole().equals(RoleEnum.ADMIN)) {
+                User existingUser = userRepository.findById(userDTO.getId())
+                        .orElseThrow(EntityNotFoundException::new);
+                if (userDTO.getRole() == null) {
+                    userDTO.setRole(existingUser.getRole());
+                }
+                BeanUtils.copyProperties(userDTO, existingUser, getNullPropertyNames(userDTO));
+                userRepository.update(existingUser);
+                return mapper.mapToResponseDTO(existingUser);
+            } else {
+                if (loggedUser.getId().equals(userDTO.getId())) {
+                    userDTO.setRole(loggedUser.getRole());
+                    BeanUtils.copyProperties(userDTO, loggedUser, getNullPropertyNames(userDTO));
+                    userRepository.update(loggedUser);
+                    return mapper.mapToResponseDTO(loggedUser);
+                } else {
+                    throw new AccessDeniedException(USER_SHOULD_HAVE_THE_ROLE + RoleEnum.ADMIN);
+                }
             }
-            BeanUtils.copyProperties(userDTO, existingUser, getNullPropertyNames(userDTO));
-            userRepository.update(existingUser);
-            return mapper.mapToResponseDTO(existingUser);
-        } catch (NullPointerException ex) {
+        } catch (
+                NullPointerException ex) {
             log.error(FAILED_TO_UPDATE_USER + userDTO.getId() + ex);
             throw new UserUpdateException(FAILED_TO_UPDATE_USER, ex);
         }
     }
 
     @Override
-    public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
+    public String resetPassword(ResetPasswordDTO resetPasswordDTO, String userEmail) {
         if (Objects.nonNull(findUserByEmail(resetPasswordDTO.getEmail()))) {
             User user = userRepository.findUserByEmail(resetPasswordDTO.getEmail());
             user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
-            updateUser(mapper.mapToUpdateDTO(user));
+            updateUser(mapper.mapToUpdateDTO(user), userEmail);
             log.info(PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY);
             return PASSWORD_CHANGED;
         }

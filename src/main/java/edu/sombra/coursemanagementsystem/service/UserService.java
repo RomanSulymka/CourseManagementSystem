@@ -21,9 +21,9 @@ public interface UserService {
 
     UserResponseDTO createUser(CreateUserDTO userDTO);
 
-    UserResponseDTO updateUser(UpdateUserDTO userDTO);
+    UserResponseDTO updateUser(UpdateUserDTO userDTO, String userEmail);
 
-    String resetPassword(ResetPasswordDTO resetPasswordDTO);
+    String resetPassword(ResetPasswordDTO resetPasswordDTO, String userEmail);
 
     String deleteUser(Long id);
 
