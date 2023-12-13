@@ -55,9 +55,13 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public Optional<Course> findByName(String name) {
-        return Optional.ofNullable(getEntityManager().createQuery(FIND_COURSE_BY_NAME_QUERY, Course.class)
-                .setParameter("name", name)
-                .getSingleResult());
+        try {
+            return Optional.ofNullable(getEntityManager().createQuery(FIND_COURSE_BY_NAME_QUERY, Course.class)
+                    .setParameter("name", name)
+                    .getSingleResult());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Course not found for the provided name");
+        }
     }
 
     @Override

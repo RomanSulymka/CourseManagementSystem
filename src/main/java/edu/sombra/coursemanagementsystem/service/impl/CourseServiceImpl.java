@@ -192,9 +192,14 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponseDTO findCourseByHomeworkId(Long userId, Long homeworkId) {
-        Course course = courseRepository.findCourseByHomeworkId(homeworkId)
-                .orElseThrow(EntityNotFoundException::new);
-        return courseMapper.mapToResponseDTO(course);
+        try {
+            Course course = courseRepository.findCourseByHomeworkId(homeworkId)
+                    .orElseThrow(EntityNotFoundException::new);
+            return courseMapper.mapToResponseDTO(course);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new EntityNotFoundException(e.getMessage());
+        }
     }
 
     @Override

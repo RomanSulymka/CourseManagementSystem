@@ -49,8 +49,8 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
             log.info(FEEDBACK_SAVED_SUCCESSFULLY);
             return courseFeedbackMapper.mapToDTO(feedback);
         } catch (Exception e) {
-            log.error(USER_NOT_ASSIGNED_ERROR);
-            throw new IllegalArgumentException(USER_NOT_ASSIGNED_ERROR);
+            log.error("Failed to create feedback", e);
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -120,12 +120,13 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
                 : (existingFeedback != null ? existingFeedback.getFeedbackText() : null);
 
         User student = courseFeedbackDTO.getStudentId() != null
-                ? userRepository.findById(courseFeedbackDTO.getStudentId()).orElseThrow()
+                ? userRepository.findById(courseFeedbackDTO.getStudentId())
+                .orElseThrow(() -> new EntityNotFoundException("Student not found!"))
                 : (existingFeedback != null ? existingFeedback.getStudent() : null);
 
         Course course = courseFeedbackDTO.getCourseId() != null
                 ? courseRepository.findById(courseFeedbackDTO.getCourseId())
-                .orElseThrow(EntityNotFoundException::new)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found!"))
                 : (existingFeedback != null ? existingFeedback.getCourse() : null);
 
         return CourseFeedback.builder()

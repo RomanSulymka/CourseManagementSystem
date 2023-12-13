@@ -147,13 +147,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (updateDTO.getCourseId() == null && updateDTO.getUserId() == null & updateDTO.getId() == null) {
             throw new EnrollmentException(ELEMENTS_ARE_EMPTY);
         }
-        User user = userRepository.findById(updateDTO.getUserId()).orElseThrow();
-        Course course = courseRepository.findById(updateDTO.getCourseId()).orElseThrow();
-        Enrollment enrollment = enrollmentRepository.update(Enrollment.builder()
-                .id(updateDTO.getId())
-                .course(course)
-                .user(user)
-                .build());
+        Enrollment existingEnrollment = enrollmentRepository.findById(updateDTO.getId()).orElseThrow(
+                () -> new EntityNotFoundException("Enrollment not found!"));
+
+        User user = userRepository.findById(updateDTO.getUserId())
+                .orElseThrow(
+                () -> new EntityNotFoundException("User not found!"));
+
+        Course course = courseRepository.findById(updateDTO.getCourseId())
+                .orElseThrow(
+                () -> new EntityNotFoundException("Course not found!"));
+        existingEnrollment.setCourse(course);
+        existingEnrollment.setUser(user);
+        Enrollment enrollment = enrollmentRepository.update(existingEnrollment);
         return enrollmentMapper.mapToDTO(enrollment);
     }
 

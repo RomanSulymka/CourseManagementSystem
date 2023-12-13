@@ -72,11 +72,11 @@ public class SecurityConfiguration {
 
                                 // Homework
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/homework/mark").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/homework/user/{userId}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework/{lessonId}/{userId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
-                                .requestMatchers(HttpMethod.GET, "/api/v1/homework/user/{userId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR")
 
                                 // Lesson
                                 .requestMatchers(HttpMethod.GET, "/api/v1/lesson/find-all").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")

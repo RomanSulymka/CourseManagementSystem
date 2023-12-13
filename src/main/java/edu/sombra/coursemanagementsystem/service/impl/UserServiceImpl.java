@@ -15,6 +15,7 @@ import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -42,8 +43,7 @@ public class UserServiceImpl implements UserService {
     public static final String FAILED_ASSIGN_NEW_ROLE_FOR_USER = "Failed assign new role for user";
     public static final String USER_NOT_FOUND = "User not found: ";
     public static final String USER_SHOULD_HAVE_THE_ROLE = "User should have the role: ";
-    public static final String FAILED_TO_CREATE_USER = "Failed to create user";
-    public static final String FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY = "Failed to create new User, the field is empty";
+    public static final String FAILED_TO_CREATE_USER = "Failed to create user ";
     public static final String FAILED_TO_UPDATE_USER = "Failed to update user ";
     public static final String PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY = "Password has been changed successfully";
     public static final String PASSWORD_CHANGED = "Password changed!";
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findUserByEmail(userDTO.getEmail());
 
             return mapper.mapToResponseDTO(user);
-        } catch (UserException ex) {
+        } catch (Exception ex) {
             log.error(ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL + userDTO.getEmail());
             throw new UserException(FAILED_ASSIGN_NEW_ROLE_FOR_USER, ex);
         }
@@ -94,8 +94,8 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findUserByEmail(email);
             return mapper.mapToResponseDTO(user);
-        } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(ERROR_USER_NOT_FOUND, e);
+        } catch (NoResultException e) {
+            throw new UserCreationException(e);
         }
     }
 
@@ -115,12 +115,9 @@ public class UserServiceImpl implements UserService {
             User user = mapper.fromDTO(userDTO);
             userRepository.save(user);
             return findUserByEmail(user.getEmail());
-        } catch (UserCreationException ex) {
-            log.error(FAILED_TO_CREATE_USER, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            log.error(FAILED_TO_CREATE_USER, ex);
             throw new UserCreationException(FAILED_TO_CREATE_USER, ex);
-        } catch (NullPointerException ex) {
-            log.error(FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY);
-            throw new NullPointerException(FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY);
         }
     }
 
@@ -157,14 +154,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String resetPassword(ResetPasswordDTO resetPasswordDTO, String userEmail) {
-        if (Objects.nonNull(findUserByEmail(resetPasswordDTO.getEmail()))) {
-            User user = userRepository.findUserByEmail(resetPasswordDTO.getEmail());
-            user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
-            updateUser(mapper.mapToUpdateDTO(user), userEmail);
-            log.info(PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY);
-            return PASSWORD_CHANGED;
+        try {
+            if (Objects.nonNull(findUserByEmail(resetPasswordDTO.getEmail()))) {
+                User user = userRepository.findUserByEmail(resetPasswordDTO.getEmail());
+                user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+                updateUser(mapper.mapToUpdateDTO(user), userEmail);
+                log.info(PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY);
+                return PASSWORD_CHANGED;
+            }
+            throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDTO.getEmail());
+        } catch (Exception ex) {
+            log.error(FAILED_TO_CREATE_USER + resetPasswordDTO.getEmail() + ex);
+            throw new UserException(FAILED_TO_CREATE_USER, ex);
         }
-        throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDTO.getEmail());
     }
 
     @Override

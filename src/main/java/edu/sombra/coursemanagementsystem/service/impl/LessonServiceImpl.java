@@ -8,7 +8,6 @@ import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
@@ -34,6 +33,8 @@ public class LessonServiceImpl implements LessonService {
     public static final String FAILED_TO_DELETE_LESSON = "Failed to delete lesson";
     public static final String LESSON_DELETED_SUCCESSFULLY = "Lesson deleted successfully";
     public static final String COURSE_SHOULD_HAVE_AT_LEAST_5_LESSONS = "Course should have at least 5 lessons";
+    public static final String LESSON_NOT_FOUND = "Lesson not found!";
+    public static final String COURSE_NOT_FOUND = "Course not found!";
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
@@ -44,7 +45,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public LessonResponseDTO save(CreateLessonDTO lessonDTO) {
         Course course = courseRepository.findById(lessonDTO.getCourseId())
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(COURSE_NOT_FOUND));
         Lesson lesson = lessonRepository.save(Lesson.builder()
                 .name(lessonDTO.getLessonName())
                 .course(course)
@@ -57,7 +58,7 @@ public class LessonServiceImpl implements LessonService {
     public LessonResponseDTO findById(Long lessonId, String userEmail) {
         User user = userRepository.findUserByEmail(userEmail);
         Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(LESSON_NOT_FOUND));
         if (user.getRole().equals(RoleEnum.ADMIN)) {
             CourseResponseDTO courseResponse = courseMapper.mapToResponseDTO(lesson.getCourse());
             return lessonMapper.mapToResponseDTO(lesson, courseResponse);
@@ -95,11 +96,11 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public List<LessonResponseDTO> findAllLessonsByCourse(Long courseId, String userEmail) {
         User user = userRepository.findUserByEmail(userEmail);
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException(COURSE_NOT_FOUND));
         if (user.getRole().equals(RoleEnum.ADMIN)) {
-            return findAllLessonsByCourse(courseId);
+            return findAllLessonsByCourse(course.getId());
         } else {
-            Course course = courseRepository.findById(courseId)
-                    .orElseThrow(EntityNotFoundException::new);
             boolean isUserAssignedToCourse = enrollmentRepository.isUserAssignedToCourse(course, user);
             if (isUserAssignedToCourse) {
                 return findAllLessonsByCourse(courseId);
@@ -139,20 +140,20 @@ public class LessonServiceImpl implements LessonService {
     public void deleteLesson(Long id) {
         try {
             Lesson lesson = lessonRepository.findById(id)
-                    .orElseThrow(EntityNotFoundException::new);
+                    .orElseThrow(() -> new EntityNotFoundException(LESSON_NOT_FOUND));
             lessonRepository.delete(lesson);
             log.info(LESSON_DELETED_SUCCESSFULLY);
-        } catch (EntityDeletionException e) {
+        } catch (Exception e) {
             log.error(FAILED_TO_DELETE_LESSON + id);
-            throw new EntityDeletionException(FAILED_TO_DELETE_LESSON, e);
+            throw new LessonException(FAILED_TO_DELETE_LESSON, e);
         }
     }
 
-    //TODO: test it
     @Override
     public LessonResponseDTO editLesson(UpdateLessonDTO lesson) {
-        lessonRepository.findById(lesson.getId());
-        Course course = courseRepository.findById(lesson.getCourseId()).orElseThrow();
+        lessonRepository.findById(lesson.getId()).orElseThrow(() -> new EntityNotFoundException(LESSON_NOT_FOUND));
+        Course course = courseRepository.findById(lesson.getCourseId())
+                .orElseThrow(() -> new EntityNotFoundException(COURSE_NOT_FOUND));
         Lesson editedLesson = Lesson.builder()
                 .id(lesson.getId())
                 .name(lesson.getName())

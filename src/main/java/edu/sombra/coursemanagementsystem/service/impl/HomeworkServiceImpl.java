@@ -35,6 +35,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     public static final String INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100_BUT_NOW_MARK_IS = "Invalid mark value. Mark should be between 0 and 100. But now mark is {}";
     public static final String INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100 = "Invalid mark value. Mark should be between 0 and 100.";
     public static final String USER_ISN_T_ASSIGNED_TO_THIS_COURSE = "User isn't assigned to this course";
+    public static final String LESSON_DOES_NOT_CONTAINS_THE_HOMEWORK = "Lesson doesn't contains the homework ";
 
     private final HomeworkRepository homeworkRepository;
     private final CourseMarkService courseMarkService;
@@ -55,23 +56,27 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public GetHomeworkDTO setMark(Long userId, Long homeworkId, Long mark) {
-        if (enrollmentService.isUserAssignedToCourse(userId, homeworkId)) {
-            if (mark >= 0 && mark <= 100) {
-                homeworkRepository.setMark(homeworkId, mark);
-                log.info(MARK_SAVED_SUCCESSFULLY);
-                Lesson lesson = lessonRepository.findLessonByHomeworkId(homeworkId)
-                        .orElseThrow(EntityNotFoundException::new);
+        try {
+            if (enrollmentService.isUserAssignedToCourse(userId, homeworkId)) {
+                if (mark >= 0 && mark <= 100) {
+                    homeworkRepository.setMark(homeworkId, mark);
+                    log.info(MARK_SAVED_SUCCESSFULLY);
+                    Lesson lesson = lessonRepository.findLessonByHomeworkId(homeworkId)
+                            .orElseThrow(EntityNotFoundException::new);
 
-                Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, lesson.getCourse().getId());
-                boolean isAllHomeworksGraded = isAllHomeworksGraded(userId, lesson.getCourse().getId());
-                courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark, isAllHomeworksGraded);
-                return findAndMapToDTO(homeworkId);
+                    Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(userId, lesson.getCourse().getId());
+                    boolean isAllHomeworksGraded = isAllHomeworksGraded(userId, lesson.getCourse().getId());
+                    courseMarkService.saveTotalMark(userId, lesson.getCourse().getId(), averageMark, isAllHomeworksGraded);
+                    return findAndMapToDTO(homeworkId);
+                } else {
+                    log.error(INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100_BUT_NOW_MARK_IS, mark);
+                    throw new IllegalArgumentException(INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100);
+                }
             } else {
-                log.error(INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100_BUT_NOW_MARK_IS, mark);
-                throw new IllegalArgumentException(INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100);
+                throw new UserNotAssignedToCourseException(USER_ISN_T_ASSIGNED_TO_THIS_COURSE);
             }
-        } else {
-            throw new UserNotAssignedToCourseException(USER_ISN_T_ASSIGNED_TO_THIS_COURSE);
+        } catch (Exception e) {
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -92,17 +97,21 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public GetHomeworkDTO findHomeworkById(Long homeworkId, String userEmail) {
-        User user = userRepository.findUserByEmail(userEmail);
-        if (user.getRole().equals(RoleEnum.ADMIN)) {
-            return findAndMapToDTO(homeworkId);
-        } else {
-            Course course = courseRepository.findCourseByHomeworkId(homeworkId).orElseThrow(EntityNotFoundException::new);
-            boolean isUserAssignedToCourse = courseRepository.isUserAssignedToCourse(user.getId(), course.getId());
-            if (isUserAssignedToCourse) {
+        try {
+            User user = userRepository.findUserByEmail(userEmail);
+            if (user.getRole().equals(RoleEnum.ADMIN)) {
                 return findAndMapToDTO(homeworkId);
             } else {
-                throw new IllegalArgumentException("User hasn't access to this homework!");
+                Course course = courseRepository.findCourseByHomeworkId(homeworkId).orElseThrow(EntityNotFoundException::new);
+                boolean isUserAssignedToCourse = courseRepository.isUserAssignedToCourse(user.getId(), course.getId());
+                if (isUserAssignedToCourse) {
+                    return findAndMapToDTO(homeworkId);
+                } else {
+                    throw new IllegalArgumentException("User hasn't access to this homework!");
+                }
             }
+        } catch (Exception e) {
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -147,13 +156,18 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public GetHomeworkDTO findHomeworkByUserAndLessonId(Long userId, Long lessonId) {
-        userRepository.findById(userId);
-        var lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(EntityNotFoundException::new);
+        try {
+            userRepository.findById(userId);
+            var lesson = lessonRepository.findById(lessonId)
+                    .orElseThrow(EntityNotFoundException::new);
 
-        Homework homework = homeworkRepository.findByUserAndLessonId(userId, lesson.getId())
-                .orElseThrow(EntityNotFoundException::new);
-        return homeworkMapper.mapToDTO(homework);
+            Homework homework = homeworkRepository.findByUserAndLessonId(userId, lesson.getId())
+                    .orElseThrow(EntityNotFoundException::new);
+            return homeworkMapper.mapToDTO(homework);
+        } catch (Exception e) {
+            log.error(LESSON_DOES_NOT_CONTAINS_THE_HOMEWORK);
+            throw new EntityNotFoundException(LESSON_DOES_NOT_CONTAINS_THE_HOMEWORK, e);
+        }
     }
 
     public Homework findHomework(Long homeworkId) {
