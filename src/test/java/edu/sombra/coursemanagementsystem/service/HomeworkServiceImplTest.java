@@ -6,7 +6,6 @@ import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.exception.UserNotAssignedToCourseException;
 import edu.sombra.coursemanagementsystem.mapper.HomeworkMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
@@ -146,7 +145,7 @@ class HomeworkServiceImplTest {
     void testSetMark_InvalidMarkValue(Long userId, Long homeworkId, Long invalidMark) {
         when(enrollmentService.isUserAssignedToCourse(userId, homeworkId)).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> homeworkService.setMark(userId, homeworkId, invalidMark));
+        assertThrows(EntityNotFoundException.class, () -> homeworkService.setMark(userId, homeworkId, invalidMark));
 
         verify(homeworkRepository, never()).setMark(any(), any());
         verify(courseMarkService, never()).saveTotalMark(any(), any(), any(), any());
@@ -157,7 +156,7 @@ class HomeworkServiceImplTest {
     void testSetMark_UserNotAssignedToCourse(Long userId, Long homeworkId, Long mark) {
         when(enrollmentService.isUserAssignedToCourse(userId, homeworkId)).thenReturn(false);
 
-        assertThrows(UserNotAssignedToCourseException.class, () -> homeworkService.setMark(userId, homeworkId, mark));
+        assertThrows(EntityNotFoundException.class, () -> homeworkService.setMark(userId, homeworkId, mark));
         verify(homeworkRepository, never()).setMark(any(), any());
         verify(courseMarkService, never()).saveTotalMark(any(), any(), any(), any());
     }
@@ -260,7 +259,7 @@ class HomeworkServiceImplTest {
         when(userRepository.findUserByEmail("email@gmail.com")).thenReturn(User.builder().role(RoleEnum.INSTRUCTOR).build());
         when(courseRepository.findCourseByHomeworkId(homeworkId)).thenReturn(Optional.ofNullable(Course.builder().id(1L).build()));
 
-        assertThrows(IllegalArgumentException.class, () -> homeworkService.findHomeworkById(homeworkId, "email@gmail.com"));
+        assertThrows(EntityNotFoundException.class, () -> homeworkService.findHomeworkById(homeworkId, "email@gmail.com"));
     }
 
     @Test

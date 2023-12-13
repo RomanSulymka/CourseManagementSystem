@@ -9,7 +9,6 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
@@ -36,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -393,9 +391,9 @@ class LessonServiceImplTest {
         Long lessonId = 1L;
         Lesson lesson = new Lesson();
         when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-        doThrow(EntityDeletionException.class).when(lessonRepository).delete(lesson);
+        doThrow(LessonException.class).when(lessonRepository).delete(lesson);
 
-        assertThrows(EntityDeletionException.class, () -> lessonService.deleteLesson(lessonId));
+        assertThrows(LessonException.class, () -> lessonService.deleteLesson(lessonId));
     }
 
     @Test
@@ -453,7 +451,8 @@ class LessonServiceImplTest {
                 .started(true)
                 .build();
 
-        when(courseRepository.findById(updateLessonDTO.getId())).thenReturn(Optional.of(course));
+        when(lessonRepository.findById(updateLessonDTO.getId())).thenReturn(Optional.of(updatedLesson));
+        when(courseRepository.findById(updatedLesson.getCourse().getId())).thenReturn(Optional.of(course));
         when(lessonRepository.update(updatedLesson)).thenReturn(updatedLesson);
         when(courseMapper.mapToResponseDTO(updatedLesson.getCourse())).thenReturn(expectedResponseCourseDTO);
         when(lessonMapper.mapToResponseDTO(updatedLesson, expectedResponseCourseDTO)).thenReturn(lessonResponseDTO);
@@ -490,7 +489,7 @@ class LessonServiceImplTest {
 
         when(lessonRepository.findById(1L)).thenReturn(Optional.ofNullable(originalLesson));
 
-        assertThrows(NoSuchElementException.class, () -> lessonService.editLesson(lesson));
+        assertThrows(EntityNotFoundException.class, () -> lessonService.editLesson(lesson));
         verify(lessonRepository, times(1)).findById(1L);
         verify(lessonRepository, never()).update(any());
     }

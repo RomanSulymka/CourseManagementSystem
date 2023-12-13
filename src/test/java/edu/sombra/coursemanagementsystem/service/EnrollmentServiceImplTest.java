@@ -328,6 +328,7 @@ class EnrollmentServiceImplTest {
         Enrollment mockEnrollment = mock(Enrollment.class);
         EnrollmentGetByNameDTO expectedDTO = new EnrollmentGetByNameDTO("name", "firstName", "lastName", "email.com", RoleEnum.INSTRUCTOR);
 
+        when(enrollmentRepository.findById(updateDTO.getId())).thenReturn(Optional.of(mock(Enrollment.class)));
         when(userRepository.findById(updateDTO.getUserId())).thenReturn(Optional.of(mock(User.class)));
         when(courseRepository.findById(updateDTO.getCourseId())).thenReturn(Optional.ofNullable(mockCourse));
         when(enrollmentRepository.update(any(Enrollment.class))).thenReturn(mockEnrollment);
