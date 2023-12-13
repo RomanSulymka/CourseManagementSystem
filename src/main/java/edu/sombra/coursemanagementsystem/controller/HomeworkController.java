@@ -35,8 +35,8 @@ public class HomeworkController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GetHomeworkDTO>> getAllHomeworks() {
-        return ResponseEntity.ok(homeworkService.getAllHomeworks());
+    public ResponseEntity<List<GetHomeworkDTO>> getAllHomeworks(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(homeworkService.getAllHomeworks(userDetails.getUsername()));
     }
 
     @GetMapping("/{lessonId}/{userId}")

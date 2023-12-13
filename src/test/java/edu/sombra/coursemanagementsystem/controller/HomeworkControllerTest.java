@@ -118,7 +118,7 @@ class HomeworkControllerTest {
         homeworkList.add(homework1);
         homeworkList.add(homework2);
 
-        when(homeworkService.getAllHomeworks()).thenReturn(homeworkList);
+        when(homeworkService.getAllHomeworks("admin@gmail.com")).thenReturn(homeworkList);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/homework")
                 .contentType(MediaType.APPLICATION_JSON));
@@ -138,7 +138,7 @@ class HomeworkControllerTest {
                 .andExpect(jsonPath("$[1].lesson").exists())
                 .andExpect(jsonPath("$[1].fileName").value("homework2.txt"));
 
-        verify(homeworkService, times(1)).getAllHomeworks();
+        verify(homeworkService, times(1)).getAllHomeworks("admin@gmail.com");
     }
 
     @Test

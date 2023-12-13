@@ -122,10 +122,20 @@ public class HomeworkServiceImpl implements HomeworkService {
     }
 
     @Override
-    public List<GetHomeworkDTO> getAllHomeworks() {
-        //TODO: student and instructor can see just his homeworks || homeworks on the course
-        List<Homework> homeworkList = homeworkRepository.findAll();
-        return homeworkMapper.mapToDTO(homeworkList);
+    public List<GetHomeworkDTO> getAllHomeworks(String userEmail) {
+        User user = userRepository.findUserByEmail(userEmail);
+        if (user.getRole().equals(RoleEnum.ADMIN)) {
+            List<Homework> homeworkList = homeworkRepository.findAll();
+            return homeworkMapper.mapToDTO(homeworkList);
+        } else if (user.getRole().equals(RoleEnum.STUDENT)) {
+            List<Homework> homeworkList = homeworkRepository.findAllByUser(user.getId());
+            return homeworkMapper.mapToDTO(homeworkList);
+        } else if (user.getRole().equals(RoleEnum.INSTRUCTOR)) {
+            List<Homework> homeworksWithInstructorAccess = homeworkRepository.findAllHomeworksWithInstructorAccess(user.getId());
+            return homeworkMapper.mapToDTO(homeworksWithInstructorAccess);
+        } else {
+            throw new IllegalArgumentException("Invalid user role");
+        }
     }
 
     @Override

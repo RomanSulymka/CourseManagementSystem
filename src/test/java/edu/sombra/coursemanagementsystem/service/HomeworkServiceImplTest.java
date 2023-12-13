@@ -310,6 +310,12 @@ class HomeworkServiceImplTest {
 
     @Test
     void testGetAllHomeworks() {
+        String userEmail = "user@email.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.ADMIN)
+                .build();
+
         List<Homework> mockHomeworkList = Arrays.asList(
                 new Homework(),
                 new Homework()
@@ -320,13 +326,73 @@ class HomeworkServiceImplTest {
                 mock(GetHomeworkDTO.class)
         );
 
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
         when(homeworkRepository.findAll()).thenReturn(mockHomeworkList);
         when(homeworkMapper.mapToDTO(mockHomeworkList)).thenReturn(mockDTOList);
 
-        List<GetHomeworkDTO> result = homeworkService.getAllHomeworks();
+        List<GetHomeworkDTO> result = homeworkService.getAllHomeworks("user@email.com");
 
         assertNotNull(result);
         assertEquals(mockDTOList, result);
+        verify(homeworkRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testGetAllHomeworks_WithInstructorCredentials() {
+        String userEmail = "user@email.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
+        List<Homework> mockHomeworkList = Arrays.asList(
+                new Homework(),
+                new Homework()
+        );
+
+        List<GetHomeworkDTO> mockDTOList = Arrays.asList(
+                mock(GetHomeworkDTO.class),
+                mock(GetHomeworkDTO.class)
+        );
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(homeworkRepository.findAllHomeworksWithInstructorAccess(user.getId())).thenReturn(mockHomeworkList);
+        when(homeworkMapper.mapToDTO(mockHomeworkList)).thenReturn(mockDTOList);
+
+        List<GetHomeworkDTO> result = homeworkService.getAllHomeworks("user@email.com");
+
+        assertNotNull(result);
+        assertEquals(mockDTOList, result);
+        verify(homeworkRepository, times(1)).findAllHomeworksWithInstructorAccess(user.getId());
+    }
+
+    @Test
+    void testGetAllHomeworks_WithStudentCredentials() {
+        String userEmail = "user@email.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        List<Homework> mockHomeworkList = Arrays.asList(
+                new Homework(),
+                new Homework()
+        );
+
+        List<GetHomeworkDTO> mockDTOList = Arrays.asList(
+                mock(GetHomeworkDTO.class),
+                mock(GetHomeworkDTO.class)
+        );
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(homeworkRepository.findAllByUser(user.getId())).thenReturn(mockHomeworkList);
+        when(homeworkMapper.mapToDTO(mockHomeworkList)).thenReturn(mockDTOList);
+
+        List<GetHomeworkDTO> result = homeworkService.getAllHomeworks("user@email.com");
+
+        assertNotNull(result);
+        assertEquals(mockDTOList, result);
+        verify(homeworkRepository, times(1)).findAllByUser(user.getId());
     }
 
     @Test
