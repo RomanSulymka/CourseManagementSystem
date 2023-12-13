@@ -11,7 +11,7 @@ import java.util.List;
 public interface LessonService {
     LessonResponseDTO save(CreateLessonDTO lessonDTO);
 
-    LessonResponseDTO findById(Long id);
+    LessonResponseDTO findById(Long id, String userEmail);
 
     List<LessonResponseDTO> findAllLessons();
 

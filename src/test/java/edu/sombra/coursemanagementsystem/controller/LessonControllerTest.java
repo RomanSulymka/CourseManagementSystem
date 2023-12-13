@@ -99,7 +99,7 @@ class LessonControllerTest {
                 .build();
 
         when(lessonMapper.mapToResponseDTO(mock(Lesson.class), mock(CourseResponseDTO.class))).thenReturn(lesson);
-        when(lessonService.findById(lessonId)).thenReturn(lesson);
+        when(lessonService.findById(lessonId, "admin@gmail.com")).thenReturn(lesson);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/lesson/{id}", lessonId)
                 .contentType(MediaType.APPLICATION_JSON));
@@ -110,7 +110,7 @@ class LessonControllerTest {
                 .andExpect(jsonPath("$.name").exists())
                 .andExpect(jsonPath("$.course").exists());
 
-        verify(lessonService, times(1)).findById(lessonId);
+        verify(lessonService, times(1)).findById(lessonId, "admin@gmail.com");
     }
 
     @Test
