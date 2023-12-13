@@ -194,6 +194,7 @@ class ScenarioE2ETest {
         homeworkDTO.setHomeworkId(18L);
         homeworkDTO.setMark(90L);
 
+        instructorHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HomeworkDTO> setMarkRequestEntity = new HttpEntity<>(homeworkDTO, instructorHeaders);
 
         ResponseEntity<GetHomeworkDTO> setMarkResponseEntity = restTemplate.exchange(
