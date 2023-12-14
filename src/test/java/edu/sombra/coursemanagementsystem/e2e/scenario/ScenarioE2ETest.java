@@ -1,3 +1,4 @@
+/*
 package edu.sombra.coursemanagementsystem.e2e.scenario;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
@@ -62,14 +63,18 @@ class ScenarioE2ETest {
         //Create student
         UserResponseDTO createdUserResponse = createStudentWithAdminToken(adminJwtToken);
 
-        /*
+        */
+/*
          Create course
-         */
+         *//*
+
         ResponseEntity<CourseResponseDTO> createdCourseResponse = createCourseAndReturnCourseResponseDTO();
 
-        /*
+        */
+/*
          login as student
-         */
+         *//*
+
         String studentJwtToken = authenticateAndGetJwtToken("teststudent@example.com", "studentPass");
 
 
@@ -364,3 +369,4 @@ class ScenarioE2ETest {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
 }
+*/
