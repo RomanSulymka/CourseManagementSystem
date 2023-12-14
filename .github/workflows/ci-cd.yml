@@ -65,9 +65,6 @@ jobs:
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
 
-      - name: Upload PEM Key
-        run: scp -i AMI_PEM_KEYS.pem AMI_PEM_KEYS.pem ec2-user@ec2-18-204-213-240.compute-1.amazonaws.com:~/AMI_PEM_KEYS.pem
-
       - name: Deploy to EC2
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > pem_key.pem
