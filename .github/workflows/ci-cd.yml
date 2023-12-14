@@ -72,6 +72,7 @@ jobs:
           chmod 400 ~/.ssh/id_rsa
           ssh-keyscan -t rsa ec2-user@ec2-18-204-213-240.compute-1.amazonaws.com >> ~/.ssh/known_hosts
           cat ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id_rsa -v ec2-user@ec2-18-204-213-240.compute-1.amazonaws.com pwd
 
       - name: Deploy to EC2
         run: |
