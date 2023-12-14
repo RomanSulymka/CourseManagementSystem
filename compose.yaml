@@ -11,9 +11,8 @@ services:
       - '5432:5432'
 
   app:
-    build:
-      context: .
     image: romansulymka/course-management-system:v1
+    pull_policy: always
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=management-system
