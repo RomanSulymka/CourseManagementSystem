@@ -13,7 +13,6 @@ import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
-import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
@@ -88,8 +87,11 @@ class ScenarioE2ETest {
         //Download homework
         HttpHeaders instructorHeaders = downloadFileAndGetInstructorHeaders(instructorJwtToken);
 
+        //Get homeworks by user
+        List<GetHomeworkDTO> homeworksByUser = getAllHomeworksByUser(createdUserResponse.getId(), instructorHeaders);
+
         //Set mark for homework
-        setMarkForHomework(createdUserResponse, instructorHeaders);
+        setMarkForHomework(createdUserResponse, instructorHeaders, homeworksByUser.get(0).getId());
 
         //Add feedback
         addCourseFeedback(instructorHeaders);
@@ -188,9 +190,22 @@ class ScenarioE2ETest {
         assertEquals(feedbackDTO.getFeedbackText(), Objects.requireNonNull(addFeedbackResponseEntity.getBody()).getFeedbackText());
     }
 
-    private void setMarkForHomework(UserResponseDTO createdUserResponse, HttpHeaders instructorHeaders) {
+    private List<GetHomeworkDTO> getAllHomeworksByUser(Long userId, HttpHeaders instructorHeaders) {
+        ResponseEntity<List<GetHomeworkDTO>> responseEntity = restTemplate.exchange(
+                "http://localhost:" + port + "/api/v1/homework/user/" + userId,
+                HttpMethod.GET,
+                new HttpEntity<>(instructorHeaders),
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        return responseEntity.getBody();
+    }
+
+    private void setMarkForHomework(UserResponseDTO createdUserResponse, HttpHeaders instructorHeaders, Long homeworkId) {
         HomeworkDTO homeworkDTO = new HomeworkDTO();
-        homeworkDTO.setHomeworkId(6L);
+        homeworkDTO.setHomeworkId(homeworkId);
         homeworkDTO.setUserId(createdUserResponse.getId());
         homeworkDTO.setMark(90L);
 
@@ -358,30 +373,6 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, logout.getStatusCode());
         assertNull(logout.getBody());
-    }
-
-    private GetHomeworkDTO findHomeworkByStudentAndCourse(Long lessonId, Long userId, HttpHeaders instructorHeaders) {
-        ResponseEntity<GetHomeworkDTO> homeworkByStudentAndCourseResponse = restTemplate.exchange(
-                buildUrl("/api/v1/homework/{lessonId}/{userId}", lessonId, userId),
-                HttpMethod.GET,
-                new HttpEntity<>(instructorHeaders),
-                GetHomeworkDTO.class
-        );
-        assertEquals(HttpStatus.OK, homeworkByStudentAndCourseResponse.getStatusCode());
-        assertNotNull(homeworkByStudentAndCourseResponse.getBody());
-        return homeworkByStudentAndCourseResponse.getBody();
-    }
-
-    private List<LessonResponseDTO> findLessonsByCourse(CourseResponseDTO createdCourse, HttpHeaders instructorHeaders) {
-        ResponseEntity<List<LessonResponseDTO>> applyForCourseResponse = restTemplate.exchange(
-                buildUrl("/api/v1/lesson/find-all/{id}", createdCourse.getCourseId()),
-                HttpMethod.GET,
-                new HttpEntity<>(instructorHeaders),
-                new ParameterizedTypeReference<>() {}
-        );
-        assertEquals(HttpStatus.OK, applyForCourseResponse.getStatusCode());
-        assertNotNull(applyForCourseResponse.getBody());
-        return applyForCourseResponse.getBody();
     }
 
     private String buildUrl(String path, Object... uriVariables) {
