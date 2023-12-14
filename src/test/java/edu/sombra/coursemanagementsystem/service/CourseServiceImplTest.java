@@ -16,7 +16,6 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
@@ -406,7 +405,7 @@ class CourseServiceImplTest {
                 .build();
 
         when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
-        assertThrows(IllegalArgumentException.class, () -> courseService.create(courseDTO));
+        assertThrows(CourseCreationException.class, () -> courseService.create(courseDTO));
         verify(courseRepository, never()).save(any());
         verify(courseRepository, never()).assignInstructor(anyLong(), anyLong());
         verify(lessonService, never()).generateAndAssignLessons(anyLong(), any());
@@ -505,7 +504,7 @@ class CourseServiceImplTest {
         when(courseRepository.exist(updatedCourse.getName())).thenReturn(true);
         when(courseRepository.findById(updatedCourse.getId())).thenReturn(Optional.of(existingCourse));
 
-        CourseAlreadyExistsException exception = assertThrows(CourseAlreadyExistsException.class,
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> courseService.update(updatedCourse));
 
         assertEquals("Course with this name is already exist: " + updatedCourse.getName(), exception.getMessage());
