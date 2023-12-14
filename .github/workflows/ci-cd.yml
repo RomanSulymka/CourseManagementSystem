@@ -67,7 +67,6 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > AMI_PEM_KEYS.pem
           chmod 400 AMI_PEM_KEYS.pem
           ssh -i AMI_PEM_KEYS.pem ec2-user@ec2-18-204-213-240.compute-1.amazonaws.com 'docker pull romansulymka/course-management-system:v1 && docker-compose down app && docker-compose up'
           yes
