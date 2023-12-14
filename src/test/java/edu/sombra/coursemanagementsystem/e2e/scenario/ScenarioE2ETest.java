@@ -13,6 +13,7 @@ import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
+import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
@@ -62,20 +63,15 @@ class ScenarioE2ETest {
         //Create student
         UserResponseDTO createdUserResponse = createStudentWithAdminToken(adminJwtToken);
 
-/*
+        /*
          Create course
         */
+        CourseResponseDTO createdCourseResponse = createCourseAndReturnCourseResponseDTO();
 
-
-        ResponseEntity<CourseResponseDTO> createdCourseResponse = createCourseAndReturnCourseResponseDTO();
-
-/*
+        /*
          login as student
         */
-
-
         String studentJwtToken = authenticateAndGetJwtToken("teststudent@example.com", "studentPass");
-
 
         //Apply student to course
         HttpHeaders studentHeader = applyForCourseWithStudentToken(studentJwtToken);
@@ -194,8 +190,8 @@ class ScenarioE2ETest {
 
     private void setMarkForHomework(UserResponseDTO createdUserResponse, HttpHeaders instructorHeaders) {
         HomeworkDTO homeworkDTO = new HomeworkDTO();
+        homeworkDTO.setHomeworkId(6L);
         homeworkDTO.setUserId(createdUserResponse.getId());
-        homeworkDTO.setHomeworkId(7L);
         homeworkDTO.setMark(90L);
 
         instructorHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -249,9 +245,9 @@ class ScenarioE2ETest {
         assertEquals(HttpStatus.OK, uploadHomeworkResponseEntity.getStatusCode());
     }
 
-    private void startCourse(ResponseEntity<CourseResponseDTO> createdCourseResponse) {
+    private void startCourse(CourseResponseDTO createdCourseResponse) {
         CourseActionDTO startCourseDTO = CourseActionDTO.builder()
-                .courseId(createdCourseResponse.getBody().getCourseId())
+                .courseId(createdCourseResponse.getCourseId())
                 .action("start")
                 .build();
 
@@ -290,7 +286,7 @@ class ScenarioE2ETest {
         return studentHeader;
     }
 
-    private ResponseEntity<CourseResponseDTO> createCourseAndReturnCourseResponseDTO() {
+    private CourseResponseDTO createCourseAndReturnCourseResponseDTO() {
         CourseDTO createCourseDTO = CourseDTO.builder()
                 .name("Python learn")
                 .startDate(LocalDate.now())
@@ -311,7 +307,7 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
         assertNotNull(createdCourseResponse.getBody());
-        return createdCourseResponse;
+        return createdCourseResponse.getBody();
     }
 
     private UserResponseDTO createStudentWithAdminToken(String adminJwtToken) {
@@ -362,6 +358,30 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, logout.getStatusCode());
         assertNull(logout.getBody());
+    }
+
+    private GetHomeworkDTO findHomeworkByStudentAndCourse(Long lessonId, Long userId, HttpHeaders instructorHeaders) {
+        ResponseEntity<GetHomeworkDTO> homeworkByStudentAndCourseResponse = restTemplate.exchange(
+                buildUrl("/api/v1/homework/{lessonId}/{userId}", lessonId, userId),
+                HttpMethod.GET,
+                new HttpEntity<>(instructorHeaders),
+                GetHomeworkDTO.class
+        );
+        assertEquals(HttpStatus.OK, homeworkByStudentAndCourseResponse.getStatusCode());
+        assertNotNull(homeworkByStudentAndCourseResponse.getBody());
+        return homeworkByStudentAndCourseResponse.getBody();
+    }
+
+    private List<LessonResponseDTO> findLessonsByCourse(CourseResponseDTO createdCourse, HttpHeaders instructorHeaders) {
+        ResponseEntity<List<LessonResponseDTO>> applyForCourseResponse = restTemplate.exchange(
+                buildUrl("/api/v1/lesson/find-all/{id}", createdCourse.getCourseId()),
+                HttpMethod.GET,
+                new HttpEntity<>(instructorHeaders),
+                new ParameterizedTypeReference<>() {}
+        );
+        assertEquals(HttpStatus.OK, applyForCourseResponse.getStatusCode());
+        assertNotNull(applyForCourseResponse.getBody());
+        return applyForCourseResponse.getBody();
     }
 
     private String buildUrl(String path, Object... uriVariables) {
