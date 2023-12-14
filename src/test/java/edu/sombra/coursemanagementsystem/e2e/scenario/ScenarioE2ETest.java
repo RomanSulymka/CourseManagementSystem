@@ -1,4 +1,3 @@
-/*
 package edu.sombra.coursemanagementsystem.e2e.scenario;
 
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
@@ -63,17 +62,17 @@ class ScenarioE2ETest {
         //Create student
         UserResponseDTO createdUserResponse = createStudentWithAdminToken(adminJwtToken);
 
-        */
 /*
          Create course
-         *//*
+        */
+
 
         ResponseEntity<CourseResponseDTO> createdCourseResponse = createCourseAndReturnCourseResponseDTO();
 
-        */
 /*
          login as student
-         *//*
+        */
+
 
         String studentJwtToken = authenticateAndGetJwtToken("teststudent@example.com", "studentPass");
 
@@ -196,7 +195,7 @@ class ScenarioE2ETest {
     private void setMarkForHomework(UserResponseDTO createdUserResponse, HttpHeaders instructorHeaders) {
         HomeworkDTO homeworkDTO = new HomeworkDTO();
         homeworkDTO.setUserId(createdUserResponse.getId());
-        homeworkDTO.setHomeworkId(18L);
+        homeworkDTO.setHomeworkId(7L);
         homeworkDTO.setMark(90L);
 
         instructorHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -369,4 +368,3 @@ class ScenarioE2ETest {
         return UriComponentsBuilder.fromUriString("http://localhost:" + port + path).buildAndExpand(uriVariables).toUriString();
     }
 }
-*/
