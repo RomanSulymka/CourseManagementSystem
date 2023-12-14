@@ -67,11 +67,11 @@ jobs:
 
       - name: Set up SSH
         run: |
-           mkdir -p ~/.ssh
-           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-           chmod 400 ~/.ssh/id_rsa
-           ssh-keyscan -t rsa ec2-user@ec2-18-204-213-240.compute-1.amazonaws.com >> ~/.ssh/known_hosts
-    
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 400 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa ec2-user@ec2-18-204-213-240.compute-1.amazonaws.com >> ~/.ssh/known_hosts
+          cat ~/.ssh/known_hosts
 
       - name: Deploy to EC2
         run: |
