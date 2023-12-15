@@ -65,6 +65,11 @@ jobs:
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
 
+      - name: Prepare SSH
+        run: |
+          mkdir -p ~/.ssh
+          touch ~/.ssh/known_hosts
+
       - name: Verify SSH host key
         run: |
           ssh-keygen -R ec2-52-91-61-185.compute-1.amazonaws.com
