@@ -65,6 +65,11 @@ jobs:
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
 
+      - name: Verify SSH host key
+        run: |
+          ssh-keygen -R ec2-52-91-61-185.compute-1.amazonaws.com
+          ssh-keyscan -H ec2-52-91-61-185.compute-1.amazonaws.com >> ~/.ssh/known_hosts
+
       - name: Deploy to EC2
         run: |
           ssh -i "KEY_PEM_PAIR.pem" ec2-user@ec2-52-91-61-185.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
@@ -72,6 +77,7 @@ jobs:
           docker-compose down app
           docker-compose up
           ENDSSH
+
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v2
         with:
