@@ -75,6 +75,9 @@ jobs:
           ssh-keygen -R ec2-52-91-61-185.compute-1.amazonaws.com
           ssh-keyscan -H ec2-52-91-61-185.compute-1.amazonaws.com >> ~/.ssh/known_hosts
 
+      - name: Set private key permissions
+        run: chmod 400 KEY_PEM_PAIR.pem
+
       - name: Deploy to EC2
         run: |
           ssh -i "KEY_PEM_PAIR.pem" ec2-user@ec2-52-91-61-185.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
