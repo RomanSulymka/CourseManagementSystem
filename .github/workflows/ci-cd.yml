@@ -65,19 +65,23 @@ jobs:
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
 
-      - name: Delete existing SSH key
-        run: rm -f key.pem
+      - name: Download private key
+        run: echo "${{ secrets.EC2_PRIVATE_KEY }}" > key.pem
+        env:
+          EC2_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Generate SSH key
-        run: ssh-keygen -t rsa -b 4096 -f key.pem -N ""
-
-      - name: Print SSH key fingerprint
-        run: ssh-keygen -lf key.pem
+      - name: Create SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/private.key
+          sudo chmod 600 ~/.ssh/private.key
+          shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
 
       - name: Deploy to EC2
         run: |
-          ssh -i key.pem ec2-user@ec2-instance 'echo "Test connection"'
-          ec2-user@ec2-52-91-61-185.compute-1.amazonaws.com 'docker pull romansulymka/course-management-system:v1 && docker-compose down app && docker-compose up' 
+          ssh -i ~/.ssh/private.key ec2-user@ec2-18-204-213-240.compute-1.amazonaws.com 'docker pull romansulymka/course-management-system:v1 && docker-compose down app && docker-compose up' 
 
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v2
