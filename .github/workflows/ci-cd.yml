@@ -65,23 +65,13 @@ jobs:
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
 
-      - name: Download private key
-        run: echo "${{ secrets.EC2_PRIVATE_KEY }}" > key.pem
-        env:
-          EC2_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: Create SSH key
         run: |
-          mkdir -p ~/.ssh/
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/private.key
-          cat ~/.ssh/private.key
-          chmod 600 ~/.ssh/private.key
-        env:
-          SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+          chmod 600 KEY_PEM_PAIR.pem
 
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/private.key ec2-52-91-61-185.compute-1.amazonaws.com 'docker pull romansulymka/course-management-system:v1 && docker-compose down app && docker-compose up' 
+          ssh -o StrictHostKeyChecking=no -i KEY_PEM_PAIR.pem ec2-52-91-61-185.compute-1.amazonaws.com 'docker pull romansulymka/course-management-system:v1 && docker-compose down app && docker-compose up' 
 
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v2
