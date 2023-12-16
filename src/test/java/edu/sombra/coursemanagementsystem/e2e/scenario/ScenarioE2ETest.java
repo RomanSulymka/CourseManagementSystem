@@ -101,10 +101,10 @@ class ScenarioE2ETest {
         getInstructorCourses(instructorHeaders);
 
         //Get list of students on the course
-        HttpEntity<Void> studentsOnCoursesRequestEntity = getStudentsOnCourse(instructorHeaders);
+        getStudentsOnCourse(instructorHeaders);
 
         //Get list of student courses
-        getListOfStudentCourses(studentsOnCoursesRequestEntity);
+        getListOfStudentCourses(studentHeader, studentJwtToken);
 
         //Get list of lessons on the course
         getListOfLessonsOnCourse(studentHeader);
@@ -136,11 +136,13 @@ class ScenarioE2ETest {
         assertNotNull(getListOfLessonsOnCourseResponseEntity.getBody());
     }
 
-    private void getListOfStudentCourses(HttpEntity<Void> studentsOnCoursesRequestEntity) {
+    private void getListOfStudentCourses(HttpHeaders headers, String studentJwtToken) {
+        headers.setBearerAuth(studentJwtToken);
+
         ResponseEntity<List<CourseResponseDTO>> getListOfStudentsCoursesResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/user/{userId}", 4),
+                buildUrl("/api/v1/course/user/{userId}", 8),
                 HttpMethod.GET,
-                studentsOnCoursesRequestEntity,
+                new HttpEntity<>(headers),
                 new ParameterizedTypeReference<>() {
                 }
         );
@@ -149,7 +151,7 @@ class ScenarioE2ETest {
         assertNotNull(getListOfStudentsCoursesResponseEntity.getBody());
     }
 
-    private HttpEntity<Void> getStudentsOnCourse(HttpHeaders instructorHeaders) {
+    private void getStudentsOnCourse(HttpHeaders instructorHeaders) {
         HttpEntity<Void> studentsOnCoursesRequestEntity = new HttpEntity<>(instructorHeaders);
 
         ResponseEntity<List<CourseResponseDTO>> getStudentsOnCourseResponseEntity = restTemplate.exchange(
@@ -162,7 +164,6 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, getStudentsOnCourseResponseEntity.getStatusCode());
         assertNotNull(getStudentsOnCourseResponseEntity.getBody());
-        return studentsOnCoursesRequestEntity;
     }
 
     private void getInstructorCourses(HttpHeaders instructorHeaders) {
