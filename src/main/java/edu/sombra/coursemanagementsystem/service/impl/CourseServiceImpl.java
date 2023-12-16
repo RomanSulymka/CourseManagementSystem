@@ -217,10 +217,22 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<CourseResponseDTO> findCoursesByInstructorId(Long instructorId) {
-        userService.isUserInstructor(instructorId);
-        return findCoursesByUserId(instructorId);
+    public List<CourseResponseDTO> findCoursesByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(EntityNotFoundException::new);
+        List<Course> courses = courseRepository.findCoursesByUserId(user.getId())
+                .orElseThrow(EntityNotFoundException::new);
+        switch (user.getRole()) {
+            case INSTRUCTOR:
+                userService.isUserInstructor(userId);
+                return courseMapper.mapToResponsesDTO(courses);
+            case STUDENT:
+                return courseMapper.mapToResponsesDTO(courses);
+            default:
+                throw new IllegalArgumentException("User with this id doesn't have a valid user role");
+        }
     }
+
 
     @Override
     public List<LessonResponseDTO> findAllLessonsByCourse(Long id) {
@@ -254,12 +266,6 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.updateStatus(courseId, status);
         log.info(COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY, courseId, status);
         return findById(courseId);
-    }
-
-    public List<CourseResponseDTO> findCoursesByUserId(Long userId) {
-        List<Course> courses = courseRepository.findCoursesByUserId(userId)
-                .orElseThrow(EntityNotFoundException::new);
-        return courseMapper.mapToResponsesDTO(courses);
     }
 
     @Override

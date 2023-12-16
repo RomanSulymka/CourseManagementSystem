@@ -64,20 +64,15 @@ public class CourseController {
         return ResponseEntity.ok(courseService.findAllLessonsByCourse(id));
     }
 
-    @GetMapping("/instructor/{instructorId}")
-    public ResponseEntity<List<CourseResponseDTO>> findCoursesByInstructorId(@PathVariable Long instructorId) {
-        return ResponseEntity.ok(courseService.findCoursesByInstructorId(instructorId));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CourseResponseDTO>> findCoursesByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(courseService.findCoursesByUserId(userId));
     }
 
     @GetMapping("/instructor/{instructorId}/{courseId}")
     public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@PathVariable Long instructorId,
                                                                                                  @PathVariable Long courseId) {
         return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(instructorId, courseId));
-    }
-
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<CourseResponseDTO>> findCoursesByStudentId(@PathVariable Long studentId) {
-        return ResponseEntity.ok(courseService.findCoursesByUserId(studentId));
     }
 
     @PostMapping("/student/lessons")

@@ -631,19 +631,49 @@ class CourseServiceImplTest {
     @Test
     void testFindCoursesByInstructorId() {
         Long instructorId = 1L;
+
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
         List<CourseResponseDTO> expectedCourses = Collections.singletonList(createCourseResponseDTO());
 
+        when(userRepository.findById(instructorId)).thenReturn(Optional.ofNullable(user));
         when(userService.isUserInstructor(instructorId)).thenReturn(true);
         when(courseRepository.findCoursesByUserId(instructorId)).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
         when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
 
-        List<CourseResponseDTO> resultCourses = courseService.findCoursesByInstructorId(instructorId);
+        List<CourseResponseDTO> resultCourses = courseService.findCoursesByUserId(instructorId);
 
         assertNotNull(resultCourses);
         assertEquals(expectedCourses, resultCourses);
 
         verify(userService, times(1)).isUserInstructor(instructorId);
         verify(courseRepository, times(1)).findCoursesByUserId(instructorId);
+    }
+
+    @Test
+    void testFindCoursesByStudentId() {
+        Long studentId = 1L;
+
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        List<CourseResponseDTO> expectedCourses = Collections.singletonList(createCourseResponseDTO());
+
+        when(userRepository.findById(studentId)).thenReturn(Optional.ofNullable(user));
+        when(courseRepository.findCoursesByUserId(studentId)).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
+        when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
+
+        List<CourseResponseDTO> resultCourses = courseService.findCoursesByUserId(studentId);
+
+        assertNotNull(resultCourses);
+        assertEquals(expectedCourses, resultCourses);
+
+        verify(courseRepository, times(1)).findCoursesByUserId(studentId);
     }
 
     @Test
