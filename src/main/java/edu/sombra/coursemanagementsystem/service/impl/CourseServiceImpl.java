@@ -11,6 +11,7 @@ import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
+import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
@@ -40,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Transactional
@@ -277,13 +279,16 @@ public class CourseServiceImpl implements CourseService {
 
             //TODO: rewrite with batch get
             List<LessonDTO> lessonDTO = lessons.stream()
-                    .map(lesson -> lessonMapper.toDTO(lesson, homeworkRepository.findByUserAndLessonId(studentId, lesson.getId())
-                                    .orElseThrow(EntityNotFoundException::new)
-                            ))
+                    .map(lesson -> {
+                        Optional<Homework> homeworkOptional = homeworkRepository.findByUserAndLessonId(studentId, lesson.getId());
+                        return lessonMapper.toDTO(lesson, homeworkOptional.orElse(null));
+                    })
                     .toList();
+
 
             return courseMapper.toDTO(course, courseMark, feedback, lessonDTO);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new IllegalArgumentException("Homework not found with these parameters!");
         }
     }

@@ -9,6 +9,7 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.mapper.CourseFeedbackMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseFeedbackRepository;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.CourseFeedbackServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -56,10 +56,12 @@ class CourseFeedbackServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private EnrollmentRepository enrollmentRepository;
 
     @BeforeEach
     void setUp() {
-        courseFeedbackService = new CourseFeedbackServiceImpl(userService, courseFeedbackRepository, courseRepository,
+        courseFeedbackService = new CourseFeedbackServiceImpl(userService, courseFeedbackRepository, enrollmentRepository, courseRepository,
                 courseFeedbackMapper, userRepository);
     }
 
@@ -102,8 +104,7 @@ class CourseFeedbackServiceImplTest {
     private static Stream<Arguments> provideTestDataWithDifferentUsers() {
         return Stream.of(
                 Arguments.of(User.builder().role(RoleEnum.ADMIN).id(3L).build()),
-                Arguments.of(User.builder().role(RoleEnum.STUDENT).id(1L).build()),
-                Arguments.of(User.builder().role(RoleEnum.INSTRUCTOR).id(2L).build())
+                Arguments.of(User.builder().role(RoleEnum.STUDENT).id(1L).build())
         );
     }
 
@@ -150,7 +151,8 @@ class CourseFeedbackServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("provideFeedbackTestData")
-    void testCreateFeedbackSuccess(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail, GetCourseFeedbackDTO expectedDTO) {
+    void testCreateFeedbackSuccess(
+            CourseFeedbackDTO courseFeedbackDTO, String instructorEmail, GetCourseFeedbackDTO expectedDTO) {
         User instructor = User.builder()
                 .id(3L)
                 .role(RoleEnum.INSTRUCTOR)
@@ -167,18 +169,16 @@ class CourseFeedbackServiceImplTest {
                 .instructor(instructor)
                 .build();
 
-        when(courseRepository.isUserAssignedToCourse(instructor.getId(), courseFeedbackDTO.getCourseId())).thenReturn(true);
-
-        when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(courseFeedback));
+        when(courseRepository.isUserAssignedToCourse(instructor.getId(), courseFeedbackDTO.getCourseId()))
+                .thenReturn(true);
 
         when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
-        when(courseFeedbackRepository.findFeedback(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(courseFeedback));
 
         when(userRepository.findUserByEmail(instructorEmail)).thenReturn(instructor);
         when(userRepository.findById(courseFeedbackDTO.getStudentId())).thenReturn(Optional.of(new User()));
-        when(courseFeedbackService.createOrUpdateFeedback(courseFeedbackDTO, instructor)).thenReturn(any());
-        when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
-        when(courseFeedbackMapper.mapToDTO(Objects.requireNonNull(courseFeedback))).thenReturn(expectedDTO);
+        when(courseFeedbackService.createFeedback(courseFeedbackDTO, instructor)).thenReturn(courseFeedback);
+        when(courseFeedbackMapper.mapToDTO(courseFeedback)).thenReturn(expectedDTO);
+
         GetCourseFeedbackDTO response = courseFeedbackService.create(courseFeedbackDTO, instructorEmail);
 
         verify(courseFeedbackRepository, times(1)).save(any());
@@ -216,45 +216,16 @@ class CourseFeedbackServiceImplTest {
     @ParameterizedTest
     @MethodSource("provideEditFeedbackTestData")
     void testEdit_Success(String instructorEmail, CourseFeedbackDTO courseFeedbackDTO, User instructor, CourseFeedback feedback, GetCourseFeedbackDTO expectedDTO) {
-        when(courseRepository.isUserAssignedToCourse(instructor.getId(), 1L)).thenReturn(true);
 
         when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.of(feedback));
-        when(courseFeedbackRepository.findFeedback(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(feedback));
 
-        when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
-
-        when(userRepository.findUserByEmail(instructorEmail)).thenReturn(instructor);
-        when(userRepository.findById(courseFeedbackDTO.getStudentId())).thenReturn(Optional.of(new User()));
-        when(courseFeedbackService.createOrUpdateFeedback(courseFeedbackDTO, instructor)).thenReturn(any());
+        when(courseFeedbackService.edit(courseFeedbackDTO, instructorEmail)).thenReturn(any());
         when(courseFeedbackRepository.update(feedback)).thenReturn(feedback);
-        when(courseRepository.findById(courseFeedbackDTO.getCourseId())).thenReturn(Optional.of(new Course()));
         when(courseFeedbackMapper.mapToDTO(feedback)).thenReturn(expectedDTO);
 
         GetCourseFeedbackDTO resultDTO = courseFeedbackService.edit(courseFeedbackDTO, instructorEmail);
 
         assertEquals(expectedDTO, resultDTO);
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideEditFeedbackTestData")
-    void testEdit_CreateOrUpdateFeedback_EntityNotFoundException(
-            String instructorEmail, CourseFeedbackDTO courseFeedbackDTO, User instructor, CourseFeedback feedback) {
-        when(courseRepository.isUserAssignedToCourse(instructor.getId(), 1L)).thenReturn(true);
-
-        when(courseFeedbackRepository.findById(courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(feedback));
-        when(courseFeedbackRepository.findFeedback(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getId())).thenReturn(Optional.ofNullable(feedback));
-
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(new Course()));
-
-        when(userRepository.findUserByEmail(instructorEmail)).thenReturn(instructor);
-        when(userRepository.findById(courseFeedbackDTO.getStudentId())).thenReturn(Optional.of(new User()));
-        when(courseFeedbackService.createOrUpdateFeedback(courseFeedbackDTO, instructor)).thenThrow(EntityNotFoundException.class);
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            courseFeedbackService.edit(courseFeedbackDTO, instructorEmail);
-        });
-        verify(courseFeedbackRepository, never()).update(any());
-        verify(courseFeedbackMapper, never()).mapToDTO((List<CourseFeedback>) any());
     }
 
     @ParameterizedTest
@@ -286,16 +257,16 @@ class CourseFeedbackServiceImplTest {
         List<CourseFeedback> feedbackList = new ArrayList<>();
         List<GetCourseFeedbackDTO> expectedDTOList = new ArrayList<>();
 
-        Mockito.when(courseFeedbackRepository.findAll())
+        when(courseFeedbackRepository.findAll())
                 .thenReturn(feedbackList);
 
-        Mockito.when(courseFeedbackMapper.mapToDTO(feedbackList))
+        when(courseFeedbackMapper.mapToDTO(feedbackList))
                 .thenReturn(expectedDTOList);
 
         List<GetCourseFeedbackDTO> result = courseFeedbackService.findAll();
 
-        Mockito.verify(courseFeedbackRepository).findAll();
-        Mockito.verify(courseFeedbackMapper).mapToDTO(feedbackList);
+        verify(courseFeedbackRepository).findAll();
+        verify(courseFeedbackMapper).mapToDTO(feedbackList);
         assertEquals(expectedDTOList, result);
     }
 
@@ -304,12 +275,12 @@ class CourseFeedbackServiceImplTest {
         CourseFeedback feedback = new CourseFeedback();
         GetCourseFeedbackDTO expectedDTO = mock(GetCourseFeedbackDTO.class);
 
-        Mockito.when(courseFeedbackMapper.mapToDTO(feedback))
+        when(courseFeedbackMapper.mapToDTO(feedback))
                 .thenReturn(expectedDTO);
 
         GetCourseFeedbackDTO result = courseFeedbackMapper.mapToDTO(feedback);
 
-        Mockito.verify(courseFeedbackMapper).mapToDTO(feedback);
+        verify(courseFeedbackMapper).mapToDTO(feedback);
         assertEquals(expectedDTO, result);
     }
 
@@ -322,9 +293,34 @@ class CourseFeedbackServiceImplTest {
 
         when(userRepository.findUserByEmail(anyString())).thenReturn(user);
 
-        Mockito.when(courseFeedbackRepository.findById(feedbackId)).thenReturn(Optional.of(feedback));
+        when(courseFeedbackRepository.findById(feedbackId)).thenReturn(Optional.of(feedback));
 
-        Mockito.when(courseFeedbackMapper.mapToDTO(feedback)).thenReturn(expectedDTO);
+        when(courseFeedbackMapper.mapToDTO(feedback)).thenReturn(expectedDTO);
+
+        GetCourseFeedbackDTO resultDTO = courseFeedbackService.findCourseFeedbackById(feedbackId, anyString());
+
+        assertEquals(expectedDTO, resultDTO);
+    }
+
+    @Test
+    void testFindCourseFeedbackById_WhenUserIsInstructor() {
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
+        Long feedbackId = 1L;
+
+        CourseFeedback feedback = CourseFeedback.builder().student(user).instructor(user).build();
+        GetCourseFeedbackDTO expectedDTO = mock(GetCourseFeedbackDTO.class);
+
+        when(userRepository.findUserByEmail(anyString())).thenReturn(user);
+
+        when(courseFeedbackRepository.findById(feedbackId)).thenReturn(Optional.of(feedback));
+
+        when(courseFeedbackMapper.mapToDTO(feedback)).thenReturn(expectedDTO);
+
+        when(enrollmentRepository.isUserAssignedToCourse(feedback.getCourse(), user)).thenReturn(true);
 
         GetCourseFeedbackDTO resultDTO = courseFeedbackService.findCourseFeedbackById(feedbackId, anyString());
 

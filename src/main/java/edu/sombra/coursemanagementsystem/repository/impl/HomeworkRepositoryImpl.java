@@ -61,14 +61,11 @@ public class HomeworkRepositoryImpl implements HomeworkRepository {
 
     @Override
     public Optional<Homework> findByUserAndLessonId(Long userId, Long lessonId) {
-        try {
-            return Optional.ofNullable(getEntityManager().createQuery(GET_HOMEWORK_BY_USER_ID_AND_LESSON_ID, Homework.class)
-                    .setParameter("userId", userId)
-                    .setParameter("lessonId", lessonId)
-                    .getSingleResult());
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
+        return getEntityManager().createQuery(GET_HOMEWORK_BY_USER_ID_AND_LESSON_ID, Homework.class)
+                .setParameter("userId", userId)
+                .setParameter("lessonId", lessonId)
+                .getResultStream()
+                .findFirst();
     }
 
     @Override
