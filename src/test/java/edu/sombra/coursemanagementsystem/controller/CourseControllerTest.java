@@ -2,6 +2,7 @@ package edu.sombra.coursemanagementsystem.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseAssignedToUserDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
@@ -333,24 +334,28 @@ class CourseControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindLessonsByCourseAndStudentSuccess() throws Exception {
-        Long studentId = 1L;
-        Long courseId = 2L;
 
-        when(courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId)).thenReturn(LessonsByCourseDTO.builder()
+        CourseAssignedToUserDTO courseDTO = CourseAssignedToUserDTO.builder()
+                .userId(1L)
+                .courseId(2L)
+                .build();
+
+        when(courseService.findAllLessonsByCourseAssignedToUserId(courseDTO.getUserId(), courseDTO.getCourseId())).thenReturn(LessonsByCourseDTO.builder()
                 .courseName("test course")
                 .courseId(2L)
                 .build());
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/v1/course/student/lessons/{studentId}/{courseId}", studentId, courseId)
-                .contentType(MediaType.APPLICATION_JSON));
+                .post("/api/v1/course/student/lessons")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(courseDTO)));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.courseName").exists())
                 .andExpect(jsonPath("$.courseId").exists());
 
-        verify(courseService, times(1)).findAllLessonsByCourseAssignedToUserId(studentId, courseId);
+        verify(courseService, times(1)).findAllLessonsByCourseAssignedToUserId(courseDTO.getUserId(), courseDTO.getCourseId());
     }
 
     @Test

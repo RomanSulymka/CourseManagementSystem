@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseAssignedToUserDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseMarkResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
@@ -79,10 +80,11 @@ public class CourseController {
         return ResponseEntity.ok(courseService.findCoursesByUserId(studentId));
     }
 
-    @GetMapping("/student/lessons/{studentId}/{courseId}")
-    public ResponseEntity<LessonsByCourseDTO> findLessonsByCourseIdAssignedToStudentId(@PathVariable Long studentId,
-                                                                                       @PathVariable Long courseId) {
-        return ResponseEntity.ok(courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId));
+    @PostMapping("/student/lessons")
+    public ResponseEntity<LessonsByCourseDTO> findLessonsByCourseIdAssignedToStudentId(@RequestBody CourseAssignedToUserDTO
+                                                                                               courseAssignedToUserDTO) {
+        return ResponseEntity.ok(courseService.findAllLessonsByCourseAssignedToUserId(courseAssignedToUserDTO.getUserId(),
+                courseAssignedToUserDTO.getCourseId()));
     }
 
     @GetMapping("/finish/{studentId}/{courseId}")

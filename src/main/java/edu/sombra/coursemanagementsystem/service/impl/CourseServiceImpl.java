@@ -285,7 +285,6 @@ public class CourseServiceImpl implements CourseService {
                     })
                     .toList();
 
-
             return courseMapper.toDTO(course, courseMark, feedback, lessonDTO);
         } catch (Exception e) {
             log.error(e.getMessage());
