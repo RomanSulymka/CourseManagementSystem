@@ -350,7 +350,6 @@ class ScenarioAdminE2ETest {
                 .name("Computer Science")
                 .startDate(LocalDate.now())
                 .status(CourseStatus.WAIT)
-                .started(false)
                 .instructorEmail("steve-instructor@gmail.com")
                 .numberOfLessons(5L)
                 .build();

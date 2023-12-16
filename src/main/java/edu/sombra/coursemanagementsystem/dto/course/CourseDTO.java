@@ -7,7 +7,6 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Generated;
 import lombok.NonNull;
 
 import java.time.LocalDate;
@@ -23,8 +22,6 @@ public class CourseDTO {
 
     @Temporal(TemporalType.DATE)
     private LocalDate startDate;
-
-    private Boolean started;
 
     @NonNull
     private String instructorEmail;

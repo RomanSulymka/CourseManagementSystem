@@ -147,7 +147,6 @@ class EnrollmentControllerTest {
                 CourseResponseDTO.builder()
                         .courseId(1L)
                         .courseName("Course1")
-                        .started(true)
                         .status(CourseStatus.STOP)
                         .startDate(LocalDate.of(2023, 1, 1))
                         .build(),
@@ -156,7 +155,6 @@ class EnrollmentControllerTest {
                         .courseName("Course2")
                         .status(CourseStatus.STARTED)
                         .startDate(LocalDate.of(2023, 1, 2))
-                        .started(true)
                         .build()
         );
 

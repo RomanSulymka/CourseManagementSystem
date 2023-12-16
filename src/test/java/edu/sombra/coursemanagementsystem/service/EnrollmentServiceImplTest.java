@@ -429,14 +429,12 @@ class EnrollmentServiceImplTest {
                         .name("Java Programming")
                         .status(CourseStatus.STOP)
                         .startDate(LocalDate.of(2023, 1, 1))
-                        .started(true)
                         .build(),
                 Course.builder()
                         .id(2L)
                         .name("Scala Programming")
                         .status(CourseStatus.STARTED)
                         .startDate(LocalDate.of(2023, 1, 2))
-                        .started(true)
                         .build()
         );
 
@@ -446,14 +444,12 @@ class EnrollmentServiceImplTest {
                         .courseName("Java Programming")
                         .status(CourseStatus.STOP)
                         .startDate(LocalDate.of(2023, 1, 1))
-                        .started(true)
                         .build(),
                 CourseResponseDTO.builder()
                         .courseId(2L)
                         .courseName("Scala Programming")
                         .status(CourseStatus.STARTED)
                         .startDate(LocalDate.of(2023, 1, 2))
-                        .started(true)
                         .build()
         );
 

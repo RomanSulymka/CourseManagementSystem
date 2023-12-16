@@ -314,7 +314,6 @@ class ScenarioE2ETest {
                 .name("Python learn")
                 .startDate(LocalDate.now())
                 .status(CourseStatus.WAIT)
-                .started(false)
                 .instructorEmail("instructor@gmail.com")
                 .numberOfLessons(10L)
                 .build();

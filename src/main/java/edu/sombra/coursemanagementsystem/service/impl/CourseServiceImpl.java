@@ -103,7 +103,6 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private Course saveCourse(Course course) {
-        course.setStarted(false);
         return courseRepository.save(course);
     }
 
@@ -127,7 +126,6 @@ public class CourseServiceImpl implements CourseService {
             List<LessonResponseDTO> lessons = lessonService.findAllLessonsByCourse(course.getId());
             if (isCourseHasMoreLessons(lessons.size())) {
                 course.setStatus(CourseStatus.STARTED);
-                course.setStarted(true);
             }
         });
 

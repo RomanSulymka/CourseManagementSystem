@@ -59,7 +59,6 @@ class CourseControllerTest {
                 .name("Java learn")
                 .startDate(LocalDate.now())
                 .status(CourseStatus.WAIT)
-                .started(false)
                 .instructorEmail("instructor@example.com")
                 .numberOfLessons(10L)
                 .build();
@@ -81,7 +80,6 @@ class CourseControllerTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2023, 1, 1))
-                .started(true)
                 .build();
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/course/edit")
@@ -103,7 +101,6 @@ class CourseControllerTest {
                 .courseName("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2023, 1, 1))
-                .started(true)
                 .build();
 
         List<Course> courses = List.of(Course.builder().id(1L).build());
@@ -118,8 +115,7 @@ class CourseControllerTest {
                 .andExpect(jsonPath("$.courseId").value(courseId))
                 .andExpect(jsonPath("$.courseName").exists())
                 .andExpect(jsonPath("$.status").exists())
-                .andExpect(jsonPath("$.startDate").exists())
-                .andExpect(jsonPath("$.started").exists());
+                .andExpect(jsonPath("$.startDate").exists());
 
         verify(courseService, times(1)).findById(courseId);
     }
@@ -133,14 +129,12 @@ class CourseControllerTest {
                         .courseName("Java Programming")
                         .status(CourseStatus.STOP)
                         .startDate(LocalDate.of(2023, 1, 1))
-                        .started(true)
                         .build(),
                 CourseResponseDTO.builder()
                         .courseId(2L)
                         .courseName("Scala Programming")
                         .status(CourseStatus.STARTED)
                         .startDate(LocalDate.of(2023, 1, 2))
-                        .started(true)
                         .build()
         );
 
@@ -150,14 +144,12 @@ class CourseControllerTest {
                         .name("Java Programming")
                         .status(CourseStatus.STOP)
                         .startDate(LocalDate.of(2023, 1, 1))
-                        .started(true)
                         .build(),
                 Course.builder()
                         .id(2L)
                         .name("Scala Programming")
                         .status(CourseStatus.STARTED)
                         .startDate(LocalDate.of(2023, 1, 2))
-                        .started(true)
                         .build()
         );
 
@@ -172,8 +164,7 @@ class CourseControllerTest {
                 .andExpect(jsonPath("$[0].courseId").exists())
                 .andExpect(jsonPath("$[0].courseName").exists())
                 .andExpect(jsonPath("$[0].status").exists())
-                .andExpect(jsonPath("$[1].startDate").exists())
-                .andExpect(jsonPath("$[1].started").exists());
+                .andExpect(jsonPath("$[1].startDate").exists());
 
         verify(courseService, times(1)).findAllCourses();
     }
@@ -201,7 +192,6 @@ class CourseControllerTest {
                 .courseName("Java Programming")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.of(2023, 1, 1))
-                .started(true)
                 .build();
 
         CourseActionDTO courseActionDTO = CourseActionDTO.builder()
@@ -255,7 +245,6 @@ class CourseControllerTest {
                         .courseId(1L)
                         .courseName("Java Programming")
                         .status(CourseStatus.FINISHED)
-                        .started(true)
                         .build()
         ));
 
@@ -266,8 +255,7 @@ class CourseControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].courseId").value(1))
                 .andExpect(jsonPath("$[0].courseName").value("Java Programming"))
-                .andExpect(jsonPath("$[0].status").value("FINISHED"))
-                .andExpect(jsonPath("$[0].started").value(true));
+                .andExpect(jsonPath("$[0].status").value("FINISHED"));
 
         verify(courseService, times(1)).findCoursesByUserId(userId);
     }

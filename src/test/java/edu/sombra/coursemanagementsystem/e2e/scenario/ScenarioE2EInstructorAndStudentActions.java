@@ -345,7 +345,6 @@ class ScenarioE2EInstructorAndStudentActions {
                 .name("Spark Intro")
                 .startDate(LocalDate.now())
                 .status(CourseStatus.WAIT)
-                .started(false)
                 .instructorEmail("steve@gmail.com")
                 .numberOfLessons(5L)
                 .build();

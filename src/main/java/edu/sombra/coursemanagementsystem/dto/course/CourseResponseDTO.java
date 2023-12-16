@@ -17,5 +17,4 @@ public class CourseResponseDTO {
     private String courseName;
     private CourseStatus status;
     private LocalDate startDate;
-    private Boolean started;
 }

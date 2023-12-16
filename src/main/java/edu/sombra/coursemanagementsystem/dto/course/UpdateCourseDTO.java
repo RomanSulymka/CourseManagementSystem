@@ -20,6 +20,4 @@ public class UpdateCourseDTO {
     private CourseStatus status;
 
     private LocalDate startDate;
-
-    private Boolean started;
 }

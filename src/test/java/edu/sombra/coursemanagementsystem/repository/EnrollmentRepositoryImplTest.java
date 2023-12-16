@@ -50,7 +50,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -87,7 +86,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -120,7 +118,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -155,7 +152,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
 
@@ -163,7 +159,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Scala Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.saveAll(List.of(course1, course2));
@@ -203,7 +198,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -253,7 +247,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -298,7 +291,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);

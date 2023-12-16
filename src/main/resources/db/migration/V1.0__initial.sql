@@ -14,7 +14,6 @@ CREATE TABLE courses
     name      VARCHAR(255) NOT NULL,
     status    VARCHAR(255),
     start_date DATE         NOT NULL,
-    started   BOOLEAN,
     UNIQUE (name)
 );
 
@@ -100,11 +99,11 @@ VALUES
     ('instructor1', 'user3 last name', '$2a$10$SVNT6a4/ZeaVCIivE7FkXu3BmvdQMIi5fOESuqmZCFRloZuP6kG0W', 'instructor1@example.com', 'INSTRUCTOR'),
     ('instructor2', 'user4 last name', '$2a$10$0RBzv0R38cG25fv3H98cZeRH0MaYbWSozq.V54nu2bRWtf6r875Sm', 'instructor2@example.com', 'INSTRUCTOR');
 
-INSERT INTO courses (name, status, start_date, started)
+INSERT INTO courses (name, status, start_date)
 VALUES
-    ('Course A', 'STOP', '2023-01-01', true),
-    ('Course B', 'STARTED', '2023-02-01', false),
-    ('Course C', 'WAIT', '2023-03-01', true);
+    ('Course A', 'STOP', '2023-01-01'),
+    ('Course B', 'STARTED', '2023-02-01'),
+    ('Course C', 'WAIT', '2023-03-01');
 
 INSERT INTO enrollments (user_id, course_id)
 VALUES

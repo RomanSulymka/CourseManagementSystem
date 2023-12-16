@@ -105,16 +105,6 @@ class LessonServiceImplTest {
         );
     }
 
-    private CourseResponseDTO createCourseResponseDTO() {
-        return CourseResponseDTO.builder()
-                .courseId(1L)
-                .courseName("Sample Course")
-                .status(CourseStatus.STARTED)
-                .startDate(LocalDate.now().plusDays(1))
-                .started(true)
-                .build();
-    }
-
     @ParameterizedTest
     @MethodSource("provideTestDataForSaveLesson")
     void testSaveLessonWithValidCourse(CreateLessonDTO lessonDTO, Course course, Lesson mockLesson) {
@@ -428,7 +418,6 @@ class LessonServiceImplTest {
                 .name("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
 
         Lesson updatedLesson = Lesson.builder()
@@ -448,7 +437,6 @@ class LessonServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
 
         when(lessonRepository.findById(updateLessonDTO.getId())).thenReturn(Optional.of(updatedLesson));

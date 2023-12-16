@@ -123,7 +123,6 @@ class CourseServiceImplTest {
                 .name("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -133,7 +132,6 @@ class CourseServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -143,7 +141,6 @@ class CourseServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -153,7 +150,6 @@ class CourseServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -163,7 +159,6 @@ class CourseServiceImplTest {
                 .name("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -171,7 +166,6 @@ class CourseServiceImplTest {
         return Course.builder()
                 .id(id)
                 .name(name)
-                .started(true)
                 .status(CourseStatus.STARTED)
                 .build();
     }
@@ -181,7 +175,6 @@ class CourseServiceImplTest {
                 .id(id)
                 .name(name)
                 .status(CourseStatus.STOP)
-                .started(true)
                 .build();
     }
 
@@ -205,7 +198,6 @@ class CourseServiceImplTest {
         return Optional.of(Course.builder()
                 .id(courseId)
                 .name("Sample Course")
-                .started(false)
                 .status(CourseStatus.WAIT)
                 .build());
     }
@@ -287,8 +279,6 @@ class CourseServiceImplTest {
 
         courseService.startCoursesOnSchedule();
 
-        assertTrue(course1.getStarted());
-        assertTrue(course2.getStarted());
         verify(courseRepository, times(1)).saveAll(coursesToStart);
     }
 
@@ -298,7 +288,6 @@ class CourseServiceImplTest {
         List<Course> coursesToStart = new ArrayList<>();
         Course course = new Course();
         course.setId(1L);
-        course.setStarted(false);
         course.setStartDate(LocalDate.parse("2023-09-21"));
         coursesToStart.add(course);
 
@@ -309,7 +298,6 @@ class CourseServiceImplTest {
                 () -> courseService.startCoursesOnSchedule());
 
         assertEquals("Course has not enough lessons", exception.getMessage());
-        assertFalse(course.getStarted());
         verify(courseRepository, never()).saveAll(any());
     }
 
@@ -321,7 +309,6 @@ class CourseServiceImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2025, 1, 1))
-                .started(true)
                 .build();
 
         CourseResponseDTO responseDTO = CourseResponseDTO.builder()
@@ -329,7 +316,6 @@ class CourseServiceImplTest {
                 .courseName("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2025, 1, 1))
-                .started(false)
                 .build();
 
         when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
@@ -346,7 +332,6 @@ class CourseServiceImplTest {
 
         assertNotNull(courseResponseDTO);
         assertEquals(1L, courseResponseDTO.getCourseId());
-        assertFalse(courseResponseDTO.getStarted());
         verify(courseRepository, times(1)).save(any());
         verify(courseRepository, times(1)).assignInstructor(eq(1L), eq(1L));
         verify(lessonService, times(1)).generateAndAssignLessons(eq(courseDTO.getNumberOfLessons()), any());
@@ -359,7 +344,6 @@ class CourseServiceImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2025, 1, 1))
-                .started(true)
                 .build();
 
         CourseDTO courseDTO = CourseDTO.builder()
@@ -394,7 +378,6 @@ class CourseServiceImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now().minusDays(1))
-                .started(true)
                 .build();
 
         CourseDTO courseDTO = CourseDTO.builder()
@@ -423,7 +406,6 @@ class CourseServiceImplTest {
         assertNotNull(foundCourse);
         assertEquals(sampleCourse.getId(), foundCourse.getCourseId());
         assertEquals(sampleCourse.getName(), foundCourse.getCourseName());
-        assertTrue(foundCourse.getStarted());
     }
 
     @Test
@@ -449,7 +431,6 @@ class CourseServiceImplTest {
         assertNotNull(foundCourse);
         assertEquals(sampleCourse.getId(), foundCourse.getCourseId());
         assertEquals(sampleCourse.getName(), foundCourse.getCourseName());
-        assertTrue(foundCourse.getStarted());
     }
 
     @Test
@@ -471,7 +452,6 @@ class CourseServiceImplTest {
                 .name("New Course Name")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         CourseResponseDTO responseCourse = CourseResponseDTO.builder()
@@ -479,7 +459,6 @@ class CourseServiceImplTest {
                 .courseName("New Course Name")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         when(courseMapper.fromDTO(updatedCourse)).thenReturn(createSampleCourse());
@@ -687,7 +666,6 @@ class CourseServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now())
-                .started(false)
                 .build();
 
         List<CourseResponseDTO> courseResponseList = List.of(courseResponseDTO);

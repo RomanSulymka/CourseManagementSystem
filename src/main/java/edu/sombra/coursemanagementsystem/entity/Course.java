@@ -14,7 +14,6 @@ import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Generated;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -38,6 +37,4 @@ public class Course {
 
     @Temporal(TemporalType.DATE)
     private LocalDate startDate;
-
-    private Boolean started;
 }

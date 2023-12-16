@@ -41,7 +41,6 @@ class LessonRepositoryImplTest {
                 .name("course")
                 .startDate(LocalDate.now())
                 .status(CourseStatus.WAIT)
-                .started(false)
                 .build();
         Lesson lesson1 = Lesson.builder()
                 .name("lesson1")

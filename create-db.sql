@@ -16,7 +16,6 @@ CREATE TABLE courses
     name      VARCHAR(255) NOT NULL,
     status    VARCHAR(255),
     startDate DATE         NOT NULL,
-    started   BOOLEAN,
     UNIQUE (name)
 );
 
