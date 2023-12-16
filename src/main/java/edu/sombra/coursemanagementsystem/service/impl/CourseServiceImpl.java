@@ -210,7 +210,7 @@ public class CourseServiceImpl implements CourseService {
             return courseMapper.mapToResponseDTO(course);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new EntityNotFoundException(e.getMessage());
+            throw new EntityNotFoundException("Homework not found!");
         }
     }
 

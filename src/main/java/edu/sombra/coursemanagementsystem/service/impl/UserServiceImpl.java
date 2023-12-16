@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
 
             return mapper.mapToResponseDTO(user);
         } catch (Exception ex) {
-            log.error(ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL + userDTO.getEmail());
+            log.error(ex.getMessage());
             throw new UserException(FAILED_ASSIGN_NEW_ROLE_FOR_USER, ex);
         }
     }
@@ -117,7 +117,7 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             return findUserByEmail(user.getEmail());
         } catch (Exception ex) {
-            log.error(FAILED_TO_CREATE_USER, ex);
+            log.error(ex.getMessage());
             throw new UserCreationException(FAILED_TO_CREATE_USER, ex);
         }
     }
@@ -146,9 +146,8 @@ public class UserServiceImpl implements UserService {
                     throw new AccessDeniedException(USER_SHOULD_HAVE_THE_ROLE + RoleEnum.ADMIN);
                 }
             }
-        } catch (
-                NullPointerException ex) {
-            log.error(FAILED_TO_UPDATE_USER + userDTO.getId() + ex);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
             throw new UserUpdateException(FAILED_TO_UPDATE_USER, ex);
         }
     }
@@ -165,7 +164,7 @@ public class UserServiceImpl implements UserService {
             }
             throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDTO.getEmail());
         } catch (Exception ex) {
-            log.error(FAILED_TO_RESET_PASSWORD + ex);
+            log.error(ex.getMessage());
             throw new UserException(FAILED_TO_RESET_PASSWORD, ex);
         }
     }
@@ -182,7 +181,7 @@ public class UserServiceImpl implements UserService {
             log.info(USER_DELETED_SUCCESSFULLY);
             return USER_DELETED_SUCCESSFULLY;
         } catch (EntityNotFoundException ex) {
-            log.error(FAILED_TO_DELETE_USER + id + ex);
+            log.error(ex.getMessage());
             throw new EntityDeletionException(FAILED_TO_DELETE_USER, ex);
         }
     }

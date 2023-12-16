@@ -76,6 +76,7 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new UserNotAssignedToCourseException(USER_ISN_T_ASSIGNED_TO_THIS_COURSE);
             }
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new EntityNotFoundException(e.getMessage());
         }
     }
@@ -111,7 +112,8 @@ public class HomeworkServiceImpl implements HomeworkService {
                 }
             }
         } catch (Exception e) {
-            throw new EntityNotFoundException(e.getMessage());
+            log.error(e.getMessage());
+            throw new EntityNotFoundException("Failed to find homework by id: " + homeworkId);
         }
     }
 
@@ -165,7 +167,7 @@ public class HomeworkServiceImpl implements HomeworkService {
                     .orElseThrow(EntityNotFoundException::new);
             return homeworkMapper.mapToDTO(homework);
         } catch (Exception e) {
-            log.error(LESSON_DOES_NOT_CONTAINS_THE_HOMEWORK);
+            log.error(e.getMessage());
             throw new EntityNotFoundException(LESSON_DOES_NOT_CONTAINS_THE_HOMEWORK, e);
         }
     }

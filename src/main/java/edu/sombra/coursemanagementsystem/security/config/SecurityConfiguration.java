@@ -73,18 +73,18 @@ public class SecurityConfiguration {
                                 // Homework
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/homework/mark").hasAnyRole("ADMIN", "INSTRUCTOR")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework/user/{userId}").hasAnyRole("ADMIN", "INSTRUCTOR")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework/{homeworkId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/homework/{lessonId}/{userId}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
 
                                 // Lesson
                                 .requestMatchers(HttpMethod.GET, "/api/v1/lesson/find-all").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
-                                .requestMatchers(HttpMethod.POST, "/api/v1/lesson/create").hasAnyRole("ADMIN", "INSTRUCTOR")
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/lesson/{id}").hasAnyRole("ADMIN", "INSTRUCTOR")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/lesson/create").hasAnyRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/lesson/{id}").hasAnyRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/lesson/edit").hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/lesson/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/lesson/find-all/{id}").hasAnyRole("ADMIN", "INSTRUCTOR", "STUDENT")
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/lesson/edit").hasAnyRole("ADMIN", "INSTRUCTOR")
 
                                 // User
                                 .requestMatchers(HttpMethod.POST, "/api/v1/user/create").hasRole("ADMIN")

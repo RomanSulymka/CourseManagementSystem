@@ -144,14 +144,15 @@ public class LessonServiceImpl implements LessonService {
             lessonRepository.delete(lesson);
             log.info(LESSON_DELETED_SUCCESSFULLY);
         } catch (Exception e) {
-            log.error(FAILED_TO_DELETE_LESSON + id);
+            log.error(e.getMessage());
             throw new LessonException(FAILED_TO_DELETE_LESSON, e);
         }
     }
 
     @Override
     public LessonResponseDTO editLesson(UpdateLessonDTO lesson) {
-        lessonRepository.findById(lesson.getId()).orElseThrow(() -> new EntityNotFoundException(LESSON_NOT_FOUND));
+        lessonRepository.findById(lesson.getId())
+                .orElseThrow(() -> new EntityNotFoundException(LESSON_NOT_FOUND));
         Course course = courseRepository.findById(lesson.getCourseId())
                 .orElseThrow(() -> new EntityNotFoundException(COURSE_NOT_FOUND));
         Lesson editedLesson = Lesson.builder()

@@ -76,7 +76,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
             return enrollmentMapper.mapToResponseDTO(savedEnrollment);
         } catch (EnrollmentException ex) {
-            log.error(ERROR_SAVING_INSTRUCTOR_TO_THE_COURSE_WITH_EMAIL, enrollmentDTO.getUserEmail());
+            log.error(ex.getMessage());
             throw new EnrollmentException(FAILED_TO_ASSIGN_INSTRUCTOR);
         }
     }
@@ -137,7 +137,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     .map(this::mapTupleToEnrollmentGetByNameDTO)
                     .toList();
         } catch (RuntimeException ex) {
-            log.error(ERROR_FINDING_ENROLLMENT_WITH_NAME, name, ex);
+            log.error(ex.getMessage());
             throw new EntityNotFoundException(FAILED_TO_FIND_ENROLLMENT_BY_NAME, ex);
         }
     }
@@ -226,7 +226,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             List<Course> courses = enrollmentRepository.findCoursesByUserId(id);
             return courseMapper.mapToResponsesDTO(courses);
         } catch (EntityNotFoundException ex) {
-            log.error(ERROR_FINDING_COURSES_FOR_USER_WITH_ID, id, ex);
+            log.error(ex.getMessage());
             throw new EntityNotFoundException(FAILED_TO_FIND_COURSES_FOR_USER, ex);
         }
     }

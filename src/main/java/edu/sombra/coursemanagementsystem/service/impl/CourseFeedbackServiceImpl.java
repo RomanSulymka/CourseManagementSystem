@@ -49,8 +49,8 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
             log.info(FEEDBACK_SAVED_SUCCESSFULLY);
             return courseFeedbackMapper.mapToDTO(feedback);
         } catch (Exception e) {
-            log.error("Failed to create feedback", e);
-            throw new IllegalArgumentException(e);
+            log.error(e.getMessage());
+            throw new IllegalArgumentException("Failed to create feedback");
         }
     }
 
