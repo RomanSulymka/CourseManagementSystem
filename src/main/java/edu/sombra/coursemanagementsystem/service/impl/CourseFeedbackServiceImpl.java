@@ -13,17 +13,14 @@ import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseFeedbackService;
 import edu.sombra.coursemanagementsystem.service.UserService;
+import edu.sombra.coursemanagementsystem.util.BaseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.PropertyDescriptor;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -59,7 +56,7 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     public GetCourseFeedbackDTO edit(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
         try {
             CourseFeedback existingFeedback = courseFeedbackRepository.findById(courseFeedbackDTO.getId()).orElseThrow();
-            BeanUtils.copyProperties(courseFeedbackDTO, existingFeedback, getNullPropertyNames(courseFeedbackDTO));
+            BeanUtils.copyProperties(courseFeedbackDTO, existingFeedback, BaseUtil.getNullPropertyNames(courseFeedbackDTO));
             courseFeedbackRepository.update(existingFeedback);
             GetCourseFeedbackDTO updatedFeedback = courseFeedbackMapper.mapToDTO(existingFeedback);
             log.info("Course feedback successfully updated!");
@@ -155,15 +152,5 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     private boolean isInstructorAssignedToCourse(Long instructorId, Long courseId) {
         userService.isUserInstructor(instructorId);
         return courseRepository.isUserAssignedToCourse(instructorId, courseId);
-    }
-
-    private static String[] getNullPropertyNames(Object entity) {
-        final BeanWrapper src = new BeanWrapperImpl(entity);
-        PropertyDescriptor[] pds = src.getPropertyDescriptors();
-
-        return Arrays.stream(pds)
-                .map(PropertyDescriptor::getName)
-                .filter(name -> src.getPropertyValue(name) == null)
-                .toArray(String[]::new);
     }
 }

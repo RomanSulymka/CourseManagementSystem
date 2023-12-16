@@ -31,9 +31,11 @@ import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
+import edu.sombra.coursemanagementsystem.util.BaseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -170,7 +172,8 @@ public class CourseServiceImpl implements CourseService {
                 throw new CourseAlreadyExistsException(courseDTO.getName());
             }
             Course courseFromDTO = courseMapper.fromDTO(courseDTO);
-            Course updatedCourse = courseRepository.update(courseFromDTO);
+            BeanUtils.copyProperties(courseFromDTO, existingCourse, BaseUtil.getNullPropertyNames(courseFromDTO));
+            Course updatedCourse = courseRepository.update(existingCourse);
             return courseMapper.mapToResponseDTO(updatedCourse);
         } catch (Exception e) {
             throw new EntityNotFoundException(e.getMessage());

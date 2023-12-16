@@ -10,24 +10,21 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.UserCreationException;
 import edu.sombra.coursemanagementsystem.exception.UserException;
-import edu.sombra.coursemanagementsystem.exception.UserUpdateException;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.UserService;
+import edu.sombra.coursemanagementsystem.util.BaseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.beans.PropertyDescriptor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -124,31 +121,38 @@ public class UserServiceImpl implements UserService {
 
     @Validated
     @Override
+    @Transactional
     public UserResponseDTO updateUser(UpdateUserDTO userDTO, String userEmail) {
-        try {
-            User loggedUser = userRepository.findUserByEmail(userEmail);
-            if (loggedUser.getRole().equals(RoleEnum.ADMIN)) {
-                User existingUser = userRepository.findById(userDTO.getId())
-                        .orElseThrow(EntityNotFoundException::new);
-                if (userDTO.getRole() == null) {
-                    userDTO.setRole(existingUser.getRole());
-                }
-                BeanUtils.copyProperties(userDTO, existingUser, getNullPropertyNames(userDTO));
-                userRepository.update(existingUser);
-                return mapper.mapToResponseDTO(existingUser);
-            } else {
-                if (loggedUser.getId().equals(userDTO.getId())) {
-                    userDTO.setRole(loggedUser.getRole());
-                    BeanUtils.copyProperties(userDTO, loggedUser, getNullPropertyNames(userDTO));
-                    userRepository.update(loggedUser);
-                    return mapper.mapToResponseDTO(loggedUser);
-                } else {
-                    throw new AccessDeniedException(USER_SHOULD_HAVE_THE_ROLE + RoleEnum.ADMIN);
-                }
-            }
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            throw new UserUpdateException(FAILED_TO_UPDATE_USER, ex);
+        User loggedUser = userRepository.findUserByEmail(userEmail);
+
+        if (loggedUser.getRole().equals(RoleEnum.ADMIN)) {
+            return updateUserAsAdmin(userDTO);
+        } else {
+            return updateUserAsNonAdmin(userDTO, loggedUser);
+        }
+    }
+
+    private UserResponseDTO updateUserAsAdmin(UpdateUserDTO userDTO) {
+        User existingUser = userRepository.findById(userDTO.getId())
+                .orElseThrow(EntityNotFoundException::new);
+
+        if (userDTO.getRole() == null) {
+            userDTO.setRole(existingUser.getRole());
+        }
+
+        BeanUtils.copyProperties(userDTO, existingUser, BaseUtil.getNullPropertyNames(userDTO));
+        userRepository.update(existingUser);
+        return mapper.mapToResponseDTO(existingUser);
+    }
+
+    private UserResponseDTO updateUserAsNonAdmin(UpdateUserDTO userDTO, User loggedUser) {
+        if (loggedUser.getId().equals(userDTO.getId())) {
+            userDTO.setRole(loggedUser.getRole());
+            BeanUtils.copyProperties(userDTO, loggedUser, BaseUtil.getNullPropertyNames(userDTO));
+            userRepository.update(loggedUser);
+            return mapper.mapToResponseDTO(loggedUser);
+        } else {
+            throw new AccessDeniedException(USER_SHOULD_HAVE_THE_ROLE + RoleEnum.ADMIN);
         }
     }
 
@@ -159,7 +163,6 @@ public class UserServiceImpl implements UserService {
                 User user = userRepository.findUserByEmail(resetPasswordDTO.getEmail());
                 user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
                 updateUser(mapper.mapToUpdateDTO(user), userEmail);
-                log.info(PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY);
                 return PASSWORD_CHANGED;
             }
             throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDTO.getEmail());
@@ -206,16 +209,6 @@ public class UserServiceImpl implements UserService {
                 });
         validateInstructor(instructor, RoleEnum.INSTRUCTOR);
         return true;
-    }
-
-    private static String[] getNullPropertyNames(Object entity) {
-        final BeanWrapper src = new BeanWrapperImpl(entity);
-        PropertyDescriptor[] pds = src.getPropertyDescriptors();
-
-        return Arrays.stream(pds)
-                .map(PropertyDescriptor::getName)
-                .filter(name -> src.getPropertyValue(name) == null)
-                .toArray(String[]::new);
     }
 
     private void validateUser(CreateUserDTO userDTO) {
