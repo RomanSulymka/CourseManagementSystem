@@ -130,19 +130,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public List<EnrollmentGetByNameDTO> findEnrolmentByCourseName(String name) {
-        try {
-            return enrollmentRepository.findEnrollmentByCourseName(name)
-                    .stream()
-                    .map(this::mapTupleToEnrollmentGetByNameDTO)
-                    .toList();
-        } catch (RuntimeException ex) {
-            log.error(ex.getMessage());
-            throw new EntityNotFoundException(FAILED_TO_FIND_ENROLLMENT_BY_NAME, ex);
-        }
-    }
-
-    @Override
     public EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO) {
         if (updateDTO.getCourseId() == null && updateDTO.getUserId() == null & updateDTO.getId() == null) {
             throw new EnrollmentException(ELEMENTS_ARE_EMPTY);

@@ -45,11 +45,6 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollmentService.findEnrolmentById(id));
     }
 
-    @GetMapping("/by-name/{name}")
-    public ResponseEntity<List<EnrollmentGetByNameDTO>> getByName(@PathVariable String name)  {
-        return ResponseEntity.ok(enrollmentService.findEnrolmentByCourseName(name));
-    }
-
     @PutMapping
     public ResponseEntity<EnrollmentGetByNameDTO> update(@RequestBody EnrollmentUpdateDTO updateDTO) {
         return ResponseEntity.ok(enrollmentService.updateEnrollment(updateDTO));
