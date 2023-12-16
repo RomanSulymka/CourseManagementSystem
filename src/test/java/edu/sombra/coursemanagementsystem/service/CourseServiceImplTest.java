@@ -613,17 +613,18 @@ class CourseServiceImplTest {
 
         User user = User.builder()
                 .id(1L)
+                .email("user@email.com")
                 .role(RoleEnum.INSTRUCTOR)
                 .build();
 
         List<CourseResponseDTO> expectedCourses = Collections.singletonList(createCourseResponseDTO());
 
-        when(userRepository.findById(instructorId)).thenReturn(Optional.ofNullable(user));
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
         when(userService.isUserInstructor(instructorId)).thenReturn(true);
         when(courseRepository.findCoursesByUserId(instructorId)).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
         when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
 
-        List<CourseResponseDTO> resultCourses = courseService.findCoursesByUserId(instructorId);
+        List<CourseResponseDTO> resultCourses = courseService.findCoursesByUserId(instructorId, user.getEmail());
 
         assertNotNull(resultCourses);
         assertEquals(expectedCourses, resultCourses);
@@ -638,16 +639,17 @@ class CourseServiceImplTest {
 
         User user = User.builder()
                 .id(1L)
+                .email("user@email.com")
                 .role(RoleEnum.STUDENT)
                 .build();
 
         List<CourseResponseDTO> expectedCourses = Collections.singletonList(createCourseResponseDTO());
 
-        when(userRepository.findById(studentId)).thenReturn(Optional.ofNullable(user));
-        when(courseRepository.findCoursesByUserId(studentId)).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+        when(courseRepository.findCoursesByUserId(user.getId())).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
         when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
 
-        List<CourseResponseDTO> resultCourses = courseService.findCoursesByUserId(studentId);
+        List<CourseResponseDTO> resultCourses = courseService.findCoursesByUserId(studentId, user.getEmail());
 
         assertNotNull(resultCourses);
         assertEquals(expectedCourses, resultCourses);

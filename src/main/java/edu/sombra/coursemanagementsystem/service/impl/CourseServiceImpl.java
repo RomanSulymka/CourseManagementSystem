@@ -35,6 +35,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -215,22 +216,52 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<CourseResponseDTO> findCoursesByUserId(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(EntityNotFoundException::new);
-        List<Course> courses = courseRepository.findCoursesByUserId(user.getId())
-                .orElseThrow(EntityNotFoundException::new);
-        switch (user.getRole()) {
-            case INSTRUCTOR:
-                userService.isUserInstructor(userId);
-                return courseMapper.mapToResponsesDTO(courses);
-            case STUDENT:
-                return courseMapper.mapToResponsesDTO(courses);
-            default:
-                throw new IllegalArgumentException("User with this id doesn't have a valid user role");
-        }
+    public List<CourseResponseDTO> findCoursesByUserId(Long userId, String userEmail) {
+        User user = getUserByEmail(userEmail);
+
+        return switch (user.getRole()) {
+            case ADMIN -> handleAdminCase(userId);
+            case INSTRUCTOR -> handleInstructorCase(userId, user);
+            case STUDENT -> handleStudentCase(userId, user);
+        };
     }
 
+    private User getUserByEmail(String userEmail) {
+        return userRepository.findUserByEmail(userEmail);
+    }
+
+    private List<CourseResponseDTO> handleAdminCase(Long userId) {
+        User user = getUserById(userId);
+        List<Course> courses = getCourseListByUserId(user.getId());
+        return courseMapper.mapToResponsesDTO(courses);
+    }
+
+    private List<CourseResponseDTO> handleInstructorCase(Long userId, User user) {
+        if (!Objects.equals(user.getId(), userId)) {
+            throw new AccessDeniedException("User hasn't access to this information!");
+        }
+        List<Course> courses = getCourseListByUserId(user.getId());
+        userService.isUserInstructor(user.getId());
+        return courseMapper.mapToResponsesDTO(courses);
+    }
+
+    private List<CourseResponseDTO> handleStudentCase(Long userId, User user) {
+        if (!Objects.equals(user.getId(), userId)) {
+            throw new AccessDeniedException("User hasn't access to this information!");
+        }
+        List<Course> courses = getCourseListByUserId(user.getId());
+        return courseMapper.mapToResponsesDTO(courses);
+    }
+
+    private User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(EntityNotFoundException::new);
+    }
+
+    private List<Course> getCourseListByUserId(Long userId) {
+        return courseRepository.findCoursesByUserId(userId)
+                .orElseThrow(EntityNotFoundException::new);
+    }
 
     @Override
     public List<LessonResponseDTO> findAllLessonsByCourse(Long id) {

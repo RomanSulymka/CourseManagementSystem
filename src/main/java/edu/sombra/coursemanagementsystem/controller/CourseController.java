@@ -12,6 +12,8 @@ import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -65,8 +67,9 @@ public class CourseController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CourseResponseDTO>> findCoursesByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(courseService.findCoursesByUserId(userId));
+    public ResponseEntity<List<CourseResponseDTO>> findCoursesByUserId(@PathVariable Long userId,
+                                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(courseService.findCoursesByUserId(userId, userDetails.getUsername()));
     }
 
     @GetMapping("/instructor/{instructorId}/{courseId}")

@@ -30,7 +30,7 @@ public interface CourseService {
 
     CourseResponseDTO findCourseByHomeworkId(Long userId, Long homeworkId);
 
-    List<CourseResponseDTO> findCoursesByUserId(Long instructorId);
+    List<CourseResponseDTO> findCoursesByUserId(Long instructorId, String userEmail);
 
     List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, Long courseId);
 

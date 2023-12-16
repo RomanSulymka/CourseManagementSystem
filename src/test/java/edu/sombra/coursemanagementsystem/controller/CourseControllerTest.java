@@ -240,7 +240,7 @@ class CourseControllerTest {
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindCoursesByUserIdSuccess() throws Exception {
         Long userId = 1L;
-        given(courseService.findCoursesByUserId(userId)).willReturn(Collections.singletonList(
+        given(courseService.findCoursesByUserId(userId, "admin@gmail.com")).willReturn(Collections.singletonList(
                 CourseResponseDTO.builder()
                         .courseId(1L)
                         .courseName("Java Programming")
@@ -257,7 +257,7 @@ class CourseControllerTest {
                 .andExpect(jsonPath("$[0].courseName").value("Java Programming"))
                 .andExpect(jsonPath("$[0].status").value("FINISHED"));
 
-        verify(courseService, times(1)).findCoursesByUserId(userId);
+        verify(courseService, times(1)).findCoursesByUserId(userId, "admin@gmail.com");
     }
 
     @Test
