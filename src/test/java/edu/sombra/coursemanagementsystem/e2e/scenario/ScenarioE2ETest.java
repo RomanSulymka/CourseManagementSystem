@@ -3,6 +3,7 @@ package edu.sombra.coursemanagementsystem.e2e.scenario;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseAssignedToUserDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
@@ -106,7 +107,7 @@ class ScenarioE2ETest {
         getListOfStudentCourses(studentsOnCoursesRequestEntity);
 
         //Get list of lessons on the course
-        getListOfLessonsOnCourse(studentsOnCoursesRequestEntity);
+        getListOfLessonsOnCourse(studentHeader);
 
         //Admin Logout
         logoutUserUsingHeader(adminHeader);
@@ -116,10 +117,17 @@ class ScenarioE2ETest {
         logoutUserUsingHeader(studentHeader);
     }
 
-    private void getListOfLessonsOnCourse(HttpEntity<Void> studentsOnCoursesRequestEntity) {
+    private void getListOfLessonsOnCourse(HttpHeaders studentHeader) {
+        CourseAssignedToUserDTO dto = CourseAssignedToUserDTO.builder()
+                .userId(4L)
+                .courseId(1L)
+                .build();
+
+        HttpEntity<CourseAssignedToUserDTO> studentsOnCoursesRequestEntity = new HttpEntity<>(dto, studentHeader);
+
         ResponseEntity<LessonsByCourseDTO> getListOfLessonsOnCourseResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/student/lessons/{studentId}/{courseId}", 4, 1),
-                HttpMethod.GET,
+                buildUrl("/api/v1/course/student/lessons"),
+                HttpMethod.POST,
                 studentsOnCoursesRequestEntity,
                 LessonsByCourseDTO.class
         );
