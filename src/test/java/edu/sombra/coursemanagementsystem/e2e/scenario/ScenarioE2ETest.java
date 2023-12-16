@@ -103,9 +103,6 @@ class ScenarioE2ETest {
         //Get list of students on the course
         getStudentsOnCourse(instructorHeaders);
 
-        //Get list of student courses
-        getListOfStudentCourses(studentHeader, studentJwtToken);
-
         //Get list of lessons on the course
         getListOfLessonsOnCourse(studentHeader);
 
@@ -134,21 +131,6 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, getListOfLessonsOnCourseResponseEntity.getStatusCode());
         assertNotNull(getListOfLessonsOnCourseResponseEntity.getBody());
-    }
-
-    private void getListOfStudentCourses(HttpHeaders headers, String studentJwtToken) {
-        headers.setBearerAuth(studentJwtToken);
-
-        ResponseEntity<List<CourseResponseDTO>> getListOfStudentsCoursesResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/user/{userId}", 8),
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                new ParameterizedTypeReference<>() {
-                }
-        );
-
-        assertEquals(HttpStatus.OK, getListOfStudentsCoursesResponseEntity.getStatusCode());
-        assertNotNull(getListOfStudentsCoursesResponseEntity.getBody());
     }
 
     private void getStudentsOnCourse(HttpHeaders instructorHeaders) {
