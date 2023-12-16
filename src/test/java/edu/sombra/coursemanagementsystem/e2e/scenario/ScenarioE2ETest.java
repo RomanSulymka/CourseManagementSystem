@@ -138,7 +138,7 @@ class ScenarioE2ETest {
 
     private void getListOfStudentCourses(HttpEntity<Void> studentsOnCoursesRequestEntity) {
         ResponseEntity<List<CourseResponseDTO>> getListOfStudentsCoursesResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/student/{studentId}", 4),
+                buildUrl("/api/v1/course/user/{userId}", 4),
                 HttpMethod.GET,
                 studentsOnCoursesRequestEntity,
                 new ParameterizedTypeReference<>() {
