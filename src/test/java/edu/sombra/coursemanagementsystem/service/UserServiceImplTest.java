@@ -10,7 +10,6 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.UserCreationException;
 import edu.sombra.coursemanagementsystem.exception.UserException;
-import edu.sombra.coursemanagementsystem.exception.UserUpdateException;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.UserServiceImpl;
@@ -432,10 +431,10 @@ class UserServiceImplTest {
 
         when(userRepository.findUserByEmail(existingUser.getEmail())).thenReturn(existingUser);
 
-        UserUpdateException exception = assertThrows(UserUpdateException.class,
+        AccessDeniedException exception = assertThrows(AccessDeniedException.class,
                 () -> userService.updateUser(updateUser, existingUser.getEmail()));
 
-        assertEquals("Failed to update user ", exception.getMessage());
+        assertEquals("User should have the role: ADMIN", exception.getMessage());
         verify(userRepository, never()).update(existingUser);
     }
 
