@@ -303,6 +303,58 @@ class LessonServiceImplTest {
         assertEquals(2, lessons.size());
     }
 
+
+    @Test
+    void testFindAllLessonsByCourseForUserAssignedToCourse() {
+        Long courseId = 1L;
+        String userEmail = "user@example.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        Course course = Course.builder()
+                .id(courseId)
+                .build();
+        List<LessonResponseDTO> expectedResponses = Collections.singletonList(new LessonResponseDTO());
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(courseRepository.findById(courseId)).thenReturn(java.util.Optional.of(course));
+        when(enrollmentRepository.isUserAssignedToCourse(course, user)).thenReturn(true);
+        when(lessonService.findAllLessonsByCourse(courseId)).thenReturn(expectedResponses);
+
+        List<LessonResponseDTO> result = lessonService.findAllLessonsByCourse(courseId, userEmail);
+
+        assertEquals(expectedResponses, result);
+
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
+        verify(courseRepository, times(1)).findById(courseId);
+        verify(enrollmentRepository, times(1)).isUserAssignedToCourse(course, user);
+    }
+
+    @Test
+    void testFindAllLessonsByCourseForUserNotAssignedToCourse() {
+        Long courseId = 1L;
+        String userEmail = "user@example.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        Course course = Course.builder()
+                .id(courseId)
+                .build();
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(courseRepository.findById(courseId)).thenReturn(java.util.Optional.of(course));
+        when(enrollmentRepository.isUserAssignedToCourse(course, user)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> lessonService.findAllLessonsByCourse(courseId, userEmail));
+
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
+        verify(courseRepository, times(1)).findById(courseId);
+        verify(enrollmentRepository, times(1)).isUserAssignedToCourse(course, user);
+    }
     @Test
     void testFindAllLessonsByCourseIdSuccess() {
         List<Lesson> lessonList = Arrays.asList(mock(Lesson.class), mock(Lesson.class));
