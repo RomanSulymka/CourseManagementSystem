@@ -59,7 +59,7 @@ class ScenarioE2EInstructorAndStudentActions {
 
     @Test
     void test_PerformInstructorAndUserScenario() {
-        //Register user without role
+        //Register users without role
         RegisterDTO registerUserDTO = RegisterDTO.builder()
                 .firstName("Steve")
                 .lastName("Peterson")

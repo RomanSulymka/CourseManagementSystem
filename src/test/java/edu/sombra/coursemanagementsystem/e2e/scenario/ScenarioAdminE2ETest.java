@@ -11,6 +11,7 @@ import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.feedback.CourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
+import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkByLessonDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
@@ -371,12 +372,16 @@ class ScenarioAdminE2ETest {
     }
 
     private GetHomeworkDTO findHomeworkByStudentAndCourse(Long lessonId, Long userId, String bearerToken) {
+        GetHomeworkByLessonDTO dto = GetHomeworkByLessonDTO.builder()
+                .lessonId(lessonId)
+                .userId(userId)
+                .build();
         adminHeaders.setBearerAuth(bearerToken);
         adminHeaders.setAccept(List.of(MediaType.APPLICATION_JSON));
         ResponseEntity<GetHomeworkDTO> homeworkByStudentAndCourseResponse = restTemplate.exchange(
-                buildUrl("/api/v1/homework/{lessonId}/{userId}", lessonId, userId),
-                HttpMethod.GET,
-                new HttpEntity<>(adminHeaders),
+                buildUrl("/api/v1/homework"),
+                HttpMethod.POST,
+                new HttpEntity<>(dto, adminHeaders),
                 GetHomeworkDTO.class
         );
         assertEquals(HttpStatus.OK, homeworkByStudentAndCourseResponse.getStatusCode());

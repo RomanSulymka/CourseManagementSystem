@@ -134,11 +134,15 @@ class ScenarioE2ETest {
     }
 
     private void getStudentsOnCourse(HttpHeaders instructorHeaders) {
-        HttpEntity<Void> studentsOnCoursesRequestEntity = new HttpEntity<>(instructorHeaders);
+        CourseAssignedToUserDTO dto = CourseAssignedToUserDTO.builder()
+                .userId(3L)
+                .courseId(3L)
+                .build();
+        HttpEntity<CourseAssignedToUserDTO> studentsOnCoursesRequestEntity = new HttpEntity<>(dto, instructorHeaders);
 
         ResponseEntity<List<CourseResponseDTO>> getStudentsOnCourseResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/instructor/{instructorId}/{courseId}", 3, 3),
-                HttpMethod.GET,
+                buildUrl("/api/v1/course/instructor/users"),
+                HttpMethod.POST,
                 studentsOnCoursesRequestEntity,
                 new ParameterizedTypeReference<>() {
                 }
