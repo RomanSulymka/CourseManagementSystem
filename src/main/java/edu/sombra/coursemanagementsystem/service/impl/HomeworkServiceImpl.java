@@ -36,7 +36,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     public static final String INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100 = "Invalid mark value. Mark should be between 0 and 100.";
     public static final String USER_ISN_T_ASSIGNED_TO_THIS_COURSE = "User isn't assigned to this course";
     public static final String USER_CANT_WATCH_THIS_HOMEWORK = "User can't permission to watch this homework";
-    public static final String ROLE_DOESN_T_EXIST = "User with this role doesn't exist";
+    public static final String ROLE_DOESNT_EXIST = "User with this role doesn't exist";
 
     private final HomeworkRepository homeworkRepository;
     private final CourseMarkService courseMarkService;
@@ -180,7 +180,7 @@ public class HomeworkServiceImpl implements HomeworkService {
                 }
                 return getHomeworkForUser(user.getId(), lesson);
             }
-            throw new IllegalArgumentException(ROLE_DOESN_T_EXIST);
+            throw new IllegalArgumentException(ROLE_DOESNT_EXIST);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new EntityNotFoundException(e.getMessage());

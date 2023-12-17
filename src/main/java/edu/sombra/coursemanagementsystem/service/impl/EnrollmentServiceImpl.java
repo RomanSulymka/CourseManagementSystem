@@ -24,7 +24,6 @@ import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,17 +37,13 @@ import java.util.List;
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
     public static final String FAILED_TO_ASSIGN_INSTRUCTOR = "Failed to assign instructor";
-    public static final String ERROR_SAVING_INSTRUCTOR_TO_THE_COURSE_WITH_EMAIL = "Error saving instructor to the course with email: {}";
     public static final String COURSE_SHOULD_HAVE_AT_LEAST_ONE_INSTRUCTOR_ASSIGNED_ON_THE_COURSE = "Course should have at least one instructor assigned on the course";
     public static final String ENTITY_NOT_FOUND_WITH_ID = "Entity not found with ID: ";
     public static final String ERROR_FINDING_ENROLLMENT_WITH_ID = "Error finding enrollment with id: {}";
     public static final String ENROLLMENT_NOT_FOUND_WITH_ID = "Enrollment not found with id: ";
-    public static final String ERROR_FINDING_ENROLLMENT_WITH_NAME = "Error finding enrollment with name: {}";
-    public static final String FAILED_TO_FIND_ENROLLMENT_BY_NAME = "Failed to find enrollment by name";
     public static final String ELEMENTS_ARE_EMPTY = "Elements are empty!";
     public static final String USER_HAS_ALREADY_ASSIGNED_FOR_5_COURSES = "User has already assigned for 5 courses";
     public static final String USER_IS_ALREADY_ASSIGNED_TO_THIS_COURSE = "User is already assigned to this course";
-    public static final String ERROR_FINDING_COURSES_FOR_USER_WITH_ID = "Error finding courses for user with id: {}";
     public static final String FAILED_TO_FIND_COURSES_FOR_USER = "Failed to find courses for user";
 
     private final EnrollmentRepository enrollmentRepository;
@@ -187,16 +182,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             log.error(USER_IS_ALREADY_ASSIGNED_TO_THIS_COURSE);
             throw new UserAlreadyAssignedException(USER_IS_ALREADY_ASSIGNED_TO_THIS_COURSE);
         }
-    }
-
-    private EnrollmentGetByNameDTO mapTupleToEnrollmentGetByNameDTO(Tuple tuple) {
-        String courseName = tuple.get(0, String.class);
-        String firstName = tuple.get(1, String.class);
-        String lastName = tuple.get(2, String.class);
-        RoleEnum role = tuple.get(3, RoleEnum.class);
-        String email = tuple.get(4, String.class);
-
-        return new EnrollmentGetByNameDTO(courseName, firstName, lastName, email, role);
     }
 
     @Override

@@ -36,13 +36,10 @@ import java.util.Objects;
 public class UserServiceImpl implements UserService {
 
     public static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
-    public static final String ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL = "Error assigning new role for user with email: ";
     public static final String FAILED_ASSIGN_NEW_ROLE_FOR_USER = "Failed assign new role for user";
     public static final String USER_NOT_FOUND = "User not found: ";
     public static final String USER_SHOULD_HAVE_THE_ROLE = "User should have the role: ";
     public static final String FAILED_TO_CREATE_USER = "Failed to create user ";
-    public static final String FAILED_TO_UPDATE_USER = "Failed to update user ";
-    public static final String PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY = "Password has been changed successfully";
     public static final String PASSWORD_CHANGED = "Password changed!";
     public static final String USER_DELETED_SUCCESSFULLY = "User deleted successfully";
     public static final String FAILED_TO_DELETE_USER = "Failed to delete user ";
@@ -50,7 +47,6 @@ public class UserServiceImpl implements UserService {
     public static final String USERNAME_IS_EMPTY = "Username is empty!";
     public static final String EMAIL_IS_EMPTY = "Email is empty!";
     public static final String USER_ROLE_IS_EMPTY = "User Role is empty!";
-    public static final String ERROR_USER_NOT_FOUND = "User not found: ";
     public static final String ROLE_NOT_FOUND = "Role not found: ";
     public static final String FAILED_TO_RESET_PASSWORD = "Failed to reset password: ";
     private final UserRepository userRepository;
