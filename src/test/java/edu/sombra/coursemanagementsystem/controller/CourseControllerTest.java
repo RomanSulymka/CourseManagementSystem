@@ -263,10 +263,12 @@ class CourseControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindUsersAssignedToCourseByInstructorIdSuccess() throws Exception {
-        Long instructorId = 1L;
-        Long courseId = 2L;
+        CourseAssignedToUserDTO courseDTO = CourseAssignedToUserDTO.builder()
+                .courseId(2L)
+                .userId(1L)
+                .build();
 
-        when(courseService.findStudentsAssignedToCourseByInstructorId(instructorId, courseId)).thenReturn(List.of(UserAssignedToCourseDTO.builder()
+        when(courseService.findStudentsAssignedToCourseByInstructorId(courseDTO.getUserId(), courseDTO.getCourseId())).thenReturn(List.of(UserAssignedToCourseDTO.builder()
                 .id(1L)
                 .firstName("TEST")
                 .lastName("TEST")
@@ -275,8 +277,9 @@ class CourseControllerTest {
                 .build()));
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/v1/course/instructor/{instructorId}/{courseId}", instructorId, courseId)
-                .contentType(MediaType.APPLICATION_JSON));
+                .post("/api/v1/course/instructor/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(courseDTO)));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -286,7 +289,7 @@ class CourseControllerTest {
                 .andExpect(jsonPath("$[0].email").exists())
                 .andExpect(jsonPath("$[0].role").exists());
 
-        verify(courseService, times(1)).findStudentsAssignedToCourseByInstructorId(instructorId, courseId);
+        verify(courseService, times(1)).findStudentsAssignedToCourseByInstructorId(courseDTO.getUserId(), courseDTO.getCourseId());
     }
 
     @Test
@@ -319,14 +322,18 @@ class CourseControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFinishCourseSuccess() throws Exception {
-        Long studentId = 1L;
-        Long courseId = 2L;
+        CourseAssignedToUserDTO courseDTO = CourseAssignedToUserDTO.builder()
+                .courseId(1L)
+                .userId(1L)
+                .build();
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/v1/course/finish/{studentId}/{courseId}", studentId, courseId));
+                .post("/api/v1/course/finish")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(courseDTO)));
 
         result.andExpect(status().isOk());
 
-        verify(courseService, times(1)).finishCourse(studentId, courseId);
+        verify(courseService, times(1)).finishCourse(courseDTO.getUserId(), courseDTO.getCourseId());
     }
 }

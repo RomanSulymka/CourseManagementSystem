@@ -21,5 +21,5 @@ public interface HomeworkService {
 
     List<GetHomeworkDTO> getAllHomeworksByUser(Long userId);
 
-    GetHomeworkDTO findHomeworkByUserAndLessonId(Long userId, Long lessonId);
+    GetHomeworkDTO findHomeworkByUserAndLessonId(Long userId, Long lessonId, String userEmail);
 }

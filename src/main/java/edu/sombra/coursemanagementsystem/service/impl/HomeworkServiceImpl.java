@@ -35,7 +35,8 @@ public class HomeworkServiceImpl implements HomeworkService {
     public static final String INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100_BUT_NOW_MARK_IS = "Invalid mark value. Mark should be between 0 and 100. But now mark is {}";
     public static final String INVALID_MARK_VALUE_MARK_SHOULD_BE_BETWEEN_0_AND_100 = "Invalid mark value. Mark should be between 0 and 100.";
     public static final String USER_ISN_T_ASSIGNED_TO_THIS_COURSE = "User isn't assigned to this course";
-    public static final String LESSON_DOES_NOT_CONTAINS_THE_HOMEWORK = "Lesson doesn't contains the homework ";
+    public static final String USER_CANT_WATCH_THIS_HOMEWORK = "User can't permission to watch this homework";
+    public static final String ROLE_DOESN_T_EXIST = "User with this role doesn't exist";
 
     private final HomeworkRepository homeworkRepository;
     private final CourseMarkService courseMarkService;
@@ -157,19 +158,48 @@ public class HomeworkServiceImpl implements HomeworkService {
     }
 
     @Override
-    public GetHomeworkDTO findHomeworkByUserAndLessonId(Long userId, Long lessonId) {
+    public GetHomeworkDTO findHomeworkByUserAndLessonId(Long userId, Long lessonId, String userEmail) {
         try {
-            userRepository.findById(userId);
+            User user = userRepository.findUserByEmail(userEmail);
             var lesson = lessonRepository.findById(lessonId)
                     .orElseThrow(EntityNotFoundException::new);
 
-            Homework homework = homeworkRepository.findByUserAndLessonId(userId, lesson.getId())
-                    .orElseThrow(EntityNotFoundException::new);
-            return homeworkMapper.mapToDTO(homework);
+            if (user.getRole().equals(RoleEnum.ADMIN)) {
+                userRepository.findById(userId);
+                return getHomeworkForUser(userId, lesson);
+
+            } else if (user.getRole().equals(RoleEnum.INSTRUCTOR)) {
+                if (userId != null) {
+                    throw new IllegalArgumentException(USER_CANT_WATCH_THIS_HOMEWORK);
+                }
+                return getHomeworkForInstructor(user.getId(), lesson);
+
+            } else if (user.getRole().equals(RoleEnum.STUDENT)) {
+                if (userId != null) {
+                    throw new IllegalArgumentException(USER_CANT_WATCH_THIS_HOMEWORK);
+                }
+                return getHomeworkForUser(user.getId(), lesson);
+            }
+            throw new IllegalArgumentException(ROLE_DOESN_T_EXIST);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new EntityNotFoundException(LESSON_DOES_NOT_CONTAINS_THE_HOMEWORK, e);
+            throw new EntityNotFoundException(e.getMessage());
         }
+    }
+
+    private GetHomeworkDTO getHomeworkForUser(Long userId, Lesson lesson) {
+        Homework homework = homeworkRepository.findByUserAndLessonId(userId, lesson.getId())
+                .orElseThrow(EntityNotFoundException::new);
+        return homeworkMapper.mapToDTO(homework);
+    }
+
+    private GetHomeworkDTO getHomeworkForInstructor(Long instructorId, Lesson lesson) {
+        List<Homework> homeworks = homeworkRepository.findAllHomeworksWithInstructorAccess(instructorId);
+        Homework homework = homeworks.stream()
+                .filter(h -> h.getId().equals(lesson.getId()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Instructor hasn't access to this homework!"));
+        return homeworkMapper.mapToDTO(homework);
     }
 
     public Homework findHomework(Long homeworkId) {

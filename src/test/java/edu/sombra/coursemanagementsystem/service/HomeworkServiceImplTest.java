@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -457,39 +458,96 @@ class HomeworkServiceImplTest {
     }
 
     @Test
-    void testFindHomeworkByUserAndLessonId() {
+    void testFindHomeworkByUserAndLessonIdForAdmin() {
         Long userId = 1L;
         Long lessonId = 2L;
+        String userEmail = "admin@example.com";
         User user = new User();
         Lesson lesson = new Lesson();
         Homework homework = new Homework();
         GetHomeworkDTO expectedDTO = new GetHomeworkDTO();
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        user.setRole(RoleEnum.ADMIN);
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
         when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
         when(homeworkRepository.findByUserAndLessonId(eq(userId), eq(lesson.getId())))
                 .thenReturn(Optional.of(homework));
         when(homeworkMapper.mapToDTO(homework)).thenReturn(expectedDTO);
 
-        GetHomeworkDTO resultDTO = homeworkService.findHomeworkByUserAndLessonId(userId, lessonId);
+        GetHomeworkDTO resultDTO = homeworkService.findHomeworkByUserAndLessonId(userId, lessonId, userEmail);
 
         assertNotNull(resultDTO);
         assertEquals(expectedDTO, resultDTO);
 
-        verify(userRepository, times(1)).findById(userId);
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
         verify(lessonRepository, times(1)).findById(lessonId);
+        verify(userRepository, times(1)).findById(userId);
         verify(homeworkMapper, times(1)).mapToDTO(homework);
     }
 
     @Test
-    void testFindHomeworkByUserAndLessonIdWhenUserNotFound() {
-        Long userId = 1L;
+    void testFindHomeworkByUserAndLessonIdForInstructor() {
         Long lessonId = 2L;
+        String userEmail = "instructor@example.com";
+        User user = new User();
+        Lesson lesson = Lesson.builder()
+                .id(1L)
+                .build();
 
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+        Homework homework = Homework.builder()
+                .id(1L)
+                .user(user)
+                .lesson(lesson)
+                .build();
+        GetHomeworkDTO expectedDTO = new GetHomeworkDTO();
 
-        assertThrows(EntityNotFoundException.class, () -> homeworkService.findHomeworkByUserAndLessonId(userId, lessonId));
+        user.setRole(RoleEnum.INSTRUCTOR);
 
-        verify(userRepository, times(1)).findById(userId);
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
+        when(homeworkRepository.findAllHomeworksWithInstructorAccess(user.getId()))
+                .thenReturn(Collections.singletonList(homework));
+        when(homeworkMapper.mapToDTO(homework)).thenReturn(expectedDTO);
+
+        GetHomeworkDTO resultDTO = homeworkService.findHomeworkByUserAndLessonId(null, lessonId, userEmail);
+
+        assertNotNull(resultDTO);
+        assertEquals(expectedDTO, resultDTO);
+
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
+        verify(lessonRepository, times(1)).findById(lessonId);
+        verify(homeworkRepository, times(1)).findAllHomeworksWithInstructorAccess(user.getId());
+        verify(homeworkMapper, times(1)).mapToDTO(homework);
+    }
+
+    @Test
+    void testFindHomeworkByUserAndLessonIdForStudent() {
+        Long userId = null;
+        Long lessonId = 2L;
+        String userEmail = "student@example.com";
+        User user = new User();
+        Lesson lesson = new Lesson();
+        Homework homework = new Homework();
+        GetHomeworkDTO expectedDTO = new GetHomeworkDTO();
+
+        user.setRole(RoleEnum.STUDENT);
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
+        when(homeworkRepository.findByUserAndLessonId(user.getId(), lesson.getId()))
+                .thenReturn(Optional.of(homework));
+        when(homeworkMapper.mapToDTO(homework)).thenReturn(expectedDTO);
+
+        GetHomeworkDTO resultDTO = homeworkService.findHomeworkByUserAndLessonId(userId, lessonId, userEmail);
+
+        assertNotNull(resultDTO);
+        assertEquals(expectedDTO, resultDTO);
+
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
+        verify(lessonRepository, times(1)).findById(lessonId);
+        verify(homeworkRepository, times(1)).findByUserAndLessonId(user.getId(), lesson.getId());
+        verify(homeworkMapper, times(1)).mapToDTO(homework);
     }
 }

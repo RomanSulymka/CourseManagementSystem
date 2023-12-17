@@ -1,5 +1,6 @@
 package edu.sombra.coursemanagementsystem.controller;
 
+import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkByLessonDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
 import edu.sombra.coursemanagementsystem.service.HomeworkService;
@@ -10,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,9 +41,10 @@ public class HomeworkController {
         return ResponseEntity.ok(homeworkService.getAllHomeworks(userDetails.getUsername()));
     }
 
-    @GetMapping("/{lessonId}/{userId}")
-    public ResponseEntity<GetHomeworkDTO> getHomeworkByLessonId(@PathVariable Long lessonId, @PathVariable Long userId) {
-        return ResponseEntity.ok(homeworkService.findHomeworkByUserAndLessonId(userId, lessonId));
+    @PostMapping
+    public ResponseEntity<GetHomeworkDTO> getHomeworkByLessonId(@RequestBody GetHomeworkByLessonDTO dto,
+                                                                @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(homeworkService.findHomeworkByUserAndLessonId(dto.getUserId(), dto.getLessonId(), userDetails.getUsername()));
     }
 
     @GetMapping("/user/{userId}")

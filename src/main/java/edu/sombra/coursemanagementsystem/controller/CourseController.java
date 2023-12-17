@@ -72,10 +72,10 @@ public class CourseController {
         return ResponseEntity.ok(courseService.findCoursesByUserId(userId, userDetails.getUsername()));
     }
 
-    @GetMapping("/instructor/{instructorId}/{courseId}")
-    public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@PathVariable Long instructorId,
-                                                                                                 @PathVariable Long courseId) {
-        return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(instructorId, courseId));
+    @PostMapping("/instructor/users")
+    public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@RequestBody CourseAssignedToUserDTO
+                                                                                                             courseAssignedToUserDTO) {
+        return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(courseAssignedToUserDTO.getUserId(), courseAssignedToUserDTO.getCourseId()));
     }
 
     @PostMapping("/student/lessons")
@@ -85,8 +85,9 @@ public class CourseController {
                 courseAssignedToUserDTO.getCourseId()));
     }
 
-    @GetMapping("/finish/{studentId}/{courseId}")
-    public ResponseEntity<CourseMarkResponseDTO> finishCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
-        return ResponseEntity.ok(courseService.finishCourse(studentId, courseId));
+    @PostMapping("/finish")
+    public ResponseEntity<CourseMarkResponseDTO> finishCourse(@RequestBody CourseAssignedToUserDTO
+                                                                          courseAssignedToUserDTO) {
+        return ResponseEntity.ok(courseService.finishCourse(courseAssignedToUserDTO.getUserId(), courseAssignedToUserDTO.getUserId()));
     }
 }
