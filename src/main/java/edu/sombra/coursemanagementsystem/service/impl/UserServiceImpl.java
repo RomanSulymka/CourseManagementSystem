@@ -10,23 +10,21 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.UserCreationException;
 import edu.sombra.coursemanagementsystem.exception.UserException;
-import edu.sombra.coursemanagementsystem.exception.UserUpdateException;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.UserService;
+import edu.sombra.coursemanagementsystem.util.BaseUtil;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.beans.PropertyDescriptor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -38,14 +36,10 @@ import java.util.Objects;
 public class UserServiceImpl implements UserService {
 
     public static final String USER_NOT_FOUND_WITH_ID = "User not found with id: ";
-    public static final String ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL = "Error assigning new role for user with email: ";
     public static final String FAILED_ASSIGN_NEW_ROLE_FOR_USER = "Failed assign new role for user";
     public static final String USER_NOT_FOUND = "User not found: ";
-    public static final String USER_SHOULD_HAS_THE_ROLE = "User should has the role: ";
-    public static final String FAILED_TO_CREATE_USER = "Failed to create user";
-    public static final String FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY = "Failed to create new User, the field is empty";
-    public static final String FAILED_TO_UPDATE_USER = "Failed to update user ";
-    public static final String PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY = "Password has been changed successfully";
+    public static final String USER_SHOULD_HAVE_THE_ROLE = "User should have the role: ";
+    public static final String FAILED_TO_CREATE_USER = "Failed to create user ";
     public static final String PASSWORD_CHANGED = "Password changed!";
     public static final String USER_DELETED_SUCCESSFULLY = "User deleted successfully";
     public static final String FAILED_TO_DELETE_USER = "Failed to delete user ";
@@ -53,8 +47,8 @@ public class UserServiceImpl implements UserService {
     public static final String USERNAME_IS_EMPTY = "Username is empty!";
     public static final String EMAIL_IS_EMPTY = "Email is empty!";
     public static final String USER_ROLE_IS_EMPTY = "User Role is empty!";
-    public static final String ERROR_USER_NOT_FOUND = "User not found: ";
     public static final String ROLE_NOT_FOUND = "Role not found: ";
+    public static final String FAILED_TO_RESET_PASSWORD = "Failed to reset password: ";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper mapper;
@@ -83,8 +77,8 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findUserByEmail(userDTO.getEmail());
 
             return mapper.mapToResponseDTO(user);
-        } catch (UserException ex) {
-            log.error(ERROR_ASSIGNING_NEW_ROLE_FOR_USER_WITH_EMAIL + userDTO.getEmail());
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
             throw new UserException(FAILED_ASSIGN_NEW_ROLE_FOR_USER, ex);
         }
     }
@@ -94,16 +88,16 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findUserByEmail(email);
             return mapper.mapToResponseDTO(user);
-        } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(ERROR_USER_NOT_FOUND, e);
+        } catch (NoResultException e) {
+            throw new UserCreationException(e);
         }
     }
 
     @Override
     public void validateInstructor(User instructor, RoleEnum role) {
         if (instructor.getRole() != role) {
-            log.error(USER_SHOULD_HAS_THE_ROLE + role.name());
-            throw new AccessDeniedException(USER_SHOULD_HAS_THE_ROLE + role.name());
+            log.error(USER_SHOULD_HAVE_THE_ROLE + role.name());
+            throw new AccessDeniedException(USER_SHOULD_HAVE_THE_ROLE + role.name());
         }
     }
 
@@ -115,46 +109,63 @@ public class UserServiceImpl implements UserService {
             User user = mapper.fromDTO(userDTO);
             userRepository.save(user);
             return findUserByEmail(user.getEmail());
-        } catch (UserCreationException ex) {
-            log.error(FAILED_TO_CREATE_USER, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
             throw new UserCreationException(FAILED_TO_CREATE_USER, ex);
-        } catch (NullPointerException ex) {
-            log.error(FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY);
-            throw new NullPointerException(FAILED_TO_CREATE_NEW_USER_THE_FIELD_IS_EMPTY);
         }
     }
 
     @Validated
     @Override
-    public UserResponseDTO updateUser(UpdateUserDTO userDTO) {
-        try {
-            User existingUser = userRepository.findById(userDTO.getId())
-                    .orElseThrow(() -> {
-                        log.error(USER_NOT_FOUND_WITH_ID + userDTO.getId());
-                        return new EntityNotFoundException(USER_NOT_FOUND_WITH_ID + userDTO.getId());
-                    });
-            if (userDTO.getRole() == null) {
-                userDTO.setRole(existingUser.getRole());
-            }
-            BeanUtils.copyProperties(userDTO, existingUser, getNullPropertyNames(userDTO));
-            userRepository.update(existingUser);
-            return mapper.mapToResponseDTO(existingUser);
-        } catch (NullPointerException ex) {
-            log.error(FAILED_TO_UPDATE_USER + userDTO.getId() + ex);
-            throw new UserUpdateException(FAILED_TO_UPDATE_USER, ex);
+    @Transactional
+    public UserResponseDTO updateUser(UpdateUserDTO userDTO, String userEmail) {
+        User loggedUser = userRepository.findUserByEmail(userEmail);
+
+        if (loggedUser.getRole().equals(RoleEnum.ADMIN)) {
+            return updateUserAsAdmin(userDTO);
+        } else {
+            return updateUserAsNonAdmin(userDTO, loggedUser);
+        }
+    }
+
+    private UserResponseDTO updateUserAsAdmin(UpdateUserDTO userDTO) {
+        User existingUser = userRepository.findById(userDTO.getId())
+                .orElseThrow(EntityNotFoundException::new);
+
+        if (userDTO.getRole() == null) {
+            userDTO.setRole(existingUser.getRole());
+        }
+
+        BeanUtils.copyProperties(userDTO, existingUser, BaseUtil.getNullPropertyNames(userDTO));
+        userRepository.update(existingUser);
+        return mapper.mapToResponseDTO(existingUser);
+    }
+
+    private UserResponseDTO updateUserAsNonAdmin(UpdateUserDTO userDTO, User loggedUser) {
+        if (loggedUser.getId().equals(userDTO.getId())) {
+            userDTO.setRole(loggedUser.getRole());
+            BeanUtils.copyProperties(userDTO, loggedUser, BaseUtil.getNullPropertyNames(userDTO));
+            userRepository.update(loggedUser);
+            return mapper.mapToResponseDTO(loggedUser);
+        } else {
+            throw new AccessDeniedException(USER_SHOULD_HAVE_THE_ROLE + RoleEnum.ADMIN);
         }
     }
 
     @Override
-    public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
-        if (Objects.nonNull(findUserByEmail(resetPasswordDTO.getEmail()))) {
-            User user = userRepository.findUserByEmail(resetPasswordDTO.getEmail());
-            user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
-            updateUser(mapper.mapToUpdateDTO(user));
-            log.info(PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY);
-            return PASSWORD_CHANGED;
+    public String resetPassword(ResetPasswordDTO resetPasswordDTO, String userEmail) {
+        try {
+            if (Objects.nonNull(findUserByEmail(resetPasswordDTO.getEmail()))) {
+                User user = userRepository.findUserByEmail(resetPasswordDTO.getEmail());
+                user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+                updateUser(mapper.mapToUpdateDTO(user), userEmail);
+                return PASSWORD_CHANGED;
+            }
+            throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDTO.getEmail());
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            throw new UserException(FAILED_TO_RESET_PASSWORD, ex);
         }
-        throw new EntityNotFoundException(USER_NOT_FOUND + resetPasswordDTO.getEmail());
     }
 
     @Override
@@ -169,7 +180,7 @@ public class UserServiceImpl implements UserService {
             log.info(USER_DELETED_SUCCESSFULLY);
             return USER_DELETED_SUCCESSFULLY;
         } catch (EntityNotFoundException ex) {
-            log.error(FAILED_TO_DELETE_USER + id + ex);
+            log.error(ex.getMessage());
             throw new EntityDeletionException(FAILED_TO_DELETE_USER, ex);
         }
     }
@@ -194,16 +205,6 @@ public class UserServiceImpl implements UserService {
                 });
         validateInstructor(instructor, RoleEnum.INSTRUCTOR);
         return true;
-    }
-
-    private static String[] getNullPropertyNames(Object entity) {
-        final BeanWrapper src = new BeanWrapperImpl(entity);
-        PropertyDescriptor[] pds = src.getPropertyDescriptors();
-
-        return Arrays.stream(pds)
-                .map(PropertyDescriptor::getName)
-                .filter(name -> src.getPropertyValue(name) == null)
-                .toArray(String[]::new);
     }
 
     private void validateUser(CreateUserDTO userDTO) {

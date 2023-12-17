@@ -26,6 +26,8 @@ public class CourseRepositoryImpl implements CourseRepository {
     private static final String GET_ALL_COURSES_BY_INSTRUCTOR_ID = "SELECT c FROM courses c " +
             "INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE u.id =: userId";
 
+    public static final String GET_COURSE_BY_FILE_ID = "SELECT c FROM courses c INNER JOIN lessons l ON c.id = l.course.id INNER JOIN homework h ON l.id = h.lesson.id INNER JOIN files f ON f.id = h.file.id WHERE f.id =: fileId";
+
     private static final String GET_ALL_USERS_IN_COURSE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id " +
             "INNER JOIN users u on u.id = e.user.id WHERE c.id =: courseId";
 
@@ -53,9 +55,13 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public Optional<Course> findByName(String name) {
-        return Optional.ofNullable(getEntityManager().createQuery(FIND_COURSE_BY_NAME_QUERY, Course.class)
-                .setParameter("name", name)
-                .getSingleResult());
+        try {
+            return Optional.ofNullable(getEntityManager().createQuery(FIND_COURSE_BY_NAME_QUERY, Course.class)
+                    .setParameter("name", name)
+                    .getSingleResult());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Course not found for the provided name");
+        }
     }
 
     @Override
@@ -148,6 +154,14 @@ public class CourseRepositoryImpl implements CourseRepository {
         } catch (NoResultException e) {
             return false;
         }
+    }
+
+    @Override
+    public Optional<Course> findCourseByFileId(Long fileId) {
+        return Optional.ofNullable(getEntityManager()
+                .createQuery(GET_COURSE_BY_FILE_ID, Course.class)
+                .setParameter("fileId", fileId)
+                .getSingleResult());
     }
 
     @Override

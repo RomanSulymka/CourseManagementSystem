@@ -103,7 +103,6 @@ class HomeworkRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -244,7 +243,6 @@ class HomeworkRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -358,7 +356,6 @@ class HomeworkRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);

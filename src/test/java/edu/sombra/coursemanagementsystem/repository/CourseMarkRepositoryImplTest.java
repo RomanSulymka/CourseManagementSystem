@@ -6,7 +6,6 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.stereotype.Repository;
@@ -19,9 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest(includeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Repository.class))
 class CourseMarkRepositoryImplTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Autowired
     private CourseMarkRepository courseMarkRepository;

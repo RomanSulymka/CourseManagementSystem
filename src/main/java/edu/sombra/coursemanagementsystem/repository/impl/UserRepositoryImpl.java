@@ -35,9 +35,13 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User findUserByEmail(String email) {
-        return getEntityManager().createQuery(FIND_USER_BY_EMAIL_QUERY, User.class)
-                .setParameter("email", email)
-                .getSingleResult();
+        try {
+            return getEntityManager().createQuery(FIND_USER_BY_EMAIL_QUERY, User.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("User not found for the provided email address");
+        }
     }
 
     @Override

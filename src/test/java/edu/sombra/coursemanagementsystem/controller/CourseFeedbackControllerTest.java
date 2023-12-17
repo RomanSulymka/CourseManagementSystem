@@ -112,7 +112,7 @@ class CourseFeedbackControllerTest {
                 .course(mock(Course.class))
                 .build();
 
-        when(courseFeedbackService.findCourseFeedbackById(feedbackId)).thenReturn(feedbackDTO);
+        when(courseFeedbackService.findCourseFeedbackById(feedbackId, "admin@gmail.com")).thenReturn(feedbackDTO);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/feedback/{id}", feedbackId));
 

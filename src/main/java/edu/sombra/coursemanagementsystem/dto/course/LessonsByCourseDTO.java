@@ -9,7 +9,6 @@ import lombok.Generated;
 import java.math.BigDecimal;
 import java.util.List;
 
-@Generated
 @Builder
 @Data
 public class LessonsByCourseDTO {

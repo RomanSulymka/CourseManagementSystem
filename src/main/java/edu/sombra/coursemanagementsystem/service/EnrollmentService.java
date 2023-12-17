@@ -20,8 +20,6 @@ public interface EnrollmentService {
 
     EnrollmentGetDTO findEnrolmentById(Long id);
 
-    List<EnrollmentGetByNameDTO> findEnrolmentByCourseName(String name);
-
     EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO);
 
     EnrollmentResponseDTO applyForCourse(EnrollmentApplyForCourseDTO applyForCourseDTO, String userEmail);

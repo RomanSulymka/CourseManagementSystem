@@ -1,11 +1,13 @@
 package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
+import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.File;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.mapper.FileMapper;
+import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.FileRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
@@ -51,19 +53,31 @@ class FileServiceImplTest {
     private HomeworkRepository homeworkRepository;
 
     @Mock
+    private CourseRepository courseRepository;
+
+
+    @Mock
     private FileMapper fileMapper;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        fileService = new FileServiceImpl(fileRepository, homeworkRepository, userRepository, lessonRepository, fileMapper);
+        fileService = new FileServiceImpl(fileRepository, homeworkRepository, userRepository, courseRepository, lessonRepository, fileMapper);
     }
 
-    public static Object[][] provideFileTest() {
+    public static Object[][] provideFileAndUserTestData() {
         return new Object[][]{
-                {1L, "text1.txt", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."},
-                {2L, "text2.txt", "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like)."},
-                {3L, "text3.txt", "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc."}
+                {1L, "text1.txt", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", "admin@gmail.com", RoleEnum.ADMIN, true},
+                {2L, "text2.txt", "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).", "user1@gmail.com", RoleEnum.STUDENT, true},
+                {3L, "text3.txt", "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.", "user1@gmail.com", RoleEnum.INSTRUCTOR, true}
+        };
+    }
+
+    public static Object[][] provideFileAndUserIncorrectTestData() {
+        return new Object[][]{
+                {1L, "text1.txt", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", "admin@gmail.com", RoleEnum.STUDENT, false},
+                {2L, "text2.txt", "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).", "user1@gmail.com", RoleEnum.STUDENT, false},
+                {3L, "text3.txt", "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.", "user1@gmail.com", RoleEnum.INSTRUCTOR, false}
         };
     }
 
@@ -203,25 +217,58 @@ class FileServiceImplTest {
                 .role(RoleEnum.STUDENT)
                 .build();
         when(userRepository.findUserByEmail(userEmail)).thenReturn(normalUser);
-        //when(homeworkRepository.isUserUploadedThisHomework(fileId, normalUser.getId())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class, () -> fileService.delete(fileId, userEmail));
         verify(fileRepository, never()).delete(any());
     }
 
     @ParameterizedTest
-    @MethodSource("provideFileTest")
-    void testDownloadFile_SuccessfulDownload(Long fileId, String fileName, String fileData) {
+    @MethodSource("provideFileAndUserTestData")
+    void testDownloadFile_SuccessfulDownload(Long fileId, String fileName, String fileData, String userEmail, RoleEnum userRole, boolean userAssignedToCourse) {
         File file = new File();
         file.setFileName(fileName);
         file.setFileData(fileData.getBytes());
         when(fileRepository.findById(fileId)).thenReturn(Optional.of(file));
 
-        Resource resource = fileService.downloadFile(fileId);
+        User user = User.builder().email(userEmail).role(userRole).build();
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
 
-        assertNotNull(resource);
-        assertTrue(resource instanceof ByteArrayResource);
-        assertEquals(fileName, resource.getFilename());
+        if (!userRole.equals(RoleEnum.ADMIN)) {
+            Course course = mock(Course.class);
+            when(courseRepository.findCourseByFileId(fileId)).thenReturn(Optional.of(course));
+            when(courseRepository.isUserAssignedToCourse(user.getId(), course.getId())).thenReturn(userAssignedToCourse);
+        }
+
+        assertDoesNotThrow(() -> {
+            Resource resource = fileService.downloadFile(fileId, userEmail);
+            assertNotNull(resource);
+            assertTrue(resource instanceof ByteArrayResource);
+            assertEquals(fileName, resource.getFilename());
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideFileAndUserIncorrectTestData")
+    void testDownloadFile_UserHasNoAccess(Long fileId, String fileName, String fileData, String userEmail, RoleEnum userRole, boolean userAssignedToCourse) {
+        File file = new File();
+        file.setFileName(fileName);
+        file.setFileData(fileData.getBytes());
+        when(fileRepository.findById(fileId)).thenReturn(Optional.of(file));
+
+        User user = User.builder().email(userEmail).role(userRole).build();
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+
+        if (!userRole.equals(RoleEnum.ADMIN)) {
+            Course course = mock(Course.class);
+            when(courseRepository.findCourseByFileId(fileId)).thenReturn(Optional.of(course));
+            when(courseRepository.isUserAssignedToCourse(user.getId(), course.getId())).thenReturn(userAssignedToCourse);
+        }
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            fileService.downloadFile(fileId, userEmail);
+        });
+
+        assertEquals("User hasn't access to this file!", exception.getMessage());
     }
 
     @Test
@@ -231,8 +278,10 @@ class FileServiceImplTest {
         file.setFileName(null);
         file.setFileData(new byte[]{1, 2, 3});
         when(fileRepository.findById(fileId)).thenReturn(Optional.of(file));
+        User user = User.builder().id(1L).role(RoleEnum.ADMIN).build();
+        when(userRepository.findUserByEmail(anyString())).thenReturn(user);
 
-        assertThrows(NoResultException.class, () -> fileService.downloadFile(fileId));
+        assertThrows(NoResultException.class, () -> fileService.downloadFile(fileId, "user@gmail.com"));
     }
 
     @Test
@@ -240,6 +289,6 @@ class FileServiceImplTest {
         Long fileId = 3L;
         when(fileRepository.findById(fileId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> fileService.downloadFile(fileId));
+        assertThrows(EntityNotFoundException.class, () -> fileService.downloadFile(fileId, "user@gmail.com"));
     }
 }

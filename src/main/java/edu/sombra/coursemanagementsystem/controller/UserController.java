@@ -8,6 +8,8 @@ import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,8 +33,9 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<UserResponseDTO> update(@RequestBody UpdateUserDTO userDTO) {
-        return ResponseEntity.ok(userService.updateUser(userDTO));
+    public ResponseEntity<UserResponseDTO> update(@RequestBody UpdateUserDTO userDTO,
+                                                  @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(userService.updateUser(userDTO, userDetails.getUsername()));
     }
 
     @PostMapping("/assign-role")
@@ -41,18 +44,19 @@ public class UserController {
     }
 
     @PutMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
-        return ResponseEntity.ok(userService.resetPassword(resetPasswordDTO));
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO,
+                                                @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(userService.resetPassword(resetPasswordDTO, userDetails.getUsername()));
     }
 
-    @GetMapping("/id/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id));
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<UserResponseDTO> findUserByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.findUserByEmail(email));
+    @PostMapping("/email")
+    public ResponseEntity<UserResponseDTO> findUserByEmail(@RequestBody UserDTO findUserDTO) {
+        return ResponseEntity.ok(userService.findUserByEmail(findUserDTO.getEmail()));
     }
 
     @GetMapping("/find-all")

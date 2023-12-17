@@ -8,7 +8,4 @@ public class EntityDeletionException extends RuntimeException {
         super(message, e);
     }
 
-    public EntityDeletionException(String message, EntityDeletionException e) {
-        super(message, e);
-    }
 }

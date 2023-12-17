@@ -20,4 +20,6 @@ public interface HomeworkRepository extends BaseRepository<Homework, Long> {
     boolean isUserUploadedHomework(Long fileId, Long studentId);
 
     List<Homework> findAllByUser(Long userId);
+
+    List<Homework> findAllHomeworksWithInstructorAccess(Long userId);
 }

@@ -10,7 +10,6 @@ import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
 import edu.sombra.coursemanagementsystem.exception.UserCreationException;
 import edu.sombra.coursemanagementsystem.exception.UserException;
-import edu.sombra.coursemanagementsystem.exception.UserUpdateException;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.UserServiceImpl;
@@ -65,31 +64,6 @@ class UserServiceImplTest {
         );
     }
 
-    private static Stream<Arguments> provideTestDataForCreateUserSuccessfully() {
-        User validUser = User.builder()
-                .id(1L)
-                .firstName("firstName")
-                .lastName("lastName")
-                .role(RoleEnum.STUDENT)
-                .password("validPassword")
-                .email("user@example.com")
-                .build();
-
-        User anotherValidUser = User.builder()
-                .id(2L)
-                .firstName("anotherFirstName")
-                .lastName("anotherLastName")
-                .role(RoleEnum.INSTRUCTOR)
-                .password("anotherValidPassword")
-                .email("anotherUser@example.com")
-                .build();
-
-        return Stream.of(
-                Arguments.of(validUser),
-                Arguments.of(anotherValidUser)
-        );
-    }
-
     private static Stream<Arguments> provideTestDataForCreateUserDTO() {
         CreateUserDTO validUser = CreateUserDTO.builder()
                 .firstName("firstName")
@@ -124,7 +98,7 @@ class UserServiceImplTest {
                 .build();
 
         User existingUserInstructorRole = User.builder()
-                .id(2L)
+                .id(1L)
                 .firstName("firstName")
                 .lastName("lastName")
                 .role(RoleEnum.INSTRUCTOR)
@@ -229,10 +203,10 @@ class UserServiceImplTest {
 
         when(userRepository.findUserByEmail(userDTO.getEmail())).thenThrow(EntityNotFoundException.class);
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+        UserException exception = assertThrows(UserException.class,
                 () -> userService.assignNewRole(userDTO));
 
-        assertEquals("User not found: ", exception.getMessage());
+        assertEquals("Failed assign new role for user", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -292,7 +266,7 @@ class UserServiceImplTest {
         AccessDeniedException exception = assertThrows(AccessDeniedException.class,
                 () -> userService.validateInstructor(mockUser, expectedRole));
 
-        assertEquals("User should has the role: " + expectedRole.name(), exception.getMessage());
+        assertEquals("User should have the role: " + expectedRole.name(), exception.getMessage());
     }
 
     @ParameterizedTest
@@ -332,10 +306,10 @@ class UserServiceImplTest {
     void testCreateUserWithEmptyPassword(CreateUserDTO userDTO) {
         userDTO.setPassword("");
 
-        NullPointerException exception = assertThrows(NullPointerException.class,
+        UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create new User, the field is empty", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -344,10 +318,10 @@ class UserServiceImplTest {
         userDTO.setLastName("");
         userDTO.setFirstName(" ");
 
-        NullPointerException exception = assertThrows(NullPointerException.class,
+        UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create new User, the field is empty", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -355,10 +329,10 @@ class UserServiceImplTest {
     void testCreateUserWithEmptyEmail(CreateUserDTO userDTO) {
         userDTO.setEmail("");
 
-        NullPointerException exception = assertThrows(NullPointerException.class,
+        UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create new User, the field is empty", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -366,10 +340,10 @@ class UserServiceImplTest {
     void testCreateUserWithNullRole(CreateUserDTO userDTO) {
         userDTO.setRole(null);
 
-        NullPointerException exception = assertThrows(NullPointerException.class,
+        UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create new User, the field is empty", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -392,18 +366,18 @@ class UserServiceImplTest {
         UserCreationException exception = assertThrows(UserCreationException.class,
                 () -> userService.createUser(userDTO));
 
-        assertEquals("Failed to create user", exception.getMessage());
+        assertEquals("Failed to create user ", exception.getMessage());
     }
 
     @ParameterizedTest
     @MethodSource("provideTestDataForUpdateUserSuccessfully")
     void testUpdateUserSuccessfully(User existingUser, UpdateUserDTO updateUser) {
-        when(userRepository.findById(updateUser.getId())).thenReturn(Optional.ofNullable(existingUser));
+        when(userRepository.findUserByEmail(existingUser.getEmail())).thenReturn(existingUser);
         when(userRepository.update(existingUser)).thenReturn(existingUser);
         UserResponseDTO mockResponse = mock(UserResponseDTO.class);
         when(userMapper.mapToResponseDTO(existingUser)).thenReturn(mockResponse);
 
-        UserResponseDTO updatedUser = userService.updateUser(updateUser);
+        UserResponseDTO updatedUser = userService.updateUser(updateUser, existingUser.getEmail());
 
         assertNotNull(updatedUser);
         assertEquals(existingUser.getEmail(), updateUser.getEmail());
@@ -416,7 +390,7 @@ class UserServiceImplTest {
     void testUpdateUserWithNullRole(User existingUser, UpdateUserDTO updateUser) {
         updateUser.setRole(null);
 
-        when(userRepository.findById(updateUser.getId())).thenReturn(Optional.ofNullable(existingUser));
+        when(userRepository.findUserByEmail(existingUser.getEmail())).thenReturn(existingUser);
         when(userRepository.update(existingUser)).thenReturn(existingUser);
         UserResponseDTO mockResponse = UserResponseDTO.builder()
                 .id(existingUser.getId())
@@ -428,7 +402,7 @@ class UserServiceImplTest {
 
         when(userMapper.mapToResponseDTO(existingUser)).thenReturn(mockResponse);
 
-        UserResponseDTO updatedUser = userService.updateUser(updateUser);
+        UserResponseDTO updatedUser = userService.updateUser(updateUser, existingUser.getEmail());
 
         assertNotNull(updatedUser);
         assertEquals(existingUser.getRole(), updatedUser.getRole());
@@ -437,19 +411,37 @@ class UserServiceImplTest {
 
     @Test
     void testUpdateUserWithUserUpdateException() {
-        UpdateUserDTO updateUser = mock(UpdateUserDTO.class);
+        User existingUser = User.builder()
+                .id(1L)
+                .firstName("firstName")
+                .lastName("lastName")
+                .role(RoleEnum.INSTRUCTOR)
+                .password("validPassword")
+                .email("user@example.com")
+                .build();
 
-        when(userRepository.findById(updateUser.getId())).thenReturn(null);
+        UpdateUserDTO updateUser = UpdateUserDTO.builder()
+                .id(2L)
+                .firstName("firstName")
+                .lastName("lastName")
+                .role(RoleEnum.INSTRUCTOR)
+                .password("validPassword")
+                .email("user3232@example.com")
+                .build();
 
-        UserUpdateException exception = assertThrows(UserUpdateException.class,
-                () -> userService.updateUser(updateUser));
+        when(userRepository.findUserByEmail(existingUser.getEmail())).thenReturn(existingUser);
 
-        assertEquals("Failed to update user ", exception.getMessage());
+        AccessDeniedException exception = assertThrows(AccessDeniedException.class,
+                () -> userService.updateUser(updateUser, existingUser.getEmail()));
+
+        assertEquals("User should have the role: ADMIN", exception.getMessage());
+        verify(userRepository, never()).update(existingUser);
     }
 
     @Test
     void testResetPasswordSuccess() {
         ResetPasswordDTO resetPasswordDTO = ResetPasswordDTO.builder()
+                .id(1L)
                 .email("user@example.com")
                 .newPassword("newPassword123")
                 .build();
@@ -463,14 +455,21 @@ class UserServiceImplTest {
                 .email("user@example.com")
                 .build();
 
+        UpdateUserDTO updateUser = UpdateUserDTO.builder()
+                .id(1L)
+                .firstName("firstName")
+                .lastName("lastName")
+                .role(RoleEnum.INSTRUCTOR)
+                .password("validPassword")
+                .email("user@example.com")
+                .build();
+
         when(userMapper.mapToResponseDTO(existingUser)).thenReturn(mock(UserResponseDTO.class));
         when(userRepository.findUserByEmail(resetPasswordDTO.getEmail())).thenReturn(existingUser);
         when(passwordEncoder.encode(resetPasswordDTO.getNewPassword())).thenReturn("encodedPassword");
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(existingUser));
-        when(userMapper.mapToUpdateDTO(existingUser)).thenReturn(mock(UpdateUserDTO.class));
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(existingUser));
+        when(userMapper.mapToUpdateDTO(existingUser)).thenReturn(updateUser);
         when(userRepository.update(existingUser)).thenReturn(existingUser);
-        String result = userService.resetPassword(resetPasswordDTO);
+        String result = userService.resetPassword(resetPasswordDTO, existingUser.getEmail());
 
         assertEquals("Password changed!", result);
         verify(userRepository, times(1)).update(existingUser);
@@ -479,16 +478,17 @@ class UserServiceImplTest {
     @Test
     void testResetPasswordUserNotFound() {
         ResetPasswordDTO resetPasswordDTO = ResetPasswordDTO.builder()
+                .id(1L)
                 .email("nonexistent@example.com")
                 .newPassword("newPassword123")
                 .build();
 
         when(userRepository.findUserByEmail(resetPasswordDTO.getEmail())).thenReturn(null);
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> userService.resetPassword(resetPasswordDTO));
+        UserException exception = assertThrows(UserException.class,
+                () -> userService.resetPassword(resetPasswordDTO, resetPasswordDTO.getEmail()));
 
-        assertEquals("User not found: " + resetPasswordDTO.getEmail(), exception.getMessage());
+        assertEquals("Failed to reset password: ", exception.getMessage());
         verify(userRepository, never()).update(any());
     }
 
@@ -625,7 +625,7 @@ class UserServiceImplTest {
         AccessDeniedException exception = assertThrows(AccessDeniedException.class,
                 () -> userService.isUserInstructor(instructorId));
 
-        assertEquals("User should has the role: INSTRUCTOR", exception.getMessage());
+        assertEquals("User should have the role: INSTRUCTOR", exception.getMessage());
         verify(userRepository, times(1)).findById(instructorId);
     }
 }

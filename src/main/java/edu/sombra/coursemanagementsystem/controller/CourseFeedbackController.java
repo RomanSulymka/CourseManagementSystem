@@ -43,8 +43,9 @@ public class CourseFeedbackController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetCourseFeedbackDTO> getFeedbackById(@PathVariable Long id) {
-        return ResponseEntity.ok(courseFeedbackService.findCourseFeedbackById(id));
+    public ResponseEntity<GetCourseFeedbackDTO> getFeedbackById(@PathVariable Long id,
+                                                                @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(courseFeedbackService.findCourseFeedbackById(id, userDetails.getUsername()));
     }
 
     @DeleteMapping("/{id}")

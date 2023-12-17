@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.user.CreateUserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.ResetPasswordDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UpdateUserDTO;
+import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.service.UserService;
@@ -24,8 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.Collections;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -42,17 +42,17 @@ class UserControllerTest {
     @MockBean
     private UserService userService;
 
-    private UserResponseDTO testUserResponce;
+    private UserResponseDTO testUserResponse;
 
     @BeforeEach
     void setUp() {
-        testUserResponce = new UserResponseDTO();
-        testUserResponce.setId(1L);
-        testUserResponce.setFirstName("John");
-        testUserResponce.setLastName("Doe");
-        testUserResponce.setEmail("john.doe@example.com");
-        testUserResponce.setPassword("password");
-        testUserResponce.setRole(RoleEnum.STUDENT);
+        testUserResponse = new UserResponseDTO();
+        testUserResponse.setId(1L);
+        testUserResponse.setFirstName("John");
+        testUserResponse.setLastName("Doe");
+        testUserResponse.setEmail("john.doe@example.com");
+        testUserResponse.setPassword("password");
+        testUserResponse.setRole(RoleEnum.STUDENT);
     }
 
     @Test
@@ -66,7 +66,7 @@ class UserControllerTest {
                 .role(RoleEnum.STUDENT)
                 .build();
 
-        when(userService.createUser(user)).thenReturn(testUserResponce);
+        when(userService.createUser(user)).thenReturn(testUserResponse);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/user/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -91,25 +91,26 @@ class UserControllerTest {
         updateTestUser.setEmail("john.doe@example.com");
         updateTestUser.setRole(RoleEnum.STUDENT);
 
-        when(userService.updateUser(updateTestUser)).thenReturn(mock(UserResponseDTO.class));
+        when(userService.updateUser(updateTestUser, "admin@gmail.com")).thenReturn(mock(UserResponseDTO.class));
 
         mockMvc.perform(put("/api/v1/user/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testUserResponce)))
+                        .content(objectMapper.writeValueAsString(testUserResponse)))
                 .andExpect(status().isOk());
 
-        verify(userService, times(1)).updateUser(updateTestUser);
+        verify(userService, times(1)).updateUser(updateTestUser, "admin@gmail.com");
     }
 
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testResetPasswordSuccess() throws Exception {
         ResetPasswordDTO resetPasswordDTO = ResetPasswordDTO.builder()
+                .id(1L)
                 .newPassword("12342")
                 .email("user@email.com")
                 .build();
 
-        when(userService.resetPassword(resetPasswordDTO)).thenReturn("Password changed!");
+        when(userService.resetPassword(resetPasswordDTO, "admin@gmail.com")).thenReturn("Password changed!");
 
         String resetPasswordJson = objectMapper.writeValueAsString(resetPasswordDTO);
 
@@ -120,7 +121,7 @@ class UserControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
                 .andExpect(jsonPath("$").value("Password changed!"));
 
-        verify(userService, times(1)).resetPassword(resetPasswordDTO);
+        verify(userService, times(1)).resetPassword(resetPasswordDTO, "admin@gmail.com");
     }
 
     @Test
@@ -136,7 +137,7 @@ class UserControllerTest {
         mockUser.setRole(RoleEnum.STUDENT);
         when(userService.findUserById(userId)).thenReturn(mockUser);
 
-        ResultActions result = mockMvc.perform(get("/api/v1/user/id/{id}", userId));
+        ResultActions result = mockMvc.perform(get("/api/v1/user/{id}", userId));
 
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -147,17 +148,23 @@ class UserControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testFindUserByEmail() throws Exception {
-        String userEmail = "johndoe@example.com";
+        String userEmail = "admin@gmail.com";
+
+        UserDTO userDTO = UserDTO.builder()
+                .email(userEmail)
+                .build();
+
         UserResponseDTO mockUser = new UserResponseDTO();
         mockUser.setId(1L);
         mockUser.setFirstName("John");
         mockUser.setLastName("Doe");
-        mockUser.setEmail("johndoe@example.com");
+        mockUser.setEmail("admin@gmail.com");
         mockUser.setPassword("password");
         mockUser.setRole(RoleEnum.STUDENT);
         when(userService.findUserByEmail(userEmail)).thenReturn(mockUser);
 
-        ResultActions result = mockMvc.perform(get("/api/v1/user/email/{email}", userEmail)
+        ResultActions result = mockMvc.perform(post("/api/v1/user/email", userEmail)
+                .content(objectMapper.writeValueAsString(userDTO))
                 .contentType(MediaType.APPLICATION_JSON));
 
         result.andExpect(status().isOk())

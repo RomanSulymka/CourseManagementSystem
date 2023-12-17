@@ -1,11 +1,11 @@
 package edu.sombra.coursemanagementsystem.dto.homework;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.Generated;
 
 @Data
-public class HomeworkDTO {
-    private Long homeworkId;
+@Builder
+public class GetHomeworkByLessonDTO {
     private Long userId;
-    private Long mark;
+    private Long lessonId;
 }

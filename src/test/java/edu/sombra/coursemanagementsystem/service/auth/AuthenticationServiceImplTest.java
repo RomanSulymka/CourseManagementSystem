@@ -34,7 +34,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -53,8 +52,6 @@ class AuthenticationServiceImplTest {
     @Mock
     private UserService userService;
     @Mock
-    private PasswordEncoder passwordEncoder;
-    @Mock
     private JwtService jwtService;
     @Mock
     private AuthenticationManager authenticationManager;
@@ -66,7 +63,7 @@ class AuthenticationServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        authenticateService = new AuthenticateServiceImpl(userService, userMapper, passwordEncoder, jwtService, authenticationManager, tokenRepository);
+        authenticateService = new AuthenticateServiceImpl(userService, userMapper, jwtService, authenticationManager, tokenRepository);
     }
 
     private static Stream<Arguments> provideRegisterDTOs() {

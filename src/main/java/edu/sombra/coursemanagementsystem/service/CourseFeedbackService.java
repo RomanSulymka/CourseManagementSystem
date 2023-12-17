@@ -13,7 +13,7 @@ public interface CourseFeedbackService {
 
     List<GetCourseFeedbackDTO> findAll();
 
-    GetCourseFeedbackDTO findCourseFeedbackById(Long id);
+    GetCourseFeedbackDTO findCourseFeedbackById(Long id, String userEmail);
 
     String delete(Long id);
 

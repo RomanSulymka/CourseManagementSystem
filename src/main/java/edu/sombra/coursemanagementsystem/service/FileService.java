@@ -12,7 +12,7 @@ public interface FileService {
 
     File getFileDataById(Long fileId);
 
-    Resource downloadFile(Long fileId);
+    Resource downloadFile(Long fileId, String userEmail);
 
     void delete(Long fileId, String userEmail);
 }

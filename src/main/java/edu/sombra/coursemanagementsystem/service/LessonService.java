@@ -11,10 +11,11 @@ import java.util.List;
 public interface LessonService {
     LessonResponseDTO save(CreateLessonDTO lessonDTO);
 
-    LessonResponseDTO findById(Long id);
+    LessonResponseDTO findById(Long id, String userEmail);
 
-    List<LessonResponseDTO> findAllLessons();
+    List<LessonResponseDTO> findAllLessons(String userEmail);
 
+    List<LessonResponseDTO> findAllLessonsByCourse(Long courseId, String userEmail);
     List<LessonResponseDTO> findAllLessonsByCourse(Long courseId);
 
     List<Lesson> generateAndAssignLessons(Long numberOfLessons, Course course);

@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-@Generated
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

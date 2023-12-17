@@ -24,7 +24,6 @@ import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,17 +37,13 @@ import java.util.List;
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
     public static final String FAILED_TO_ASSIGN_INSTRUCTOR = "Failed to assign instructor";
-    public static final String ERROR_SAVING_INSTRUCTOR_TO_THE_COURSE_WITH_EMAIL = "Error saving instructor to the course with email: {}";
     public static final String COURSE_SHOULD_HAVE_AT_LEAST_ONE_INSTRUCTOR_ASSIGNED_ON_THE_COURSE = "Course should have at least one instructor assigned on the course";
     public static final String ENTITY_NOT_FOUND_WITH_ID = "Entity not found with ID: ";
     public static final String ERROR_FINDING_ENROLLMENT_WITH_ID = "Error finding enrollment with id: {}";
     public static final String ENROLLMENT_NOT_FOUND_WITH_ID = "Enrollment not found with id: ";
-    public static final String ERROR_FINDING_ENROLLMENT_WITH_NAME = "Error finding enrollment with name: {}";
-    public static final String FAILED_TO_FIND_ENROLLMENT_BY_NAME = "Failed to find enrollment by name";
     public static final String ELEMENTS_ARE_EMPTY = "Elements are empty!";
     public static final String USER_HAS_ALREADY_ASSIGNED_FOR_5_COURSES = "User has already assigned for 5 courses";
     public static final String USER_IS_ALREADY_ASSIGNED_TO_THIS_COURSE = "User is already assigned to this course";
-    public static final String ERROR_FINDING_COURSES_FOR_USER_WITH_ID = "Error finding courses for user with id: {}";
     public static final String FAILED_TO_FIND_COURSES_FOR_USER = "Failed to find courses for user";
 
     private final EnrollmentRepository enrollmentRepository;
@@ -76,7 +71,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
             return enrollmentMapper.mapToResponseDTO(savedEnrollment);
         } catch (EnrollmentException ex) {
-            log.error(ERROR_SAVING_INSTRUCTOR_TO_THE_COURSE_WITH_EMAIL, enrollmentDTO.getUserEmail());
+            log.error(ex.getMessage());
             throw new EnrollmentException(FAILED_TO_ASSIGN_INSTRUCTOR);
         }
     }
@@ -130,30 +125,23 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public List<EnrollmentGetByNameDTO> findEnrolmentByCourseName(String name) {
-        try {
-            return enrollmentRepository.findEnrollmentByCourseName(name)
-                    .stream()
-                    .map(this::mapTupleToEnrollmentGetByNameDTO)
-                    .toList();
-        } catch (RuntimeException ex) {
-            log.error(ERROR_FINDING_ENROLLMENT_WITH_NAME, name, ex);
-            throw new EntityNotFoundException(FAILED_TO_FIND_ENROLLMENT_BY_NAME, ex);
-        }
-    }
-
-    @Override
     public EnrollmentGetByNameDTO updateEnrollment(EnrollmentUpdateDTO updateDTO) {
         if (updateDTO.getCourseId() == null && updateDTO.getUserId() == null & updateDTO.getId() == null) {
             throw new EnrollmentException(ELEMENTS_ARE_EMPTY);
         }
-        User user = userRepository.findById(updateDTO.getUserId()).orElseThrow();
-        Course course = courseRepository.findById(updateDTO.getCourseId()).orElseThrow();
-        Enrollment enrollment = enrollmentRepository.update(Enrollment.builder()
-                .id(updateDTO.getId())
-                .course(course)
-                .user(user)
-                .build());
+        Enrollment existingEnrollment = enrollmentRepository.findById(updateDTO.getId()).orElseThrow(
+                () -> new EntityNotFoundException("Enrollment not found!"));
+
+        User user = userRepository.findById(updateDTO.getUserId())
+                .orElseThrow(
+                () -> new EntityNotFoundException("User not found!"));
+
+        Course course = courseRepository.findById(updateDTO.getCourseId())
+                .orElseThrow(
+                () -> new EntityNotFoundException("Course not found!"));
+        existingEnrollment.setCourse(course);
+        existingEnrollment.setUser(user);
+        Enrollment enrollment = enrollmentRepository.update(existingEnrollment);
         return enrollmentMapper.mapToDTO(enrollment);
     }
 
@@ -173,7 +161,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private EnrollmentResponseDTO assignUserForLesson(EnrollmentApplyForCourseDTO applyForCourseDTO, Long numberOfUserCourses, User user) {
         if (numberOfUserCourses < COURSE_LIMIT) {
-            Course course = courseRepository.findByName(applyForCourseDTO.getCourseName()).orElseThrow();
+            Course course = courseRepository.findByName(applyForCourseDTO.getCourseName()).orElseThrow(EntityNotFoundException::new);
             isUserAlreadyAssigned(course, user);
             Enrollment enrollment = buildEnrollment(course, user);
             enrollmentRepository.save(enrollment);
@@ -196,16 +184,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
     }
 
-    private EnrollmentGetByNameDTO mapTupleToEnrollmentGetByNameDTO(Tuple tuple) {
-        String courseName = tuple.get(0, String.class);
-        String firstName = tuple.get(1, String.class);
-        String lastName = tuple.get(2, String.class);
-        RoleEnum role = tuple.get(3, RoleEnum.class);
-        String email = tuple.get(4, String.class);
-
-        return new EnrollmentGetByNameDTO(courseName, firstName, lastName, email, role);
-    }
-
     @Override
     public Enrollment buildEnrollment(Course course, User instructor) {
         return Enrollment.builder()
@@ -220,7 +198,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             List<Course> courses = enrollmentRepository.findCoursesByUserId(id);
             return courseMapper.mapToResponsesDTO(courses);
         } catch (EntityNotFoundException ex) {
-            log.error(ERROR_FINDING_COURSES_FOR_USER_WITH_ID, id, ex);
+            log.error(ex.getMessage());
             throw new EntityNotFoundException(FAILED_TO_FIND_COURSES_FOR_USER, ex);
         }
     }

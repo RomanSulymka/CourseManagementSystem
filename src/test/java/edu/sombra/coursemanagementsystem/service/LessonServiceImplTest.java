@@ -6,13 +6,16 @@ import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
+import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
-import edu.sombra.coursemanagementsystem.exception.EntityDeletionException;
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.LessonException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
 import edu.sombra.coursemanagementsystem.mapper.LessonMapper;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
+import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.LessonRepository;
+import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.LessonServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,10 +62,16 @@ class LessonServiceImplTest {
     @Mock
     private CourseMapper courseMapper;
 
+    @Mock
+    EnrollmentRepository enrollmentRepository;
+
+    @Mock
+    UserRepository userRepository;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        lessonService = new LessonServiceImpl(lessonRepository, courseRepository, lessonMapper, courseMapper);
+        lessonService = new LessonServiceImpl(lessonRepository, courseRepository, userRepository, enrollmentRepository, lessonMapper, courseMapper);
     }
 
     private static Stream<Arguments> provideTestDataForSaveLesson() {
@@ -94,16 +103,6 @@ class LessonServiceImplTest {
                 Arguments.of(lessonDTO, validCourse, savedLesson),
                 Arguments.of(anotherLessonDTO, anotherCourse, anotherSavedLesson)
         );
-    }
-
-    private CourseResponseDTO createCourseResponseDTO() {
-        return CourseResponseDTO.builder()
-                .courseId(1L)
-                .courseName("Sample Course")
-                .status(CourseStatus.STARTED)
-                .startDate(LocalDate.now().plusDays(1))
-                .started(true)
-                .build();
     }
 
     @ParameterizedTest
@@ -155,39 +154,98 @@ class LessonServiceImplTest {
     }
 
     @Test
-    void testFindLessonById_ExistingLesson_ReturnsLesson() {
+    void testFindLessonByIdAsAdmin_ExistingLesson_ReturnsLesson() {
         Long id = 1L;
+        String userEmail = "user@email.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.ADMIN)
+                .build();
+
         Lesson expectedLesson = mock(Lesson.class);
         LessonResponseDTO expectedResponseLessonDTO = mock(LessonResponseDTO.class);
         CourseResponseDTO expectedResponseCourseDTO = mock(CourseResponseDTO.class);
 
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
         when(lessonRepository.findById(id)).thenReturn(Optional.of(expectedLesson));
         when(courseMapper.mapToResponseDTO(expectedLesson.getCourse())).thenReturn(expectedResponseCourseDTO);
 
         when(lessonMapper.mapToResponseDTO(expectedLesson, expectedResponseCourseDTO)).thenReturn(expectedResponseLessonDTO);
 
-        LessonResponseDTO result = lessonService.findById(id);
+        LessonResponseDTO result = lessonService.findById(id, userEmail);
 
         assertEquals(expectedResponseLessonDTO, result);
         verify(lessonRepository, times(1)).findById(id);
     }
 
+    @Test
+    void testFindLessonByIdAsStudent_ExistingLesson_ReturnsLesson() {
+        Long id = 1L;
+        String userEmail = "user@email.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        Lesson expectedLesson = mock(Lesson.class);
+        LessonResponseDTO expectedResponseLessonDTO = mock(LessonResponseDTO.class);
+        CourseResponseDTO expectedResponseCourseDTO = mock(CourseResponseDTO.class);
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(lessonRepository.findById(id)).thenReturn(Optional.of(expectedLesson));
+        when(enrollmentRepository.isUserAssignedToCourse(expectedLesson.getCourse(), user)).thenReturn(true);
+        when(courseMapper.mapToResponseDTO(expectedLesson.getCourse())).thenReturn(expectedResponseCourseDTO);
+
+        when(lessonMapper.mapToResponseDTO(expectedLesson, expectedResponseCourseDTO)).thenReturn(expectedResponseLessonDTO);
+
+        LessonResponseDTO result = lessonService.findById(id, userEmail);
+
+        assertEquals(expectedResponseLessonDTO, result);
+        verify(enrollmentRepository, times(1)).isUserAssignedToCourse(expectedLesson.getCourse(), user);
+    }
+
+    @Test
+    void testFindLessonByIdAsInstructor_ExistingLesson_ReturnsLesson() {
+        Long id = 1L;
+        String userEmail = "user@email.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
+        Lesson expectedLesson = mock(Lesson.class);
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(lessonRepository.findById(id)).thenReturn(Optional.of(expectedLesson));
+        when(enrollmentRepository.isUserAssignedToCourse(expectedLesson.getCourse(), user)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> lessonService.findById(id, userEmail));
+        verify(lessonRepository, times(1)).findById(id);
+        verify(courseMapper, never()).mapToResponseDTO(any());
+    }
 
     @Test
     void testFindLessonById_NonExistingLesson_ThrowsEntityNotFoundException() {
         Long id = 2L;
         when(lessonRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> lessonService.findById(id));
+        assertThrows(EntityNotFoundException.class, () -> lessonService.findById(id, "admin@gmail.com"));
     }
 
     @Test
     void testFindAllLessonsReturnsEmptyList() {
+        User user = User.builder()
+                .email("user@email.com")
+                .role(RoleEnum.ADMIN)
+                .build();
+
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+
         when(lessonRepository.findAll()).thenReturn(new ArrayList<>());
 
         when(lessonMapper.mapToResponsesDTO(any(), any())).thenReturn(new ArrayList<>());
 
-        List<LessonResponseDTO> lessons = lessonService.findAllLessons();
+        List<LessonResponseDTO> lessons = lessonService.findAllLessons(user.getEmail());
 
         assertNotNull(lessons);
         assertTrue(lessons.isEmpty());
@@ -201,6 +259,13 @@ class LessonServiceImplTest {
 
     @Test
     void testFindAllLessonsReturnsNonEmptyList() {
+        User user = User.builder()
+                .email("user@email.com")
+                .role(RoleEnum.ADMIN)
+                .build();
+
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+
         List<Lesson> lessonList = Arrays.asList(mock(Lesson.class), mock(Lesson.class));
         List<CourseResponseDTO> courseResponseDTOList = Arrays.asList(null, null);
 
@@ -209,12 +274,87 @@ class LessonServiceImplTest {
 
         when(lessonRepository.findAll()).thenReturn(lessonList);
 
-        List<LessonResponseDTO> lessons = lessonService.findAllLessons();
+        List<LessonResponseDTO> lessons = lessonService.findAllLessons(user.getEmail());
 
         assertNotNull(lessons);
         assertEquals(2, lessons.size());
     }
 
+    @Test
+    void testFindAllLessonsReturnsNonEmptyListAsInstructor() {
+        User user = User.builder()
+                .email("user@email.com")
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+
+        List<Lesson> lessonList = Arrays.asList(mock(Lesson.class), mock(Lesson.class));
+        List<CourseResponseDTO> courseResponseDTOList = Arrays.asList(null, null);
+
+        when(lessonMapper.mapToResponsesDTO(eq(lessonList), eq(courseResponseDTOList)))
+                .thenReturn(Arrays.asList(mock(LessonResponseDTO.class), mock(LessonResponseDTO.class)));
+
+        when(lessonRepository.findAllLessonsByUserId(user.getId())).thenReturn(lessonList);
+
+        List<LessonResponseDTO> lessons = lessonService.findAllLessons(user.getEmail());
+
+        assertNotNull(lessons);
+        assertEquals(2, lessons.size());
+    }
+
+
+    @Test
+    void testFindAllLessonsByCourseForUserAssignedToCourse() {
+        Long courseId = 1L;
+        String userEmail = "user@example.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        Course course = Course.builder()
+                .id(courseId)
+                .build();
+        List<LessonResponseDTO> expectedResponses = Collections.singletonList(new LessonResponseDTO());
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(courseRepository.findById(courseId)).thenReturn(java.util.Optional.of(course));
+        when(enrollmentRepository.isUserAssignedToCourse(course, user)).thenReturn(true);
+        when(lessonService.findAllLessonsByCourse(courseId)).thenReturn(expectedResponses);
+
+        List<LessonResponseDTO> result = lessonService.findAllLessonsByCourse(courseId, userEmail);
+
+        assertEquals(expectedResponses, result);
+
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
+        verify(courseRepository, times(1)).findById(courseId);
+        verify(enrollmentRepository, times(1)).isUserAssignedToCourse(course, user);
+    }
+
+    @Test
+    void testFindAllLessonsByCourseForUserNotAssignedToCourse() {
+        Long courseId = 1L;
+        String userEmail = "user@example.com";
+        User user = User.builder()
+                .id(1L)
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        Course course = Course.builder()
+                .id(courseId)
+                .build();
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(user);
+        when(courseRepository.findById(courseId)).thenReturn(java.util.Optional.of(course));
+        when(enrollmentRepository.isUserAssignedToCourse(course, user)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> lessonService.findAllLessonsByCourse(courseId, userEmail));
+
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
+        verify(courseRepository, times(1)).findById(courseId);
+        verify(enrollmentRepository, times(1)).isUserAssignedToCourse(course, user);
+    }
     @Test
     void testFindAllLessonsByCourseIdSuccess() {
         List<Lesson> lessonList = Arrays.asList(mock(Lesson.class), mock(Lesson.class));
@@ -293,9 +433,9 @@ class LessonServiceImplTest {
         Long lessonId = 1L;
         Lesson lesson = new Lesson();
         when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
-        doThrow(EntityDeletionException.class).when(lessonRepository).delete(lesson);
+        doThrow(LessonException.class).when(lessonRepository).delete(lesson);
 
-        assertThrows(EntityDeletionException.class, () -> lessonService.deleteLesson(lessonId));
+        assertThrows(LessonException.class, () -> lessonService.deleteLesson(lessonId));
     }
 
     @Test
@@ -330,13 +470,6 @@ class LessonServiceImplTest {
                 .name("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
-                .build();
-
-        Lesson originalLesson = Lesson.builder()
-                .id(1L)
-                .course(course)
-                .name("Original Lesson")
                 .build();
 
         Lesson updatedLesson = Lesson.builder()
@@ -356,20 +489,10 @@ class LessonServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
-        Long id = 1L;
-        Lesson expectedLesson = mock(Lesson.class);
-        LessonResponseDTO expectedResponseLessonDTO = mock(LessonResponseDTO.class);
 
-        when(lessonRepository.findById(1L)).thenReturn(Optional.of(originalLesson));
-
-        when(lessonRepository.findById(id)).thenReturn(Optional.of(expectedLesson));
-        when(courseMapper.mapToResponseDTO(expectedLesson.getCourse())).thenReturn(expectedResponseCourseDTO);
-
-        when(lessonMapper.mapToResponseDTO(expectedLesson, expectedResponseCourseDTO)).thenReturn(expectedResponseLessonDTO);
-
-        when(courseRepository.findById(updateLessonDTO.getId())).thenReturn(Optional.of(course));
+        when(lessonRepository.findById(updateLessonDTO.getId())).thenReturn(Optional.of(updatedLesson));
+        when(courseRepository.findById(updatedLesson.getCourse().getId())).thenReturn(Optional.of(course));
         when(lessonRepository.update(updatedLesson)).thenReturn(updatedLesson);
         when(courseMapper.mapToResponseDTO(updatedLesson.getCourse())).thenReturn(expectedResponseCourseDTO);
         when(lessonMapper.mapToResponseDTO(updatedLesson, expectedResponseCourseDTO)).thenReturn(lessonResponseDTO);
@@ -400,7 +523,11 @@ class LessonServiceImplTest {
                 .name("Original Lesson")
                 .build();
 
-        when(lessonRepository.findById(1L)).thenReturn(Optional.empty());
+        Lesson originalLesson = Lesson.builder()
+                .id(1L)
+                .build();
+
+        when(lessonRepository.findById(1L)).thenReturn(Optional.ofNullable(originalLesson));
 
         assertThrows(EntityNotFoundException.class, () -> lessonService.editLesson(lesson));
         verify(lessonRepository, times(1)).findById(1L);

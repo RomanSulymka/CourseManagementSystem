@@ -23,7 +23,6 @@ import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.EnrollmentServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -294,31 +293,6 @@ class EnrollmentServiceImplTest {
     }
 
     @Test
-    void testFindEnrolmentByCourseNameSuccessfully() {
-        String courseName = "SomeCourse";
-        Tuple mockTuple = mock(Tuple.class);
-
-        when(enrollmentRepository.findEnrollmentByCourseName(courseName)).thenReturn(List.of(mockTuple));
-
-        List<EnrollmentGetByNameDTO> resultDTOs = assertDoesNotThrow(() -> enrollmentService.findEnrolmentByCourseName(courseName));
-
-        assertNotNull(resultDTOs);
-        assertFalse(resultDTOs.isEmpty());
-    }
-
-    @Test
-    void testFindEnrolmentByCourseNameWithRuntimeException() {
-        String courseName = "Math";
-
-        when(enrollmentRepository.findEnrollmentByCourseName(courseName)).thenThrow(new RuntimeException("Test Exception"));
-
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> enrollmentService.findEnrolmentByCourseName(courseName));
-        assertEquals("Failed to find enrollment by name", exception.getMessage());
-    }
-
-
-    @Test
     void testUpdateEnrollmentSuccessfully() {
         EnrollmentUpdateDTO updateDTO = new EnrollmentUpdateDTO();
         updateDTO.setUserId(1L);
@@ -328,6 +302,7 @@ class EnrollmentServiceImplTest {
         Enrollment mockEnrollment = mock(Enrollment.class);
         EnrollmentGetByNameDTO expectedDTO = new EnrollmentGetByNameDTO("name", "firstName", "lastName", "email.com", RoleEnum.INSTRUCTOR);
 
+        when(enrollmentRepository.findById(updateDTO.getId())).thenReturn(Optional.of(mock(Enrollment.class)));
         when(userRepository.findById(updateDTO.getUserId())).thenReturn(Optional.of(mock(User.class)));
         when(courseRepository.findById(updateDTO.getCourseId())).thenReturn(Optional.ofNullable(mockCourse));
         when(enrollmentRepository.update(any(Enrollment.class))).thenReturn(mockEnrollment);
@@ -454,14 +429,12 @@ class EnrollmentServiceImplTest {
                         .name("Java Programming")
                         .status(CourseStatus.STOP)
                         .startDate(LocalDate.of(2023, 1, 1))
-                        .started(true)
                         .build(),
                 Course.builder()
                         .id(2L)
                         .name("Scala Programming")
                         .status(CourseStatus.STARTED)
                         .startDate(LocalDate.of(2023, 1, 2))
-                        .started(true)
                         .build()
         );
 
@@ -471,14 +444,12 @@ class EnrollmentServiceImplTest {
                         .courseName("Java Programming")
                         .status(CourseStatus.STOP)
                         .startDate(LocalDate.of(2023, 1, 1))
-                        .started(true)
                         .build(),
                 CourseResponseDTO.builder()
                         .courseId(2L)
                         .courseName("Scala Programming")
                         .status(CourseStatus.STARTED)
                         .startDate(LocalDate.of(2023, 1, 2))
-                        .started(true)
                         .build()
         );
 

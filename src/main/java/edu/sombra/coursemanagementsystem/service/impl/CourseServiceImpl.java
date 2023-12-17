@@ -11,6 +11,7 @@ import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
+import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
@@ -30,16 +31,20 @@ import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
+import edu.sombra.coursemanagementsystem.util.BaseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Transactional
@@ -75,25 +80,32 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponseDTO create(CourseDTO courseDTO) {
-        Course course = courseMapper.fromCourseDTO(courseDTO);
-        validateCourseCreation(course.getName(), course.getStartDate());
-        Course createdCourse = saveCourse(course);
-        assignInstructor(createdCourse, courseDTO.getInstructorEmail());
-        lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), createdCourse);
-        return courseMapper.mapToResponseDTO(createdCourse);
+        try {
+            Course course = courseMapper.fromCourseDTO(courseDTO);
+            validateCourseCreation(course.getName(), course.getStartDate());
+            Course createdCourse = saveCourse(course);
+            assignInstructor(createdCourse, courseDTO.getInstructorEmail());
+            lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), createdCourse);
+            return courseMapper.mapToResponseDTO(createdCourse);
+        } catch (Exception e) {
+            throw new CourseCreationException(e);
+        }
     }
 
     private void validateCourseCreation(String courseName, LocalDate startDate) {
-        if (courseRepository.exist(courseName)) {
-            throw new CourseCreationException("Course with name " + courseName + " already exists");
-        }
-        if (startDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException(COURSE_START_DATE_HAS_ALREADY_EXPIRED);
+        try {
+            if (courseRepository.exist(courseName)) {
+                throw new IllegalArgumentException("Course with name " + courseName + " already exists");
+            }
+            if (startDate.isBefore(LocalDate.now())) {
+                throw new IllegalArgumentException(COURSE_START_DATE_HAS_ALREADY_EXPIRED);
+            }
+        } catch (Exception e) {
+            throw new CourseCreationException(e);
         }
     }
 
     private Course saveCourse(Course course) {
-        course.setStarted(false);
         return courseRepository.save(course);
     }
 
@@ -117,7 +129,6 @@ public class CourseServiceImpl implements CourseService {
             List<LessonResponseDTO> lessons = lessonService.findAllLessonsByCourse(course.getId());
             if (isCourseHasMoreLessons(lessons.size())) {
                 course.setStatus(CourseStatus.STARTED);
-                course.setStarted(true);
             }
         });
 
@@ -154,14 +165,19 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponseDTO update(UpdateCourseDTO courseDTO) {
-        Course existingCourse = courseRepository.findById(courseDTO.getId())
-                .orElseThrow();
-        if (!courseDTO.getName().equals(existingCourse.getName()) && (courseRepository.exist(courseDTO.getName()))) {
-            throw new CourseAlreadyExistsException(courseDTO.getName());
+        try {
+            Course existingCourse = courseRepository.findById(courseDTO.getId())
+                    .orElseThrow(() -> new EntityNotFoundException(COURSE_NOT_FOUND_WITH_ID + courseDTO.getId()));
+            if (!courseDTO.getName().equals(existingCourse.getName()) && (courseRepository.exist(courseDTO.getName()))) {
+                throw new CourseAlreadyExistsException(courseDTO.getName());
+            }
+            Course courseFromDTO = courseMapper.fromDTO(courseDTO);
+            BeanUtils.copyProperties(courseFromDTO, existingCourse, BaseUtil.getNullPropertyNames(courseFromDTO));
+            Course updatedCourse = courseRepository.update(existingCourse);
+            return courseMapper.mapToResponseDTO(updatedCourse);
+        } catch (Exception e) {
+            throw new EntityNotFoundException(e.getMessage());
         }
-        Course courseFromDTO = courseMapper.fromDTO(courseDTO);
-        Course updatedCourse = courseRepository.update(courseFromDTO);
-        return courseMapper.mapToResponseDTO(updatedCourse);
     }
 
     @Override
@@ -192,15 +208,62 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponseDTO findCourseByHomeworkId(Long userId, Long homeworkId) {
-        Course course = courseRepository.findCourseByHomeworkId(homeworkId)
-                .orElseThrow(EntityNotFoundException::new);
-        return courseMapper.mapToResponseDTO(course);
+        try {
+            Course course = courseRepository.findCourseByHomeworkId(homeworkId)
+                    .orElseThrow(EntityNotFoundException::new);
+            return courseMapper.mapToResponseDTO(course);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new EntityNotFoundException("Homework not found!");
+        }
     }
 
     @Override
-    public List<CourseResponseDTO> findCoursesByInstructorId(Long instructorId) {
-        userService.isUserInstructor(instructorId);
-        return findCoursesByUserId(instructorId);
+    public List<CourseResponseDTO> findCoursesByUserId(Long userId, String userEmail) {
+        User user = getUserByEmail(userEmail);
+
+        return switch (user.getRole()) {
+            case ADMIN -> handleAdminCase(userId);
+            case INSTRUCTOR -> handleInstructorCase(userId, user);
+            case STUDENT -> handleStudentCase(userId, user);
+        };
+    }
+
+    private User getUserByEmail(String userEmail) {
+        return userRepository.findUserByEmail(userEmail);
+    }
+
+    private List<CourseResponseDTO> handleAdminCase(Long userId) {
+        User user = getUserById(userId);
+        List<Course> courses = getCourseListByUserId(user.getId());
+        return courseMapper.mapToResponsesDTO(courses);
+    }
+
+    private List<CourseResponseDTO> handleInstructorCase(Long userId, User user) {
+        if (!Objects.equals(user.getId(), userId)) {
+            throw new AccessDeniedException("User hasn't access to this information!");
+        }
+        List<Course> courses = getCourseListByUserId(user.getId());
+        userService.isUserInstructor(user.getId());
+        return courseMapper.mapToResponsesDTO(courses);
+    }
+
+    private List<CourseResponseDTO> handleStudentCase(Long userId, User user) {
+        if (!Objects.equals(user.getId(), userId)) {
+            throw new AccessDeniedException("User hasn't access to this information!");
+        }
+        List<Course> courses = getCourseListByUserId(user.getId());
+        return courseMapper.mapToResponsesDTO(courses);
+    }
+
+    private User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(EntityNotFoundException::new);
+    }
+
+    private List<Course> getCourseListByUserId(Long userId) {
+        return courseRepository.findCoursesByUserId(userId)
+                .orElseThrow(EntityNotFoundException::new);
     }
 
     @Override
@@ -237,32 +300,34 @@ public class CourseServiceImpl implements CourseService {
         return findById(courseId);
     }
 
-    public List<CourseResponseDTO> findCoursesByUserId(Long userId) {
-        List<Course> courses = courseRepository.findCoursesByUserId(userId)
-                .orElseThrow(EntityNotFoundException::new);
-        return courseMapper.mapToResponsesDTO(courses);
-    }
-
     @Override
     public LessonsByCourseDTO findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId) {
-        isUserAssignedToCourse(studentId, courseId);
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow();
+        try {
+            isUserAssignedToCourse(studentId, courseId);
+            Course course = courseRepository.findById(courseId)
+                    .orElseThrow();
 
-        CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
-                .orElse(new CourseMark());
+            CourseMark courseMark = courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)
+                    .orElse(new CourseMark());
 
-        List<Lesson> lessons = courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)
-                .orElseThrow(EntityNotFoundException::new);
+            List<Lesson> lessons = courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)
+                    .orElseThrow(EntityNotFoundException::new);
 
-        CourseFeedback feedback = courseFeedbackRepository.findFeedback(studentId, courseId).orElse(null);
+            CourseFeedback feedback = courseFeedbackRepository.findFeedback(studentId, courseId).orElse(null);
 
-        List<LessonDTO> lessonDTO = lessons.stream()
-                .map(lesson -> lessonMapper.toDTO(lesson, homeworkRepository.findByUserAndLessonId(studentId, lesson.getId())
-                        .orElseThrow(EntityNotFoundException::new)))
-                .toList();
+            //TODO: rewrite with batch get
+            List<LessonDTO> lessonDTO = lessons.stream()
+                    .map(lesson -> {
+                        Optional<Homework> homeworkOptional = homeworkRepository.findByUserAndLessonId(studentId, lesson.getId());
+                        return lessonMapper.toDTO(lesson, homeworkOptional.orElse(null));
+                    })
+                    .toList();
 
-        return courseMapper.toDTO(course, courseMark, feedback, lessonDTO);
+            return courseMapper.toDTO(course, courseMark, feedback, lessonDTO);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new IllegalArgumentException("Homework not found with these parameters!");
+        }
     }
 
     @Override

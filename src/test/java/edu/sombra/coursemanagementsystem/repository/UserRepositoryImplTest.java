@@ -2,7 +2,6 @@ package edu.sombra.coursemanagementsystem.repository;
 
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import jakarta.persistence.NoResultException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -69,7 +68,7 @@ class UserRepositoryImplTest {
 
     @Test
     void testFindUserByEmail_NonExistingUser() {
-        assertThrows(NoResultException.class, () -> userRepository.findUserByEmail("nonexistent@example.com"));
+        assertThrows(IllegalArgumentException.class, () -> userRepository.findUserByEmail("nonexistent@example.com"));
     }
 
     @Test

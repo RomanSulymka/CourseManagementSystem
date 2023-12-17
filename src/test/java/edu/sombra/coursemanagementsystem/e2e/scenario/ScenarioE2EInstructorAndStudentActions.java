@@ -59,7 +59,7 @@ class ScenarioE2EInstructorAndStudentActions {
 
     @Test
     void test_PerformInstructorAndUserScenario() {
-        //Register user without role
+        //Register users without role
         RegisterDTO registerUserDTO = RegisterDTO.builder()
                 .firstName("Steve")
                 .lastName("Peterson")
@@ -345,7 +345,6 @@ class ScenarioE2EInstructorAndStudentActions {
                 .name("Spark Intro")
                 .startDate(LocalDate.now())
                 .status(CourseStatus.WAIT)
-                .started(false)
                 .instructorEmail("steve@gmail.com")
                 .numberOfLessons(5L)
                 .build();

@@ -24,4 +24,5 @@ public interface CourseRepository extends BaseRepository<Course, Long> {
     List<User> findUsersInCourse(Long courseId);
     Optional<List<Lesson>> findAllLessonsByCourseAssignedToUserId(Long studentId, Long courseId);
     boolean isUserAssignedToCourse(Long userId, Long courseId);
+    Optional<Course> findCourseByFileId(Long fileId);
 }

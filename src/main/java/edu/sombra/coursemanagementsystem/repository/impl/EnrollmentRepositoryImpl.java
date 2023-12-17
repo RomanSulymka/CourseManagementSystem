@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Tuple;
 import lombok.Generated;
@@ -71,9 +72,13 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
     @Override
     public User findUserByEnrollmentId(Long id) {
-        return getEntityManager().createQuery(GET_USER_BY_ENROLLMENT, User.class)
-                .setParameter("id", id)
-                .getSingleResult();
+        try {
+            return getEntityManager().createQuery(GET_USER_BY_ENROLLMENT, User.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+        } catch (Exception e) {
+            throw new EntityNotFoundException("Enrollment not found!");
+        }
     }
 
     @Generated

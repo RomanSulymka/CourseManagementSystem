@@ -3,7 +3,6 @@ package edu.sombra.coursemanagementsystem.enums;
 import lombok.Generated;
 import lombok.Getter;
 
-@Generated
 @Getter
 public enum RoleEnum {
     ADMIN("ROLE_ADMIN"),

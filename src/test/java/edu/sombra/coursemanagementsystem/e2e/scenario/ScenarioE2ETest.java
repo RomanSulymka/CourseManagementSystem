@@ -3,6 +3,7 @@ package edu.sombra.coursemanagementsystem.e2e.scenario;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseAssignedToUserDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
@@ -64,14 +65,13 @@ class ScenarioE2ETest {
 
         /*
          Create course
-         */
-        ResponseEntity<CourseResponseDTO> createdCourseResponse = createCourseAndReturnCourseResponseDTO();
+        */
+        CourseResponseDTO createdCourseResponse = createCourseAndReturnCourseResponseDTO();
 
         /*
          login as student
-         */
+        */
         String studentJwtToken = authenticateAndGetJwtToken("teststudent@example.com", "studentPass");
-
 
         //Apply student to course
         HttpHeaders studentHeader = applyForCourseWithStudentToken(studentJwtToken);
@@ -88,8 +88,11 @@ class ScenarioE2ETest {
         //Download homework
         HttpHeaders instructorHeaders = downloadFileAndGetInstructorHeaders(instructorJwtToken);
 
+        //Get homeworks by user
+        List<GetHomeworkDTO> homeworksByUser = getAllHomeworksByUser(createdUserResponse.getId(), instructorHeaders);
+
         //Set mark for homework
-        setMarkForHomework(createdUserResponse, instructorHeaders);
+        setMarkForHomework(createdUserResponse, instructorHeaders, homeworksByUser.get(0).getId());
 
         //Add feedback
         addCourseFeedback(instructorHeaders);
@@ -98,13 +101,10 @@ class ScenarioE2ETest {
         getInstructorCourses(instructorHeaders);
 
         //Get list of students on the course
-        HttpEntity<Void> studentsOnCoursesRequestEntity = getStudentsOnCourse(instructorHeaders);
-
-        //Get list of student courses
-        getListOfStudentCourses(studentsOnCoursesRequestEntity);
+        getStudentsOnCourse(instructorHeaders);
 
         //Get list of lessons on the course
-        getListOfLessonsOnCourse(studentsOnCoursesRequestEntity);
+        getListOfLessonsOnCourse(studentHeader);
 
         //Admin Logout
         logoutUserUsingHeader(adminHeader);
@@ -114,10 +114,17 @@ class ScenarioE2ETest {
         logoutUserUsingHeader(studentHeader);
     }
 
-    private void getListOfLessonsOnCourse(HttpEntity<Void> studentsOnCoursesRequestEntity) {
+    private void getListOfLessonsOnCourse(HttpHeaders studentHeader) {
+        CourseAssignedToUserDTO dto = CourseAssignedToUserDTO.builder()
+                .userId(4L)
+                .courseId(1L)
+                .build();
+
+        HttpEntity<CourseAssignedToUserDTO> studentsOnCoursesRequestEntity = new HttpEntity<>(dto, studentHeader);
+
         ResponseEntity<LessonsByCourseDTO> getListOfLessonsOnCourseResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/student/lessons/{studentId}/{courseId}", 4, 1),
-                HttpMethod.GET,
+                buildUrl("/api/v1/course/student/lessons"),
+                HttpMethod.POST,
                 studentsOnCoursesRequestEntity,
                 LessonsByCourseDTO.class
         );
@@ -126,25 +133,16 @@ class ScenarioE2ETest {
         assertNotNull(getListOfLessonsOnCourseResponseEntity.getBody());
     }
 
-    private void getListOfStudentCourses(HttpEntity<Void> studentsOnCoursesRequestEntity) {
-        ResponseEntity<List<CourseResponseDTO>> getListOfStudentsCoursesResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/student/{studentId}", 4),
-                HttpMethod.GET,
-                studentsOnCoursesRequestEntity,
-                new ParameterizedTypeReference<>() {
-                }
-        );
-
-        assertEquals(HttpStatus.OK, getListOfStudentsCoursesResponseEntity.getStatusCode());
-        assertNotNull(getListOfStudentsCoursesResponseEntity.getBody());
-    }
-
-    private HttpEntity<Void> getStudentsOnCourse(HttpHeaders instructorHeaders) {
-        HttpEntity<Void> studentsOnCoursesRequestEntity = new HttpEntity<>(instructorHeaders);
+    private void getStudentsOnCourse(HttpHeaders instructorHeaders) {
+        CourseAssignedToUserDTO dto = CourseAssignedToUserDTO.builder()
+                .userId(3L)
+                .courseId(3L)
+                .build();
+        HttpEntity<CourseAssignedToUserDTO> studentsOnCoursesRequestEntity = new HttpEntity<>(dto, instructorHeaders);
 
         ResponseEntity<List<CourseResponseDTO>> getStudentsOnCourseResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/instructor/{instructorId}/{courseId}", 3, 3),
-                HttpMethod.GET,
+                buildUrl("/api/v1/course/instructor/users"),
+                HttpMethod.POST,
                 studentsOnCoursesRequestEntity,
                 new ParameterizedTypeReference<>() {
                 }
@@ -152,14 +150,13 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, getStudentsOnCourseResponseEntity.getStatusCode());
         assertNotNull(getStudentsOnCourseResponseEntity.getBody());
-        return studentsOnCoursesRequestEntity;
     }
 
     private void getInstructorCourses(HttpHeaders instructorHeaders) {
         HttpEntity<Void> instructorCoursesRequestEntity = new HttpEntity<>(instructorHeaders);
 
         ResponseEntity<List<CourseResponseDTO>> getInstructorCoursesResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/instructor/{instructorId}", 3),
+                buildUrl("/api/v1/course/user/{userId}", 3),
                 HttpMethod.GET,
                 instructorCoursesRequestEntity,
                 new ParameterizedTypeReference<>() {
@@ -188,12 +185,26 @@ class ScenarioE2ETest {
         assertEquals(feedbackDTO.getFeedbackText(), Objects.requireNonNull(addFeedbackResponseEntity.getBody()).getFeedbackText());
     }
 
-    private void setMarkForHomework(UserResponseDTO createdUserResponse, HttpHeaders instructorHeaders) {
+    private List<GetHomeworkDTO> getAllHomeworksByUser(Long userId, HttpHeaders instructorHeaders) {
+        ResponseEntity<List<GetHomeworkDTO>> responseEntity = restTemplate.exchange(
+                "http://localhost:" + port + "/api/v1/homework/user/" + userId,
+                HttpMethod.GET,
+                new HttpEntity<>(instructorHeaders),
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        return responseEntity.getBody();
+    }
+
+    private void setMarkForHomework(UserResponseDTO createdUserResponse, HttpHeaders instructorHeaders, Long homeworkId) {
         HomeworkDTO homeworkDTO = new HomeworkDTO();
+        homeworkDTO.setHomeworkId(homeworkId);
         homeworkDTO.setUserId(createdUserResponse.getId());
-        homeworkDTO.setHomeworkId(18L);
         homeworkDTO.setMark(90L);
 
+        instructorHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HomeworkDTO> setMarkRequestEntity = new HttpEntity<>(homeworkDTO, instructorHeaders);
 
         ResponseEntity<GetHomeworkDTO> setMarkResponseEntity = restTemplate.exchange(
@@ -244,9 +255,9 @@ class ScenarioE2ETest {
         assertEquals(HttpStatus.OK, uploadHomeworkResponseEntity.getStatusCode());
     }
 
-    private void startCourse(ResponseEntity<CourseResponseDTO> createdCourseResponse) {
+    private void startCourse(CourseResponseDTO createdCourseResponse) {
         CourseActionDTO startCourseDTO = CourseActionDTO.builder()
-                .courseId(createdCourseResponse.getBody().getCourseId())
+                .courseId(createdCourseResponse.getCourseId())
                 .action("start")
                 .build();
 
@@ -285,12 +296,11 @@ class ScenarioE2ETest {
         return studentHeader;
     }
 
-    private ResponseEntity<CourseResponseDTO> createCourseAndReturnCourseResponseDTO() {
+    private CourseResponseDTO createCourseAndReturnCourseResponseDTO() {
         CourseDTO createCourseDTO = CourseDTO.builder()
                 .name("Python learn")
                 .startDate(LocalDate.now())
                 .status(CourseStatus.WAIT)
-                .started(false)
                 .instructorEmail("instructor@gmail.com")
                 .numberOfLessons(10L)
                 .build();
@@ -306,7 +316,7 @@ class ScenarioE2ETest {
 
         assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
         assertNotNull(createdCourseResponse.getBody());
-        return createdCourseResponse;
+        return createdCourseResponse.getBody();
     }
 
     private UserResponseDTO createStudentWithAdminToken(String adminJwtToken) {

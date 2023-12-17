@@ -16,7 +16,7 @@ public class UserMapper {
     public List<UserAssignedToCourseDTO> mapUsersToDTO(List<User> users) {
         return users.stream()
                 .map(this::mapUserToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public UserAssignedToCourseDTO mapUserToDTO(User user) {

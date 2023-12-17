@@ -108,18 +108,6 @@ class EnrollmentControllerTest {
 
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
-    void testGetEnrollmentByNameSuccess() throws Exception {
-        String enrollmentName = "Test name";
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/enrollment/by-name/{name}", enrollmentName))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-
-        verify(enrollmentService, times(1)).findEnrolmentByCourseName(enrollmentName);
-    }
-
-    @Test
-    @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testUpdateEnrollmentSuccess() throws Exception {
         EnrollmentUpdateDTO updateDTO = new EnrollmentUpdateDTO();
         updateDTO.setId(8L);
@@ -159,7 +147,6 @@ class EnrollmentControllerTest {
                 CourseResponseDTO.builder()
                         .courseId(1L)
                         .courseName("Course1")
-                        .started(true)
                         .status(CourseStatus.STOP)
                         .startDate(LocalDate.of(2023, 1, 1))
                         .build(),
@@ -168,7 +155,6 @@ class EnrollmentControllerTest {
                         .courseName("Course2")
                         .status(CourseStatus.STARTED)
                         .startDate(LocalDate.of(2023, 1, 2))
-                        .started(true)
                         .build()
         );
 

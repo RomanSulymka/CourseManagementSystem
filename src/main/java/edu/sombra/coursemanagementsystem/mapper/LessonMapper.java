@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class LessonMapper {
         return LessonDTO.builder()
                 .lessonId(lesson.getId())
                 .lessonName(lesson.getName())
-                .homeworkDTO(homeworkMapper.toDTO(homework))
+                .homeworkDTO(Objects.nonNull(homework) ? homeworkMapper.toDTO(homework) : null)
                 .build();
     }
 

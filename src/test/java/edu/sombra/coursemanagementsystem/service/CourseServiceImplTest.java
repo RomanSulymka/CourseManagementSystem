@@ -16,7 +16,6 @@ import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
-import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
 import edu.sombra.coursemanagementsystem.mapper.CourseMapper;
@@ -124,7 +123,6 @@ class CourseServiceImplTest {
                 .name("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -134,7 +132,6 @@ class CourseServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -144,7 +141,6 @@ class CourseServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -154,7 +150,6 @@ class CourseServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -164,7 +159,6 @@ class CourseServiceImplTest {
                 .name("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now().plusDays(1))
-                .started(true)
                 .build();
     }
 
@@ -172,7 +166,6 @@ class CourseServiceImplTest {
         return Course.builder()
                 .id(id)
                 .name(name)
-                .started(true)
                 .status(CourseStatus.STARTED)
                 .build();
     }
@@ -182,7 +175,6 @@ class CourseServiceImplTest {
                 .id(id)
                 .name(name)
                 .status(CourseStatus.STOP)
-                .started(true)
                 .build();
     }
 
@@ -206,7 +198,6 @@ class CourseServiceImplTest {
         return Optional.of(Course.builder()
                 .id(courseId)
                 .name("Sample Course")
-                .started(false)
                 .status(CourseStatus.WAIT)
                 .build());
     }
@@ -288,8 +279,6 @@ class CourseServiceImplTest {
 
         courseService.startCoursesOnSchedule();
 
-        assertTrue(course1.getStarted());
-        assertTrue(course2.getStarted());
         verify(courseRepository, times(1)).saveAll(coursesToStart);
     }
 
@@ -299,7 +288,6 @@ class CourseServiceImplTest {
         List<Course> coursesToStart = new ArrayList<>();
         Course course = new Course();
         course.setId(1L);
-        course.setStarted(false);
         course.setStartDate(LocalDate.parse("2023-09-21"));
         coursesToStart.add(course);
 
@@ -310,7 +298,6 @@ class CourseServiceImplTest {
                 () -> courseService.startCoursesOnSchedule());
 
         assertEquals("Course has not enough lessons", exception.getMessage());
-        assertFalse(course.getStarted());
         verify(courseRepository, never()).saveAll(any());
     }
 
@@ -322,7 +309,6 @@ class CourseServiceImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2025, 1, 1))
-                .started(true)
                 .build();
 
         CourseResponseDTO responseDTO = CourseResponseDTO.builder()
@@ -330,7 +316,6 @@ class CourseServiceImplTest {
                 .courseName("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2025, 1, 1))
-                .started(false)
                 .build();
 
         when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
@@ -347,7 +332,6 @@ class CourseServiceImplTest {
 
         assertNotNull(courseResponseDTO);
         assertEquals(1L, courseResponseDTO.getCourseId());
-        assertFalse(courseResponseDTO.getStarted());
         verify(courseRepository, times(1)).save(any());
         verify(courseRepository, times(1)).assignInstructor(eq(1L), eq(1L));
         verify(lessonService, times(1)).generateAndAssignLessons(eq(courseDTO.getNumberOfLessons()), any());
@@ -360,7 +344,6 @@ class CourseServiceImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.of(2025, 1, 1))
-                .started(true)
                 .build();
 
         CourseDTO courseDTO = CourseDTO.builder()
@@ -395,7 +378,6 @@ class CourseServiceImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now().minusDays(1))
-                .started(true)
                 .build();
 
         CourseDTO courseDTO = CourseDTO.builder()
@@ -406,7 +388,7 @@ class CourseServiceImplTest {
                 .build();
 
         when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
-        assertThrows(IllegalArgumentException.class, () -> courseService.create(courseDTO));
+        assertThrows(CourseCreationException.class, () -> courseService.create(courseDTO));
         verify(courseRepository, never()).save(any());
         verify(courseRepository, never()).assignInstructor(anyLong(), anyLong());
         verify(lessonService, never()).generateAndAssignLessons(anyLong(), any());
@@ -424,7 +406,6 @@ class CourseServiceImplTest {
         assertNotNull(foundCourse);
         assertEquals(sampleCourse.getId(), foundCourse.getCourseId());
         assertEquals(sampleCourse.getName(), foundCourse.getCourseName());
-        assertTrue(foundCourse.getStarted());
     }
 
     @Test
@@ -450,7 +431,6 @@ class CourseServiceImplTest {
         assertNotNull(foundCourse);
         assertEquals(sampleCourse.getId(), foundCourse.getCourseId());
         assertEquals(sampleCourse.getName(), foundCourse.getCourseName());
-        assertTrue(foundCourse.getStarted());
     }
 
     @Test
@@ -472,7 +452,6 @@ class CourseServiceImplTest {
                 .name("New Course Name")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         CourseResponseDTO responseCourse = CourseResponseDTO.builder()
@@ -480,7 +459,6 @@ class CourseServiceImplTest {
                 .courseName("New Course Name")
                 .status(CourseStatus.STARTED)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         when(courseMapper.fromDTO(updatedCourse)).thenReturn(createSampleCourse());
@@ -505,7 +483,7 @@ class CourseServiceImplTest {
         when(courseRepository.exist(updatedCourse.getName())).thenReturn(true);
         when(courseRepository.findById(updatedCourse.getId())).thenReturn(Optional.of(existingCourse));
 
-        CourseAlreadyExistsException exception = assertThrows(CourseAlreadyExistsException.class,
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> courseService.update(updatedCourse));
 
         assertEquals("Course with this name is already exist: " + updatedCourse.getName(), exception.getMessage());
@@ -630,21 +608,74 @@ class CourseServiceImplTest {
     }
 
     @Test
+    void testFindCoursesByUserIdForAdmin() {
+        Long userId = 1L;
+        String userEmail = "admin@example.com";
+        User adminUser = User.builder()
+                .id(1L)
+                .role(RoleEnum.ADMIN)
+                .build();
+        List<CourseResponseDTO> expectedResponses = Collections.singletonList(createCourseResponseDTO());
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(adminUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.ofNullable(adminUser));
+        when(courseRepository.findCoursesByUserId(userId)).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
+        when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
+        List<CourseResponseDTO> result = courseService.findCoursesByUserId(userId, userEmail);
+
+        assertEquals(expectedResponses, result);
+
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
+    }
+
+    @Test
     void testFindCoursesByInstructorId() {
         Long instructorId = 1L;
+
+        User user = User.builder()
+                .id(1L)
+                .email("user@email.com")
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
         List<CourseResponseDTO> expectedCourses = Collections.singletonList(createCourseResponseDTO());
 
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
         when(userService.isUserInstructor(instructorId)).thenReturn(true);
         when(courseRepository.findCoursesByUserId(instructorId)).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
         when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
 
-        List<CourseResponseDTO> resultCourses = courseService.findCoursesByInstructorId(instructorId);
+        List<CourseResponseDTO> resultCourses = courseService.findCoursesByUserId(instructorId, user.getEmail());
 
         assertNotNull(resultCourses);
         assertEquals(expectedCourses, resultCourses);
 
         verify(userService, times(1)).isUserInstructor(instructorId);
         verify(courseRepository, times(1)).findCoursesByUserId(instructorId);
+    }
+
+    @Test
+    void testFindCoursesByStudentId() {
+        Long studentId = 1L;
+
+        User user = User.builder()
+                .id(1L)
+                .email("user@email.com")
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        List<CourseResponseDTO> expectedCourses = Collections.singletonList(createCourseResponseDTO());
+
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(user);
+        when(courseRepository.findCoursesByUserId(user.getId())).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
+        when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
+
+        List<CourseResponseDTO> resultCourses = courseService.findCoursesByUserId(studentId, user.getEmail());
+
+        assertNotNull(resultCourses);
+        assertEquals(expectedCourses, resultCourses);
+
+        verify(courseRepository, times(1)).findCoursesByUserId(studentId);
     }
 
     @Test
@@ -658,7 +689,6 @@ class CourseServiceImplTest {
                 .courseName("Sample Course")
                 .status(CourseStatus.WAIT)
                 .startDate(LocalDate.now())
-                .started(false)
                 .build();
 
         List<CourseResponseDTO> courseResponseList = List.of(courseResponseDTO);

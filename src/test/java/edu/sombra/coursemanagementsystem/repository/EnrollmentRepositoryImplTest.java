@@ -9,7 +9,6 @@ import jakarta.persistence.Tuple;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.stereotype.Repository;
@@ -31,9 +30,6 @@ class EnrollmentRepositoryImplTest {
     @Autowired
     private CourseRepository courseRepository;
 
-    @Autowired
-    private TestEntityManager entityManager;
-
     @Test
     void testIsUserAssignedToCourse() {
         User user = User.builder()
@@ -50,7 +46,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -87,7 +82,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -120,7 +114,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -155,7 +148,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
 
@@ -163,7 +155,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Scala Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.saveAll(List.of(course1, course2));
@@ -203,7 +194,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -253,7 +243,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);
@@ -298,7 +287,6 @@ class EnrollmentRepositoryImplTest {
                 .name("Java Programming")
                 .status(CourseStatus.STOP)
                 .startDate(LocalDate.now())
-                .started(true)
                 .build();
 
         courseRepository.save(course);

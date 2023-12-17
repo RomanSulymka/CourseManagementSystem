@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.controller;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseAssignedToUserDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseMarkResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
@@ -11,6 +12,8 @@ import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,30 +66,28 @@ public class CourseController {
         return ResponseEntity.ok(courseService.findAllLessonsByCourse(id));
     }
 
-    @GetMapping("/instructor/{instructorId}")
-    public ResponseEntity<List<CourseResponseDTO>> findCoursesByInstructorId(@PathVariable Long instructorId) {
-        return ResponseEntity.ok(courseService.findCoursesByInstructorId(instructorId));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CourseResponseDTO>> findCoursesByUserId(@PathVariable Long userId,
+                                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(courseService.findCoursesByUserId(userId, userDetails.getUsername()));
     }
 
-    @GetMapping("/instructor/{instructorId}/{courseId}")
-    public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@PathVariable Long instructorId,
-                                                                                                 @PathVariable Long courseId) {
-        return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(instructorId, courseId));
+    @PostMapping("/instructor/users")
+    public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@RequestBody CourseAssignedToUserDTO
+                                                                                                             courseAssignedToUserDTO) {
+        return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(courseAssignedToUserDTO.getUserId(), courseAssignedToUserDTO.getCourseId()));
     }
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<CourseResponseDTO>> findCoursesByStudentId(@PathVariable Long studentId) {
-        return ResponseEntity.ok(courseService.findCoursesByUserId(studentId));
+    @PostMapping("/student/lessons")
+    public ResponseEntity<LessonsByCourseDTO> findLessonsByCourseIdAssignedToStudentId(@RequestBody CourseAssignedToUserDTO
+                                                                                               courseAssignedToUserDTO) {
+        return ResponseEntity.ok(courseService.findAllLessonsByCourseAssignedToUserId(courseAssignedToUserDTO.getUserId(),
+                courseAssignedToUserDTO.getCourseId()));
     }
 
-    @GetMapping("/student/lessons/{studentId}/{courseId}")
-    public ResponseEntity<LessonsByCourseDTO> findLessonsByCourseIdAssignedToStudentId(@PathVariable Long studentId,
-                                                                                       @PathVariable Long courseId) {
-        return ResponseEntity.ok(courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId));
-    }
-
-    @GetMapping("/finish/{studentId}/{courseId}")
-    public ResponseEntity<CourseMarkResponseDTO> finishCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
-        return ResponseEntity.ok(courseService.finishCourse(studentId, courseId));
+    @PostMapping("/finish")
+    public ResponseEntity<CourseMarkResponseDTO> finishCourse(@RequestBody CourseAssignedToUserDTO
+                                                                          courseAssignedToUserDTO) {
+        return ResponseEntity.ok(courseService.finishCourse(courseAssignedToUserDTO.getUserId(), courseAssignedToUserDTO.getUserId()));
     }
 }

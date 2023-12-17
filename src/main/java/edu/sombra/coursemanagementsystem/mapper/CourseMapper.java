@@ -8,14 +8,12 @@ import edu.sombra.coursemanagementsystem.dto.lesson.LessonDTO;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.CourseFeedback;
 import edu.sombra.coursemanagementsystem.entity.CourseMark;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
 public class CourseMapper {
 
     public LessonsByCourseDTO toDTO(Course course, CourseMark courseMark,
@@ -35,7 +33,6 @@ public class CourseMapper {
                 .id(courseDTO.getId())
                 .name(courseDTO.getName())
                 .startDate(courseDTO.getStartDate())
-                .started(courseDTO.getStarted())
                 .status(courseDTO.getStatus())
                 .build();
     }
@@ -44,7 +41,6 @@ public class CourseMapper {
         return Course.builder()
                 .name(courseDTO.getName())
                 .startDate(courseDTO.getStartDate())
-                .started(courseDTO.getStarted())
                 .status(courseDTO.getStatus())
                 .build();
     }
@@ -54,7 +50,6 @@ public class CourseMapper {
                 .courseId(course.getId())
                 .courseName(course.getName())
                 .startDate(course.getStartDate())
-                .started(course.getStarted())
                 .status(course.getStatus())
                 .build();
     }
@@ -70,7 +65,6 @@ public class CourseMapper {
                 .id(courseResponseDTO.getCourseId())
                 .name(courseResponseDTO.getCourseName())
                 .startDate(courseResponseDTO.getStartDate())
-                .started(courseResponseDTO.getStarted())
                 .build();
     }
 }

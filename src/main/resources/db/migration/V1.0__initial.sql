@@ -14,7 +14,6 @@ CREATE TABLE courses
     name      VARCHAR(255) NOT NULL,
     status    VARCHAR(255),
     start_date DATE         NOT NULL,
-    started   BOOLEAN,
     UNIQUE (name)
 );
 
@@ -92,19 +91,19 @@ CREATE TABLE tokens
 
 INSERT INTO users (first_name, last_name, password, email, role)
 VALUES
-    ('user1', 'user1 last name', 'password1', 'user1@example.com', 'STUDENT'),
+    ('user1', 'user1 last name', '$2a$10$dvj38BqK0Pnp24c3Bx3MYeN9GabMO5ZROwE4af6vFQvFvI/wSj3Aa', 'user1@example.com', 'STUDENT'),
     ('admin', 'admin', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'admin@gmail.com', 'ADMIN'),
     ('instructor', 'instructor', '$2a$10$d7NjI6y4aBFXdKEbaiPqVeQG3sXJk34.rQaonW5AAQi7wjVX7qjki', 'instructor@gmail.com', 'INSTRUCTOR'),
     ('student', 'student', '$2a$10$KNhkSyMKkSm1bMLwM41WzOEnRs6ZCusvU2s984UBa9mIpYZJ6lMm2', 'student@gmail.com', 'STUDENT'),
     ('student2', 'student2', '$2a$10$6HZfDrXpJT5Vh5MtZR7U8e31MeRJFc3UldWVixD/QQ0hYGXR9mM1y', 'student2@gmail.com', 'STUDENT'),
-    ('instructor1', 'user3 last name', 'password3', 'instructor1@example.com', 'INSTRUCTOR'),
-    ('instructor2', 'user4 last name', 'password4', 'instructor2@example.com', 'INSTRUCTOR');
+    ('instructor1', 'user3 last name', '$2a$10$SVNT6a4/ZeaVCIivE7FkXu3BmvdQMIi5fOESuqmZCFRloZuP6kG0W', 'instructor1@example.com', 'INSTRUCTOR'),
+    ('instructor2', 'user4 last name', '$2a$10$0RBzv0R38cG25fv3H98cZeRH0MaYbWSozq.V54nu2bRWtf6r875Sm', 'instructor2@example.com', 'INSTRUCTOR');
 
-INSERT INTO courses (name, status, start_date, started)
+INSERT INTO courses (name, status, start_date)
 VALUES
-    ('Course A', 'STOP', '2023-01-01', true),
-    ('Course B', 'STARTED', '2023-02-01', false),
-    ('Course C', 'WAIT', '2023-03-01', true);
+    ('Course A', 'STOP', '2023-01-01'),
+    ('Course B', 'STARTED', '2023-02-01'),
+    ('Course C', 'WAIT', '2023-03-01');
 
 INSERT INTO enrollments (user_id, course_id)
 VALUES
