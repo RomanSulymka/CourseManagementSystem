@@ -608,6 +608,27 @@ class CourseServiceImplTest {
     }
 
     @Test
+    void testFindCoursesByUserIdForAdmin() {
+        Long userId = 1L;
+        String userEmail = "admin@example.com";
+        User adminUser = User.builder()
+                .id(1L)
+                .role(RoleEnum.ADMIN)
+                .build();
+        List<CourseResponseDTO> expectedResponses = Collections.singletonList(createCourseResponseDTO());
+
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(adminUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.ofNullable(adminUser));
+        when(courseRepository.findCoursesByUserId(userId)).thenReturn(Optional.of(List.of(createSampleCourse(1L, "Sample Course"))));
+        when(courseMapper.mapToResponsesDTO(List.of(createSampleCourse(1L, "Sample Course")))).thenReturn(Collections.singletonList(createCourseResponseDTO()));
+        List<CourseResponseDTO> result = courseService.findCoursesByUserId(userId, userEmail);
+
+        assertEquals(expectedResponses, result);
+
+        verify(userRepository, times(1)).findUserByEmail(userEmail);
+    }
+
+    @Test
     void testFindCoursesByInstructorId() {
         Long instructorId = 1L;
 
