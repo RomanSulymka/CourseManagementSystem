@@ -218,7 +218,7 @@ class FileServiceImplTest {
                 .build();
         when(userRepository.findUserByEmail(userEmail)).thenReturn(normalUser);
 
-        assertThrows(IllegalArgumentException.class, () -> fileService.delete(fileId, userEmail));
+        assertThrows(EntityNotFoundException.class, () -> fileService.delete(fileId, userEmail));
         verify(fileRepository, never()).delete(any());
     }
 

@@ -52,7 +52,7 @@ import java.util.Optional;
 @Service
 public class CourseServiceImpl implements CourseService {
     public static final String COURSE_START_DATE_HAS_ALREADY_EXPIRED = "Course start date has already expired!";
-    public static final String USER_SHOULD_HAVE_INSTRUCTOR_ROLE_BUT_NOW_USER_HAS_ROLE = "User should have instructor role, but now user has role {}";
+    public static final String USER_SHOULD_HAVE_INSTRUCTOR_ROLE = "User should be Instructor";
     public static final String INSTRUCTOR_SUCCESSFULLY_ASSIGNED = "Instructor successfully assigned!";
     public static final String SCHEDULER_SUCCESSFULLY_STARTED = "Scheduler successfully started";
     public static final String FAILED_START_COURSE_COURSE_HAS_NOT_ENOUGH_LESSONS = "Error, course has not enough lessons";
@@ -110,15 +110,19 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private void assignInstructor(Course createdCourse, String instructorEmail) {
-        User user = userRepository.findUserByEmail(instructorEmail);
+        try {
+            User user = userRepository.findUserByEmail(instructorEmail);
 
-        if (user.getRole() != RoleEnum.INSTRUCTOR) {
-            log.error(USER_SHOULD_HAVE_INSTRUCTOR_ROLE_BUT_NOW_USER_HAS_ROLE, user.getRole());
-            throw new CourseCreationException(String.format(USER_SHOULD_HAVE_INSTRUCTOR_ROLE_BUT_NOW_USER_HAS_ROLE, user.getRole()));
+            if (user.getRole() != RoleEnum.INSTRUCTOR) {
+                throw new CourseCreationException(USER_SHOULD_HAVE_INSTRUCTOR_ROLE);
+            }
+
+            courseRepository.assignInstructor(createdCourse.getId(), user.getId());
+            log.info(INSTRUCTOR_SUCCESSFULLY_ASSIGNED);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new IllegalArgumentException(USER_SHOULD_HAVE_INSTRUCTOR_ROLE);
         }
-
-        courseRepository.assignInstructor(createdCourse.getId(), user.getId());
-        log.info(INSTRUCTOR_SUCCESSFULLY_ASSIGNED);
     }
 
     @Scheduled(cron = "0 0 0 * * ?")
