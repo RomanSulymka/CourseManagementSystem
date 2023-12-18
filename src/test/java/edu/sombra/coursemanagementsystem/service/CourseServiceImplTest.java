@@ -241,26 +241,10 @@ class CourseServiceImplTest {
         );
     }
 
-    private CourseMark createSampleCourseMark() {
-        return CourseMark.builder().build();
-    }
-
     private Homework createSampleHomework() {
         return Homework.builder()
                 .id(1L)
                 .build();
-    }
-
-    private LessonsByCourseDTO createSampleLessonsByCourseDTO() {
-        return LessonsByCourseDTO.builder().build();
-    }
-
-    private LessonDTO createSampleLessonDTO() {
-        return LessonDTO.builder().build();
-    }
-
-    private CourseFeedback createSampleCourseFeedback() {
-        return CourseFeedback.builder().build();
     }
 
     @ParameterizedTest
@@ -817,12 +801,12 @@ class CourseServiceImplTest {
         when(courseRepository.isUserAssignedToCourse(studentId, courseId)).thenReturn(true);
         when(courseRepository.findById(courseId)).thenReturn(createSampleCourse(courseId));
         when(courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)).thenReturn(Optional.of(createSampleLessons()));
-        when(courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)).thenReturn(Optional.of(createSampleCourseMark()));
-        when(courseFeedbackRepository.findFeedback(studentId, courseId)).thenReturn(Optional.ofNullable(createSampleCourseFeedback()));
-        when(lessonMapper.toDTO(any(), any())).thenReturn(createSampleLessonDTO());
+        when(courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)).thenReturn(Optional.of(mock(CourseMark.class)));
+        when(courseFeedbackRepository.findFeedback(studentId, courseId)).thenReturn(Optional.ofNullable(mock(CourseFeedback.class)));
+        when(lessonMapper.toDTO(any(), any())).thenReturn(mock(LessonDTO.class));
         when(homeworkRepository.findByUserAndLessonId(eq(studentId), any())).thenReturn(Optional.ofNullable(createSampleHomework()));
 
-        when(courseMapper.toDTO(any(), any(), any(), any())).thenReturn(createSampleLessonsByCourseDTO());
+        when(courseMapper.toDTO(any(), any(), any(), any())).thenReturn(mock(LessonsByCourseDTO.class));
 
         LessonsByCourseDTO resultDTO = courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId);
 

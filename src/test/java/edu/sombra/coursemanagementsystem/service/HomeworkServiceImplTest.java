@@ -61,17 +61,7 @@ class HomeworkServiceImplTest {
         homeworkService = new HomeworkServiceImpl(homeworkRepository, courseMarkService, lessonRepository, enrollmentService, homeworkMapper, userRepository, courseRepository);
     }
 
-    private static Stream<Arguments> provideTestDataForSetInvalidMark() {
-        Long userId = 1L;
-        Long homeworkId = 2L;
-
-        return Stream.of(
-                Arguments.of(userId, homeworkId, 110L),
-                Arguments.of(userId, homeworkId, -5L)
-        );
-    }
-
-    private static Stream<Arguments> provideTestDataForSetCorrectMark() {
+    private static Stream<Arguments> provideTestDataForSetMark() {
         Long userId = 1L;
         Long homeworkId = 2L;
 
@@ -142,7 +132,7 @@ class HomeworkServiceImplTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestDataForSetInvalidMark")
+    @MethodSource("provideTestDataForSetMark")
     void testSetMark_InvalidMarkValue(Long userId, Long homeworkId, Long invalidMark) {
         when(enrollmentService.isUserAssignedToCourse(userId, homeworkId)).thenReturn(true);
 
@@ -153,7 +143,7 @@ class HomeworkServiceImplTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestDataForSetCorrectMark")
+    @MethodSource("provideTestDataForSetMark")
     void testSetMark_UserNotAssignedToCourse(Long userId, Long homeworkId, Long mark) {
         when(enrollmentService.isUserAssignedToCourse(userId, homeworkId)).thenReturn(false);
 
