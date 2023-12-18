@@ -18,10 +18,12 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
     @PersistenceContext
     private EntityManager entityManager;
     public static final String GET_COURSES_BY_USER_ID = "SELECT c FROM enrollments e INNER JOIN courses c on c.id = e.course.id WHERE e.user.id =:id";
-    public static final String GET_COURSES_BY_ENROLLMENT_ID = "SELECT e.course FROM enrollments e INNER JOIN users u on u.id = e.user.id where e.id =: id";
-    public static final String GET_ASSIGNED_INSTRUCTOR_FOR_COURSE = "SELECT u FROM enrollments e INNER JOIN users u on u.id = e.user.id WHERE e.course.id =: id AND u.role = 'INSTRUCTOR'";
+    public static final String GET_COURSES_BY_ENROLLMENT_ID = "SELECT e.course FROM enrollments e INNER JOIN users u on u.id = e.user.id WHERE e.id =: id";
+    public static final String GET_ASSIGNED_INSTRUCTOR_FOR_COURSE = "SELECT u FROM enrollments e INNER JOIN users u on u.id = e.user.id" +
+            " WHERE e.course.id =: id AND u.role = 'INSTRUCTOR'";
     public static final String GET_USER_BY_ENROLLMENT = "SELECT u FROM enrollments e INNER JOIN users u on u.id = e.user.id WHERE e.id =: id";
-    public static final String GET_ENROLLMENT_BY_COURSE_NAME = "select c.name, u.firstName, u.lastName, u.role, u.email from enrollments e inner join courses c on c.id = e.course.id INNER JOIN users u on u.id = e.user.id where c.name = :name";
+    public static final String GET_ENROLLMENT_BY_COURSE_NAME = "select c.name, u.firstName, u.lastName, u.role, u.email from enrollments e" +
+            " inner join courses c on c.id = e.course.id INNER JOIN users u on u.id = e.user.id where c.name = :name";
     public static final String GET_NUMBER_OF_USER_COURSES = "SELECT count(e.course.id) FROM enrollments e WHERE e.user.id =: userId";
     public static final String IS_USER_ALREADY_ASSIGNED_FOR_COURSE_QUERY = "SELECT COUNT(e) FROM enrollments e WHERE e.course = :course AND e.user = :user";
 

@@ -24,7 +24,8 @@ public class CourseMarkRepositoryImpl implements CourseMarkRepository {
             " DO UPDATE " +
             "   SET total_score = EXCLUDED.total_score, " +
             "       passed = EXCLUDED.passed; ";
-    private static final String GET_ELEMENTS_BY_USER_ID_AND_COURSE_ID = "SELECT u FROM user_course_marks u WHERE u.course.id = :courseId AND u.user.id = :userId";
+    private static final String GET_ELEMENTS_BY_USER_ID_AND_COURSE_ID = "SELECT u FROM user_course_marks u" +
+            " WHERE u.course.id = :courseId AND u.user.id = :userId";
 
     @Generated
     @Override

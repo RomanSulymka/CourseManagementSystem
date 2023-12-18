@@ -12,13 +12,16 @@ import java.util.Optional;
 
 @Repository
 public class LessonRepositoryImpl implements LessonRepository {
-    public static final String GET_LESSONS_BY_USER = "SELECT l FROM lessons l INNER JOIN enrollments e on l.course.id = e.course.id" +
-            " INNER JOIN users u on e.user.id = u.id " +
-            " WHERE u.id =: userId";
+
     @PersistenceContext
     private EntityManager entityManager;
 
-    private static final String GET_LESSONS_BY_HOMEWORK_ID = "SELECT l FROM homework h INNER JOIN lessons l on l.id = h.lesson.id WHERE h.id = :homeworkId";
+    public static final String GET_LESSONS_BY_USER = "SELECT l FROM lessons l INNER JOIN enrollments e on l.course.id = e.course.id" +
+            " INNER JOIN users u on e.user.id = u.id " +
+            " WHERE u.id =: userId";
+
+    private static final String GET_LESSONS_BY_HOMEWORK_ID = "SELECT l FROM homework h INNER JOIN lessons l on l.id = h.lesson.id" +
+            " WHERE h.id = :homeworkId";
 
     private static final String GET_ALL_LESSONS_BY_COURSE_ID = "SELECT l FROM lessons l WHERE l.course.id =: courseId";
 
