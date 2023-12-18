@@ -3,7 +3,6 @@ package edu.sombra.coursemanagementsystem.controller.auth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.RegisterDTO;
-import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.service.auth.AuthenticateService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +46,7 @@ class AuthenticationControllerTest {
 
     @Test
     void registerUser_ValidRequest_ReturnsOk() throws Exception {
-        RegisterDTO registerDTO = new RegisterDTO("firstName", "lastName", "email", "password", RoleEnum.STUDENT);
+        RegisterDTO registerDTO = new RegisterDTO("firstName", "lastName", "email", "password");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
