@@ -51,6 +51,6 @@ public class FileController {
     public ResponseEntity<Void> deleteFile(@PathVariable Long fileId,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         fileService.delete(fileId, userDetails.getUsername());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }

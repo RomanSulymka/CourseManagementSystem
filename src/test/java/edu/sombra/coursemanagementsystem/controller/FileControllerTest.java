@@ -122,7 +122,7 @@ class FileControllerTest {
                             request.setRemoteUser("admin@gmail.com");
                             return request;
                         }))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(fileService).delete(fileId, "admin@gmail.com");
     }
