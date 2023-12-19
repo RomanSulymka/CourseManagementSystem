@@ -280,9 +280,7 @@ class HomeworkServiceImplTest {
                         .build())
                 .build();
         when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(homework));
-        String result = homeworkService.deleteHomework(homeworkId);
-
-        assertEquals("Homework deleted successfully!", result);
+        assertDoesNotThrow(() ->homeworkService.deleteHomework(homeworkId));
 
         verify(homeworkRepository, times(1)).delete(homework);
     }

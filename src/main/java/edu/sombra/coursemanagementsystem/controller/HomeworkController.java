@@ -53,7 +53,8 @@ public class HomeworkController {
     }
 
     @DeleteMapping("/{homeworkId}")
-    public ResponseEntity<String> delete(@PathVariable Long homeworkId) {
-        return ResponseEntity.ok(homeworkService.deleteHomework(homeworkId));
+    public ResponseEntity<Void> delete(@PathVariable Long homeworkId) {
+        homeworkService.deleteHomework(homeworkId);
+        return ResponseEntity.noContent().build();
     }
 }

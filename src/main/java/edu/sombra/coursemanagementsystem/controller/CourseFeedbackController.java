@@ -49,7 +49,8 @@ public class CourseFeedbackController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteFeedback(@PathVariable Long id) {
-        return ResponseEntity.ok(courseFeedbackService.delete(id));
+    public ResponseEntity<Void> deleteFeedback(@PathVariable Long id) {
+        courseFeedbackService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

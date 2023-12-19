@@ -15,7 +15,7 @@ public interface HomeworkService {
 
     GetHomeworkDTO findHomeworkById(Long homeworkId, String userEmail);
 
-    String deleteHomework(Long homeworkId);
+    void deleteHomework(Long homeworkId);
 
     List<GetHomeworkDTO> getAllHomeworks(String userEmail);
 

@@ -185,14 +185,13 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public boolean delete(Long id) {
+    public void delete(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error(COURSE_NOT_FOUND_WITH_ID + id);
                     return new EntityNotFoundException(COURSE_NOT_FOUND_WITH_ID + id);
                 });
         courseRepository.delete(course);
-        return true;
     }
 
     @Override

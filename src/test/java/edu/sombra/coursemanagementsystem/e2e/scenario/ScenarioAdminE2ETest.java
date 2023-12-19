@@ -192,15 +192,14 @@ class ScenarioAdminE2ETest {
     }
 
     private void deleteLessonById(List<LessonResponseDTO> lessonsResponse) {
-        ResponseEntity<String> deleteLessonResponse = restTemplate.exchange(
+        ResponseEntity<Void> deleteLessonResponse = restTemplate.exchange(
                 buildUrl("/api/v1/lesson/{id}", lessonsResponse.get(1).getId()),
                 HttpMethod.DELETE,
                 new HttpEntity<>(adminHeaders),
-                String.class
+                Void.class
         );
 
-        assertEquals(HttpStatus.OK, deleteLessonResponse.getStatusCode());
-        assertEquals("Lesson deleted successfully", deleteLessonResponse.getBody());
+        assertEquals(HttpStatus.NO_CONTENT, deleteLessonResponse.getStatusCode());
     }
 
     private LessonResponseDTO changeLessonName(List<LessonResponseDTO> lessonsResponse, String adminJwtToken) {

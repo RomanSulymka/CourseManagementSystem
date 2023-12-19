@@ -484,9 +484,7 @@ class CourseServiceImplTest {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(existingCourse));
 
-        boolean result = assertDoesNotThrow(() -> courseService.delete(courseId));
-
-        assertTrue(result);
+        assertDoesNotThrow(() -> courseService.delete(courseId));
 
         verify(courseRepository, times(1)).findById(courseId);
         verify(courseRepository, times(1)).delete(existingCourse);

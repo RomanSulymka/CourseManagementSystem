@@ -31,9 +31,9 @@ public class LessonController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         lessonService.deleteLesson(id);
-        return ResponseEntity.ok("Lesson deleted successfully");
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")

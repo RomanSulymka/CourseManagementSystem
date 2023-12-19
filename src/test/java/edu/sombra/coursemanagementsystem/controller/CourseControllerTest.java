@@ -174,12 +174,10 @@ class CourseControllerTest {
     void testDeleteCourseByIdSuccess() throws Exception {
         var courseId = 1L;
 
-        when(courseService.delete(courseId)).thenReturn(true);
-
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/course/{id}", courseId)
                 .contentType(MediaType.APPLICATION_JSON));
 
-        result.andExpect(status().isOk());
+        result.andExpect(status().isNoContent());
 
         verify(courseService, times(1)).delete(courseId);
     }

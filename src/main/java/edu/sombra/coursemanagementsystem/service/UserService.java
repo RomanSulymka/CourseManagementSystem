@@ -25,7 +25,7 @@ public interface UserService {
 
     String resetPassword(ResetPasswordDTO resetPasswordDTO, String userEmail);
 
-    String deleteUser(Long id);
+    void deleteUser(Long id);
 
     List<UserResponseDTO> findAllUsers();
 

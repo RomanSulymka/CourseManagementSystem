@@ -78,11 +78,8 @@ class LessonControllerTest {
         Long lessonId = 1L;
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/lesson/{id}", lessonId)
-                .contentType(MediaType.APPLICATION_JSON));
-
-        result.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(jsonPath("$").isString());
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
 
         verify(lessonService, times(1)).deleteLesson(lessonId);
     }
