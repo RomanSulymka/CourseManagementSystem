@@ -69,7 +69,7 @@ jobs:
         env:
           PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
           HOSTNAME: ${{secrets.EC2_HOSTNAME}}
-          USER_NAME: ${{secrets.USER_NAME}}
+          USER_NAME: ${{secrets.EC2_USER_NAME}}
 
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
