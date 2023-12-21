@@ -622,7 +622,7 @@ class UserServiceImplTest {
                 .build();
         when(userRepository.findById(instructorId)).thenReturn(Optional.of(instructor));
 
-        AccessDeniedException exception = assertThrows(AccessDeniedException.class,
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> userService.isUserInstructor(instructorId));
 
         assertEquals("User role should be: INSTRUCTOR", exception.getMessage());
