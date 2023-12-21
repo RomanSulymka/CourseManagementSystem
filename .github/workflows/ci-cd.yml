@@ -80,14 +80,8 @@ jobs:
           echo ${{ secrets.EC2_PRIVATE_KEY }} > ~/.ssh/key.pem
           chmod 600 ~/.ssh/key.pem
 
-#      - name: Start SSH agent
-#        run: eval $(ssh-agent -s)
-#
-#      - name: Add private key to SSH agent
-#        run: ssh-add ~/.ssh/key.pem
-
-      - name: Debug
-        run: ssh -v -i ~/.ssh/key.pem ec2-user@ec2-52-3-252-203.compute-1.amazonaws.com 'echo Debugging SSH connection'
+      - name: Debug SSH key content
+        run: cat ~/.ssh/key.pem
 
       - name: Deploy to EC2
         run: |
