@@ -79,6 +79,8 @@ jobs:
                     docker-compose down app
                     docker-compose up -d
                     docker ps
+                    ENDSSH
+                    '
 
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v2
