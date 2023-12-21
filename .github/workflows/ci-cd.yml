@@ -77,7 +77,33 @@ jobs:
 
       - name: Set up SSH key
         run: |
-          echo ${{ secrets.EC2_PRIVATE_KEY }} > ~/.ssh/key.pem
+          echo -----BEGIN RSA PRIVATE KEY-----
+  MIIEowIBAAKCAQEAk1rYs+OjIxAbm0NY3jAvjD7b+wDO1em9gZfgcZLfafZl6VGO
+  iVVHh/GeQx2RhLzfWTRj2ozUoQ13g+s7WK/HsOxrMt2rP9vxm8k+0Esf2A0G26P0
+  bvKTVyvqEE/SOTy/bF8++AHZN0QA/25CWgf1I/7jKCSe+MZ+/2ep1I5igL2EFzNk
+  TRDCuBVPsL5u2Wv8zIkd3341UiLR/hLgHDku8nArOM9W0VXnai2hwk2YlLF8QmDO
+  kjWWy5kTxsTlkbPjOh7xYycTFTWswmz10RzcXpdZ8P5gE6T001Te9prStaInIbr5
+  r963qwG2GvefM5rkDzPW/hJY4vS6lJRl97qmwwIDAQABAoIBAErb5idNR/1yG3Q/
+  PJB0DlPDQ2I6wNkvi9SgYaeRI+rjAFcN1cmzB0nq16nlBZ5XjWf2E5xd20+OVd8w
+  y898TYh2Mud+cZdZl167WCvdXmoWBBvlKTKMDYpFhv2Ob5AgamcV5Bl+ZumKpK8f
+  RpoSXNlSjfhA0noz7SS3dzHCvAwGdQ+p2QqfWlOcyM8PhRfPpgmcH1Oz6G03xKKo
+  CEpIHJMdw9xcliSatrOeco+JYyVD8YubmuTIPTMTA5ZpmJJhnynO+2YKOfNA3uMZ
+  4L3FKg58I2zlWUiozD5e5u07B4vE8TXp6DMwHbeXTmcAvkk/36/O1bocuDbwY8E0
+  H3HcPbECgYEA1u6EH0dKNv+aZCu+KjM+mJOv47iXcGMWrUSzN40WbnBd5T2xJ7Sq
+  3oXBL9SBEiceTpSas2ldzVlU0atYQfMgpMR7mZSqQtRMYTNq/R41nthSFRZrKojV
+  ahB+v53fT3B8gecsDbmbdwVMYwBr4lh0aLg7aQ5JrZDWS1tWmMiJG+8CgYEAr4LH
+  OS2CeY02f9fLYaw++Ene9LyBhMCK3EovPaHozPCHrZEwlnmHt2qS36bv0/2JaDYj
+  bqT/UwJXxJxIvS2XJ03uOaxGKN3O57lSjd6b08WM1uxBAvakQtApE9utf0/Q09Fk
+  2KN6zoswQfB2YghkP6TrEcSlDQlAqS/cl1xoXm0CgYAEsJOlcxLFfHJL+UBe/1tA
+  TQireV2kkCTwhu06KxPwOPdzhxMUgLaxwE1k08g1MzFQGaH+hDANyQM2x/xXBA0U
+  S00/HqVQa/12qX6OI1icLLAt0Z1pAi9V7yI04Cb9PsEYvIiTjBc+U5lFF79C4xc3
+  Kb3yHuOwq9ZhMo8DKm0DdQKBgCd1UXDraGAHfW80hscIwId1pCiFkODVoOJx0zka
+  A4q/sOE2uSO7YuW7khWyJE0WvSOuuDyR3807w5uyPzA45biybpKMxqE9bNzv7z1y
+  BLqRuV5Ac0VFShyzS+jpBJKQ0TQt6WxDJML2y/ynIRZdKJyeaTLvcOQDZoQi/IcT
+  AWvpAoGBAJ+h01AMJYtB74qXA1c5IZno0uqKy9I1A0EE2CnxaKiZthCRcLVqodmy
+  NBk2arCVYt6HP3mnXcDom/oY/K34Z8XwlaUYxcW/6d74lQlaP2ll00FI2AvSZGoL
+  eoUhFs1FopXSbpU16c0hNGHl8ciPWB8F9g7k/lXkaqg2oIzLNVLH
+  -----END RSA PRIVATE KEY----- > ~/.ssh/key.pem
           chmod 600 ~/.ssh/key.pem
 
 #      - name: Start SSH agent
