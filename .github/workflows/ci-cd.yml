@@ -65,7 +65,7 @@ jobs:
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
 
-      - uses: actions/checkout@v2
+      - uses: appleboy/ssh-action@v1.0.0
       - name: Deploy to EC2
         env:
           PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
