@@ -111,8 +111,18 @@ class CourseRepositoryImplTest {
 
         courseRepository.save(course);
 
-        User instructor = User.builder().id(3L).email("instructor@gmail.com").role(RoleEnum.INSTRUCTOR).build();
-        courseRepository.assignInstructor(course.getId(), instructor.getId());
+        User instructor = User.builder()
+                .id(3L)
+                .email("instructor@gmail.com")
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
+        Enrollment enrollment = Enrollment.builder()
+                .course(course)
+                .user(instructor)
+                .build();
+
+        enrollmentRepository.save(enrollment);
 
         User student1 = userRepository.save(User.builder()
                 .lastName("test")

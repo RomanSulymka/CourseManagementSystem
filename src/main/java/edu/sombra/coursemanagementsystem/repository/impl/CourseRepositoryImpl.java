@@ -44,9 +44,6 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     private static final String EXIST_COURSE_BY_NAME_QUERY = "SELECT COUNT(c) FROM courses c WHERE c.name = :name";
 
-    private static final String ASSIGN_USER_TO_COURSE = "INSERT INTO enrollments (user_id, course_id)" +
-            " VALUES (:instructorId, :courseId )";
-
     private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status, start_date =:startDate WHERE id =:id";
 
     private static final String GET_USERS_IN_COURSE_BY_ROLE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id" +
@@ -106,15 +103,6 @@ public class CourseRepositoryImpl implements CourseRepository {
         return getEntityManager().createQuery(GET_COURSES_BY_START_DATE, Course.class)
                 .setParameter("startDate", currentDate)
                 .getResultList();
-    }
-
-    @Override
-    public void assignInstructor(Long courseId, Long instructorId) {
-        getEntityManager()
-                .createNativeQuery(ASSIGN_USER_TO_COURSE)
-                .setParameter("courseId", courseId)
-                .setParameter("instructorId", instructorId)
-                .executeUpdate();
     }
 
     @Override

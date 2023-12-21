@@ -29,6 +29,7 @@ import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.CourseService;
+import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import edu.sombra.coursemanagementsystem.util.BaseUtil;
@@ -52,8 +53,6 @@ import java.util.Optional;
 @Service
 public class CourseServiceImpl implements CourseService {
     public static final String COURSE_START_DATE_HAS_ALREADY_EXPIRED = "Course start date has already expired!";
-    public static final String USER_SHOULD_HAVE_INSTRUCTOR_ROLE = "User should be Instructor";
-    public static final String INSTRUCTOR_SUCCESSFULLY_ASSIGNED = "Instructor successfully assigned!";
     public static final String SCHEDULER_SUCCESSFULLY_STARTED = "Scheduler successfully started";
     public static final String FAILED_START_COURSE_COURSE_HAS_NOT_ENOUGH_LESSONS = "Error, course has not enough lessons";
     public static final String COURSE_HAS_NOT_ENOUGH_LESSONS = "Course has not enough lessons";
@@ -68,6 +67,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseFeedbackRepository courseFeedbackRepository;
     private final CourseMarkRepository courseMarkRepository;
     private final UserService userService;
+    private final EnrollmentService enrollmentService;
     private final UserRepository userRepository;
     private final HomeworkRepository homeworkRepository;
     private final LessonService lessonService;
@@ -84,7 +84,7 @@ public class CourseServiceImpl implements CourseService {
             Course course = courseMapper.fromCourseDTO(courseDTO);
             validateCourseCreation(course.getName(), course.getStartDate());
             Course createdCourse = saveCourse(course);
-            assignInstructor(createdCourse, courseDTO.getInstructorEmail());
+            enrollmentService.assignInstructor(courseDTO.getName() , courseDTO.getInstructorEmail());
             lessonService.generateAndAssignLessons(courseDTO.getNumberOfLessons(), createdCourse);
             return courseMapper.mapToResponseDTO(createdCourse);
         } catch (Exception e) {
@@ -107,22 +107,6 @@ public class CourseServiceImpl implements CourseService {
 
     private Course saveCourse(Course course) {
         return courseRepository.save(course);
-    }
-
-    private void assignInstructor(Course createdCourse, String instructorEmail) {
-        try {
-            User user = userRepository.findUserByEmail(instructorEmail);
-
-            if (user.getRole() != RoleEnum.INSTRUCTOR) {
-                throw new CourseCreationException(USER_SHOULD_HAVE_INSTRUCTOR_ROLE);
-            }
-
-            courseRepository.assignInstructor(createdCourse.getId(), user.getId());
-            log.info(INSTRUCTOR_SUCCESSFULLY_ASSIGNED);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new IllegalArgumentException(USER_SHOULD_HAVE_INSTRUCTOR_ROLE);
-        }
     }
 
     @Scheduled(cron = "0 0 0 * * ?")

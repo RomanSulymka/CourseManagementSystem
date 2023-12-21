@@ -56,7 +56,7 @@ class EnrollmentControllerTest {
                 .courseName(enrollmentDTO.getCourseName())
                 .build();
 
-        when(enrollmentService.assignInstructor(enrollmentDTO)).thenReturn(enrollmentGetDTO);
+        when(enrollmentService.assignInstructor(enrollmentDTO.getCourseName(), enrollmentDTO.getUserEmail())).thenReturn(enrollmentGetDTO);
 
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/enrollment/instructor")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -66,7 +66,7 @@ class EnrollmentControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.courseName").value(enrollmentDTO.getCourseName()));
 
-        verify(enrollmentService, times(1)).assignInstructor(enrollmentDTO);
+        verify(enrollmentService, times(1)).assignInstructor(enrollmentDTO.getCourseName(), enrollmentDTO.getUserEmail());
     }
 
     @Test

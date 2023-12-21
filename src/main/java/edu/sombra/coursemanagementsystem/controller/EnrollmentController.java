@@ -31,7 +31,7 @@ public class EnrollmentController {
 
     @PostMapping("/instructor")
     public ResponseEntity<EnrollmentResponseDTO> assignInstructor(@RequestBody EnrollmentDTO enrollmentDTO) {
-        return ResponseEntity.ok(enrollmentService.assignInstructor(enrollmentDTO));
+        return ResponseEntity.ok(enrollmentService.assignInstructor(enrollmentDTO.getCourseName(), enrollmentDTO.getUserEmail()));
     }
 
     @PostMapping("/user/apply")

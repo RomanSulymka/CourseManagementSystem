@@ -2,7 +2,6 @@ package edu.sombra.coursemanagementsystem.service;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
-import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
@@ -14,7 +13,7 @@ import edu.sombra.coursemanagementsystem.entity.User;
 import java.util.List;
 
 public interface EnrollmentService {
-    EnrollmentResponseDTO assignInstructor(EnrollmentDTO enrollmentDTO);
+    EnrollmentResponseDTO assignInstructor(String courseName, String userEmail);
 
     void removeUserFromCourse(Long id);
 

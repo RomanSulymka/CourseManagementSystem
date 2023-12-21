@@ -18,7 +18,6 @@ public interface CourseRepository extends BaseRepository<Course, Long> {
     List<User> findUsersInCourseByRole(Long id, RoleEnum roleEnum);
     Optional<List<Lesson>> findAllLessonsInCourse(Long id);
     List<Course> findByStartDate(LocalDate currentDate);
-    void assignInstructor(Long courseId, Long instructorId);
     Optional<Course> findCourseByHomeworkId(Long homeworkId);
     Optional<List<Course>> findCoursesByUserId(Long instructorId);
     List<User> findUsersInCourse(Long courseId);

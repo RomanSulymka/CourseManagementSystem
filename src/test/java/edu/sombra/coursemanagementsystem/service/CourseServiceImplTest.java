@@ -40,6 +40,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -60,6 +61,8 @@ class CourseServiceImplTest {
     private CourseServiceImpl courseService;
     @Mock
     private CourseRepository courseRepository;
+    @Mock
+    private EnrollmentService enrollmentService;
     @Mock
     private CourseMarkRepository courseMarkRepository;
     @Mock
@@ -83,8 +86,8 @@ class CourseServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        courseService = new CourseServiceImpl(courseRepository, courseFeedbackRepository, courseMarkRepository, userService, userRepository,
-                homeworkRepository, lessonService, userMapper, courseMapper, courseMarkMapper, lessonMapper);
+        courseService = new CourseServiceImpl(courseRepository, courseFeedbackRepository, courseMarkRepository, userService,
+                enrollmentService,userRepository, homeworkRepository, lessonService, userMapper, courseMapper, courseMarkMapper, lessonMapper);
     }
 
     private static Stream<Arguments> lessonListProvider() {
@@ -309,7 +312,6 @@ class CourseServiceImplTest {
             savedCourse.setId(1L);
             return savedCourse;
         });
-        when(userRepository.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
         when(courseMapper.mapToResponseDTO(course)).thenReturn(responseDTO);
 
         CourseResponseDTO courseResponseDTO = assertDoesNotThrow(() -> courseService.create(courseDTO));
@@ -317,7 +319,7 @@ class CourseServiceImplTest {
         assertNotNull(courseResponseDTO);
         assertEquals(1L, courseResponseDTO.getCourseId());
         verify(courseRepository, times(1)).save(any());
-        verify(courseRepository, times(1)).assignInstructor(eq(1L), eq(1L));
+        verify(enrollmentService, times(1)).assignInstructor(courseDTO.getName(), user.getEmail());
         verify(lessonService, times(1)).generateAndAssignLessons(eq(courseDTO.getNumberOfLessons()), any());
     }
 
@@ -350,7 +352,9 @@ class CourseServiceImplTest {
             savedCourse.setId(1L);
             return savedCourse;
         });
-        when(userRepository.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
+        doThrow(new AccessDeniedException("User role should be: INSTRUCTOR"))
+                .when(enrollmentService)
+                .assignInstructor(courseDTO.getName(), courseDTO.getInstructorEmail());
 
         assertThrows(CourseCreationException.class, () -> courseService.create(courseDTO));
     }
@@ -374,7 +378,6 @@ class CourseServiceImplTest {
         when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
         assertThrows(CourseCreationException.class, () -> courseService.create(courseDTO));
         verify(courseRepository, never()).save(any());
-        verify(courseRepository, never()).assignInstructor(anyLong(), anyLong());
         verify(lessonService, never()).generateAndAssignLessons(anyLong(), any());
     }
 
