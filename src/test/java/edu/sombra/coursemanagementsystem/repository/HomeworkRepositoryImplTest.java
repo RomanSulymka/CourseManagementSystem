@@ -1,6 +1,7 @@
 package edu.sombra.coursemanagementsystem.repository;
 
 import edu.sombra.coursemanagementsystem.entity.Course;
+import edu.sombra.coursemanagementsystem.entity.Enrollment;
 import edu.sombra.coursemanagementsystem.entity.File;
 import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
@@ -42,6 +43,9 @@ class HomeworkRepositoryImplTest {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
 
     @Test
     @Transactional
@@ -406,5 +410,70 @@ class HomeworkRepositoryImplTest {
         assertEquals(2, foundHomework.size());
         assertTrue(foundHomework.contains(homework1));
         assertTrue(foundHomework.contains(homework2));
+    }
+
+    @Test
+    void testFindAllHomeworksWithInstructorAccess() {
+        User instructor = User.builder()
+                .lastName("Instructor")
+                .firstName("Test")
+                .password("123")
+                .email("instructor@example.com")
+                .role(RoleEnum.INSTRUCTOR)
+                .build();
+
+        userRepository.save(instructor);
+
+        User student = User.builder()
+                .lastName("Student")
+                .firstName("Test")
+                .password("123")
+                .email("student@example.com")
+                .role(RoleEnum.STUDENT)
+                .build();
+
+        userRepository.save(student);
+
+        Course course = Course.builder()
+                .name("Test Course")
+                .startDate(LocalDate.of(2023, 1, 1))
+                .status(CourseStatus.STARTED)
+                .build();
+
+        Enrollment studentEnrollment = Enrollment.builder()
+                .user(student)
+                .course(course)
+                .build();
+
+        Enrollment instructorEnrollment = Enrollment.builder()
+                .user(instructor)
+                .course(course)
+                .build();
+
+        courseRepository.save(course);
+        enrollmentRepository.save(studentEnrollment);
+        enrollmentRepository.save(instructorEnrollment);
+
+        File file = File.builder()
+                .fileName("testfile")
+                .fileData("testdata".getBytes())
+                .build();
+
+        fileRepository.save(file);
+
+        Homework homework = Homework.builder()
+                .user(student)
+                .lesson(Lesson.builder().id(1L).course(course).build())
+                .mark(85L)
+                .file(file)
+                .build();
+
+        homeworkRepository.save(homework);
+
+        List<Homework> homeworkList = homeworkRepository.findAllHomeworksWithInstructorAccess(instructor.getId());
+
+        assertFalse(homeworkList.isEmpty());
+        assertEquals(1, homeworkList.size());
+        assertEquals(homework, homeworkList.get(0));
     }
 }
