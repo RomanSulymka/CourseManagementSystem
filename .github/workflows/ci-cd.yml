@@ -65,27 +65,21 @@ jobs:
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
 
-      - name: Set up SSH key
-        run: |
-          echo ${{ secrets.EC2_PRIVATE_KEY }} > ~/.ssh/key.pem
-          chmod 400 ~/.ssh/key.pem
-
-      - name: Verify SSH host key
-        run: |
-          ssh-keygen -R ec2-52-3-252-203.compute-1.amazonaws.com
-          ssh-keyscan -H ec2-52-3-252-203.compute-1.amazonaws.com >> ~/.ssh/known_hosts
-
-      - name: Debug SSH key content
-        run: cat ~/.ssh/key.pem
-
       - name: Deploy to EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+          HOSTNAME: ${{secrets.EC2_HOSTNAME}}
+          USER_NAME: ${{secrets.USER_NAME}}
+
         run: |
-          ssh -i ~/.ssh/key.pem ec2-user@ec2-52-3-252-203.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
-          docker pull romansulymka/course-management-system:v1
-          docker-compose down app
-          docker-compose up -d
-          docker ps
-          ENDSSH
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+#          ssh -i ~/.ssh/key.pem ec2-user@ec2-52-3-252-203.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
+                    docker pull romansulymka/course-management-system:v1
+                    docker-compose down app
+                    docker-compose up -d
+                    docker ps
+                    ENDSSH
 
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v2
