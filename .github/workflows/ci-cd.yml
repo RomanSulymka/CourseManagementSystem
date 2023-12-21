@@ -80,11 +80,11 @@ jobs:
           echo "$EC2_PRIVATE_KEY" > ~/.ssh/key.pem
           chmod 600 ~/.ssh/key.pem
 
-      - name: Start SSH agent
-        run: eval $(ssh-agent -s)
-
-      - name: Add private key to SSH agent
-        run: ssh-add ~/.ssh/key.pem
+#      - name: Start SSH agent
+#        run: eval $(ssh-agent -s)
+#
+#      - name: Add private key to SSH agent
+#        run: ssh-add ~/.ssh/key.pem
 
       - name: Debug
         run: cat ~/.ssh/key.pem
