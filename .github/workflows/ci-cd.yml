@@ -37,6 +37,7 @@ jobs:
 
       - name: Run migration and build with Maven
         run: |
+          ls $HOME/.ssh
           ./mvnw flyway:migrate
           ./mvnw clean install
         env:
