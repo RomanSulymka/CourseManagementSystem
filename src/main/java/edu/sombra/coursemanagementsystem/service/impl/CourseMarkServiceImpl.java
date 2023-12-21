@@ -21,6 +21,7 @@ import java.util.List;
 @Transactional
 public class CourseMarkServiceImpl implements CourseMarkService {
     public static final String TOTAL_MARK_SAVED_SUCCESSFULLY = "Total mark saved successfully";
+    public static final int MIN_PASS_MARK = 80;
     private final CourseMarkRepository courseMarkRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
@@ -55,6 +56,6 @@ public class CourseMarkServiceImpl implements CourseMarkService {
 
     @Override
     public boolean isCoursePassed(Double averageMark, boolean isAllHomeworksGraded) {
-        return isAllHomeworksGraded && averageMark >= 80;
+        return isAllHomeworksGraded && averageMark >= MIN_PASS_MARK;
     }
 }

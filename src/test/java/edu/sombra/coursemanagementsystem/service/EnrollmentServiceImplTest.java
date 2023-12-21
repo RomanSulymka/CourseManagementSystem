@@ -53,14 +53,9 @@ class EnrollmentServiceImplTest {
     @Mock
     private EnrollmentRepository enrollmentRepository;
     @Mock
-    private CourseService courseService;
-    @Mock
     private CourseMapper courseMapper;
     @Mock
     private CourseRepository courseRepository;
-    @Mock
-    private UserService userService;
-
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -71,7 +66,7 @@ class EnrollmentServiceImplTest {
     @BeforeEach
     void setUp() {
         enrollmentService = new EnrollmentServiceImpl(enrollmentRepository, courseMapper, courseRepository,
-                userService, userRepository, homeworkRepository, enrollmentMapper);
+                userRepository, homeworkRepository, enrollmentMapper);
     }
 
     private static Stream<Arguments> provideTestDataForAssignInstructor() {

@@ -20,7 +20,6 @@ import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
-import edu.sombra.coursemanagementsystem.service.UserService;
 import edu.sombra.coursemanagementsystem.util.BaseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +47,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseMapper courseMapper;
     private final CourseRepository courseRepository;
-    private final UserService userService;
     private final UserRepository userRepository;
     private final HomeworkRepository homeworkRepository;
     private final EnrollmentMapper enrollmentMapper;
