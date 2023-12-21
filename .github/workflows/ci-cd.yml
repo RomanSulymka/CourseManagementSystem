@@ -70,20 +70,6 @@ jobs:
           mkdir -p ~/.ssh
           touch ~/.ssh/known_hosts
 
-      - name: Run migration and build with Maven
-        run: |
-          ssh -i "KEY_PEM_PAIR.pem" ec2-user@ec2-52-91-61-185.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
-          docker pull romansulymka/course-management-system:v1
-          docker-compose down app
-          docker-compose up -d
-          docker ps
-          ENDSSH
-
-      - name: Prepare SSH
-        run: |
-          mkdir -p ~/.ssh
-          touch ~/.ssh/known_hosts
-
       - name: Verify SSH host key
         run: |
           
