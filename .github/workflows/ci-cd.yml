@@ -68,14 +68,12 @@ jobs:
 
       - name: Prepare SSH
         run: |
+          ls $HOME/.ssh
           mkdir -p ~/.ssh
           touch ~/.ssh/known_hosts
 
       - name: Verify SSH host key
         run: |
-          
-          ls $HOME/.ssh
-          
           ssh-keygen -R ec2-52-91-61-185.compute-1.amazonaws.com
           ssh-keyscan -H ec2-52-91-61-185.compute-1.amazonaws.com >> ~/.ssh/known_hosts
 
