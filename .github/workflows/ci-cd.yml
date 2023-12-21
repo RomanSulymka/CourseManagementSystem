@@ -87,11 +87,11 @@ jobs:
 #        run: ssh-add ~/.ssh/key.pem
 
       - name: Debug
-        run: cat ~/.ssh/key.pem
+        run: ssh -v -i ~/.ssh/key.pem ec2-user@ec2-52-3-252-203.compute-1.amazonaws.com 'echo Debugging SSH connection'
 
       - name: Deploy to EC2
         run: |
-          ssh ec2-user@ec2-52-3-252-203.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
+          ssh -i ~/.ssh/key.pem ec2-user@ec2-52-3-252-203.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
           docker pull romansulymka/course-management-system:v1
           docker-compose down app
           docker-compose up -d
