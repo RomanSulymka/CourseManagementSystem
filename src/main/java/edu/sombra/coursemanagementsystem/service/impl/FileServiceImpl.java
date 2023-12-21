@@ -127,24 +127,27 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void delete(Long fileId, String userEmail) {
-        User user = userRepository.findUserByEmail(userEmail);
-        if (user.getRole().equals(RoleEnum.ADMIN)) {
+        try {
+            User user = userRepository.findUserByEmail(userEmail);
             File file = findFileById(fileId);
-            fileRepository.delete(file);
-            log.info(FILE_DELETED_SUCCESSFULLY_BY_ADMIN);
-        } else {
-            if (homeworkRepository.isUserUploadedHomework(fileId, user.getId())) {
-                File file = findFileById(fileId);
+            if (user.getRole().equals(RoleEnum.ADMIN)) {
                 fileRepository.delete(file);
-                log.info(FILE_DELETED_SUCCESSFULLY);
+                log.info(FILE_DELETED_SUCCESSFULLY_BY_ADMIN);
             } else {
-                throw new IllegalArgumentException(USER_HAS_NO_PERMISSION_TO_DELETE_THIS_HOMEWORK);
+                if (homeworkRepository.isUserUploadedHomework(fileId, user.getId())) {
+                    fileRepository.delete(file);
+                    log.info(FILE_DELETED_SUCCESSFULLY);
+                } else {
+                    throw new IllegalArgumentException(USER_HAS_NO_PERMISSION_TO_DELETE_THIS_HOMEWORK);
+                }
             }
+        } catch (Exception e) {
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
     private File findFileById(Long fileId) {
         return fileRepository.findById(fileId)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException(FILE_NOT_FOUND));
     }
 }

@@ -18,8 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -58,7 +57,7 @@ class CourseFeedbackControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(feedbackDTO)));
 
-        result.andExpect(status().isOk())
+        result.andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.feedbackText").value(getCourseFeedbackDTO.getFeedbackText()))
                 .andExpect(jsonPath("$.id").value(getCourseFeedbackDTO.getId()));
@@ -126,12 +125,10 @@ class CourseFeedbackControllerTest {
     void testDeleteFeedbackAPI() throws Exception {
         Long feedbackId = 8L;
 
-        when(courseFeedbackService.delete(feedbackId)).thenReturn("Course Feedback deleted successfully");
-
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/feedback/{id}", feedbackId));
 
-        result.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(jsonPath("$").isString());
+        result.andExpect(status().isNoContent());
+
+        verify(courseFeedbackService, times(1)).delete(feedbackId);
     }
 }

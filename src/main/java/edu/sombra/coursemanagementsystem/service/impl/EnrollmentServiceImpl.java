@@ -2,7 +2,6 @@ package edu.sombra.coursemanagementsystem.service.impl;
 
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentApplyForCourseDTO;
-import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetByNameDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentGetDTO;
 import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
@@ -20,9 +19,9 @@ import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import edu.sombra.coursemanagementsystem.repository.EnrollmentRepository;
 import edu.sombra.coursemanagementsystem.repository.HomeworkRepository;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
-import edu.sombra.coursemanagementsystem.service.CourseService;
 import edu.sombra.coursemanagementsystem.service.EnrollmentService;
 import edu.sombra.coursemanagementsystem.service.UserService;
+import edu.sombra.coursemanagementsystem.util.BaseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +46,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public static final String FAILED_TO_FIND_COURSES_FOR_USER = "Failed to find courses for user";
 
     private final EnrollmentRepository enrollmentRepository;
-    private final CourseService courseService;
     private final CourseMapper courseMapper;
     private final CourseRepository courseRepository;
     private final UserService userService;
@@ -58,12 +56,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private static final Long COURSE_LIMIT = 5L;
 
     @Override
-    public EnrollmentResponseDTO assignInstructor(EnrollmentDTO enrollmentDTO) {
+    public EnrollmentResponseDTO assignInstructor(String courseName, String userEmail) {
         try {
-            Course course = courseRepository.findByName(enrollmentDTO.getCourseName())
+            Course course = courseRepository.findByName(courseName)
                     .orElseThrow();
-            User instructor = userRepository.findUserByEmail(enrollmentDTO.getUserEmail());
-            userService.validateInstructor(instructor, RoleEnum.INSTRUCTOR);
+            User instructor = userRepository.findUserByEmail(userEmail);
+            BaseUtil.validateInstructor(instructor, RoleEnum.INSTRUCTOR);
 
             isUserAlreadyAssigned(course, instructor);
 
@@ -205,8 +203,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public boolean isUserAssignedToCourse(Long userId, Long homeworkId) {
-        CourseResponseDTO courseResponseDTO = courseService.findCourseByHomeworkId(userId, homeworkId);
-        Course course = courseMapper.fromResponseDTO(courseResponseDTO);
+        Course course = courseRepository.findCourseByHomeworkId(homeworkId)
+                .orElseThrow(EntityNotFoundException::new);
         User user = userRepository.findById(userId).orElseThrow();
         return enrollmentRepository.isUserAssignedToCourse(course, user);
     }

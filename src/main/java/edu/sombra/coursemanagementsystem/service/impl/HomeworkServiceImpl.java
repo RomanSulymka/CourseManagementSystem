@@ -124,13 +124,12 @@ public class HomeworkServiceImpl implements HomeworkService {
     }
 
     @Override
-    public String deleteHomework(Long homeworkId) {
+    public void deleteHomework(Long homeworkId) {
         Homework homework = findHomework(homeworkId);
         homeworkRepository.delete(homework);
         Double averageMark = homeworkRepository.calculateAverageHomeworksMarkByUserId(homework.getUser().getId(), homework.getLesson().getCourse().getId());
         courseMarkService.saveTotalMark(homework.getUser().getId(), homework.getLesson().getCourse().getId(), averageMark, false);
         log.info(HOMEWORK_DELETED_SUCCESSFULLY);
-        return HOMEWORK_DELETED_SUCCESSFULLY;
     }
 
     @Override

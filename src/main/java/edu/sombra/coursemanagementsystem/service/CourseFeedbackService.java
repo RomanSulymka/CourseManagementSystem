@@ -15,7 +15,7 @@ public interface CourseFeedbackService {
 
     GetCourseFeedbackDTO findCourseFeedbackById(Long id, String userEmail);
 
-    String delete(Long id);
+    void delete(Long id);
 
     GetCourseFeedbackDTO edit(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail);
 }

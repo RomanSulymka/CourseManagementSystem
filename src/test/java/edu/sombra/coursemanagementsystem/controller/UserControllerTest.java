@@ -72,7 +72,7 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(user)));
 
-        result.andExpect(status().isOk())
+        result.andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.firstName").value("John"))
@@ -190,10 +190,10 @@ class UserControllerTest {
     @Test
     @WithMockUser(username = "admin@gmail.com", roles = "ADMIN")
     void testDeleteUser() throws Exception {
-        when(userService.deleteUser(1L)).thenReturn("User deleted successfully");
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/user/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User deleted successfully"));
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/user/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+        verify(userService, times(1)).deleteUser(1L);
     }
 }

@@ -48,7 +48,7 @@ public class AuthenticateServiceImpl implements AuthenticateService {
             user.setLastName(registerDTO.getLastName());
             user.setEmail(registerDTO.getEmail());
             user.setPassword(registerDTO.getPassword());
-            user.setRole(registerDTO.getRole() != null ? registerDTO.getRole() : RoleEnum.STUDENT);
+            user.setRole(RoleEnum.STUDENT);
 
             var createUserDTO = userMapper.mapToDTO(user);
             var savedUserDTO = userService.createUser(createUserDTO);

@@ -72,14 +72,12 @@ class AuthenticationServiceImplTest {
         dto1.setLastName("Doe");
         dto1.setEmail("john.doe@example.com");
         dto1.setPassword("password123");
-        dto1.setRole(RoleEnum.STUDENT);
 
         RegisterDTO dto2 = new RegisterDTO();
         dto2.setFirstName("Jane");
         dto2.setLastName("Doe");
         dto2.setEmail("jane.doe@example.com");
         dto2.setPassword("password456");
-        dto2.setRole(RoleEnum.STUDENT);
 
         return Stream.of(
                 Arguments.of(dto1, "mockedJwtToken"),
@@ -168,14 +166,14 @@ class AuthenticationServiceImplTest {
         savedUser.setLastName(registerDTO.getLastName());
         savedUser.setEmail(registerDTO.getEmail());
         savedUser.setPassword("encodedPassword");
-        savedUser.setRole(registerDTO.getRole());
+        savedUser.setRole(RoleEnum.STUDENT);
 
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId(1L);
         userResponseDTO.setFirstName(registerDTO.getFirstName());
         userResponseDTO.setLastName(registerDTO.getLastName());
         userResponseDTO.setEmail(registerDTO.getEmail());
-        userResponseDTO.setRole(registerDTO.getRole());
+        userResponseDTO.setRole(RoleEnum.STUDENT);
 
         when(userMapper.mapToDTO(any(User.class))).thenReturn(createTestUserDTO());
         when(userService.createUser(any(CreateUserDTO.class))).thenReturn(userResponseDTO);

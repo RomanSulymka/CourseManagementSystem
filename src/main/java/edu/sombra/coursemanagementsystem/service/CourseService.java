@@ -20,7 +20,7 @@ public interface CourseService {
 
     CourseResponseDTO findById(Long courseId);
 
-    boolean delete(Long id);
+    void delete(Long id);
 
     List<CourseResponseDTO> findAllCourses();
 

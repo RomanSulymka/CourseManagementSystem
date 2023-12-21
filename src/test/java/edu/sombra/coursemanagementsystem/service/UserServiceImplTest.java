@@ -13,6 +13,7 @@ import edu.sombra.coursemanagementsystem.exception.UserException;
 import edu.sombra.coursemanagementsystem.mapper.UserMapper;
 import edu.sombra.coursemanagementsystem.repository.UserRepository;
 import edu.sombra.coursemanagementsystem.service.impl.UserServiceImpl;
+import edu.sombra.coursemanagementsystem.util.BaseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -251,7 +252,7 @@ class UserServiceImplTest {
                 .build();
         RoleEnum expectedRole = RoleEnum.INSTRUCTOR;
 
-        assertDoesNotThrow(() -> userService.validateInstructor(mockUser, expectedRole));
+        assertDoesNotThrow(() -> BaseUtil.validateInstructor(mockUser, expectedRole));
     }
 
     @Test
@@ -263,10 +264,10 @@ class UserServiceImplTest {
                 .build();
         RoleEnum expectedRole = RoleEnum.INSTRUCTOR;
 
-        AccessDeniedException exception = assertThrows(AccessDeniedException.class,
-                () -> userService.validateInstructor(mockUser, expectedRole));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> BaseUtil.validateInstructor(mockUser, expectedRole));
 
-        assertEquals("User should have the role: " + expectedRole.name(), exception.getMessage());
+        assertEquals("User role should be: " + expectedRole.name(), exception.getMessage());
     }
 
     @ParameterizedTest
@@ -506,9 +507,8 @@ class UserServiceImplTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         doNothing().when(userRepository).delete(existingUser);
 
-        String result = userService.deleteUser(userId);
+        userService.deleteUser(userId);
 
-        assertEquals("User deleted successfully", result);
         verify(userRepository, times(1)).delete(existingUser);
     }
 
@@ -622,10 +622,10 @@ class UserServiceImplTest {
                 .build();
         when(userRepository.findById(instructorId)).thenReturn(Optional.of(instructor));
 
-        AccessDeniedException exception = assertThrows(AccessDeniedException.class,
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> userService.isUserInstructor(instructorId));
 
-        assertEquals("User should have the role: INSTRUCTOR", exception.getMessage());
+        assertEquals("User role should be: INSTRUCTOR", exception.getMessage());
         verify(userRepository, times(1)).findById(instructorId);
     }
 }

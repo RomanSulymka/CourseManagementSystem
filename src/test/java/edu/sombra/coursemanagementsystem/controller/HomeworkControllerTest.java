@@ -177,14 +177,9 @@ class HomeworkControllerTest {
     void testDeleteHomeworkAPI() throws Exception {
         Long homeworkId = 1L;
 
-        when(homeworkService.deleteHomework(homeworkId)).thenReturn("Homework deleted successfully!");
-
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/homework/{homeworkId}", homeworkId)
-                .contentType(MediaType.APPLICATION_JSON));
-
-        result.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(jsonPath("$").isString());
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/homework/{homeworkId}", homeworkId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
 
         verify(homeworkService, times(1)).deleteHomework(homeworkId);
     }

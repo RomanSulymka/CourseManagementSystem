@@ -26,7 +26,8 @@ public class CourseRepositoryImpl implements CourseRepository {
     private static final String GET_ALL_COURSES_BY_INSTRUCTOR_ID = "SELECT c FROM courses c " +
             "INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE u.id =: userId";
 
-    public static final String GET_COURSE_BY_FILE_ID = "SELECT c FROM courses c INNER JOIN lessons l ON c.id = l.course.id INNER JOIN homework h ON l.id = h.lesson.id INNER JOIN files f ON f.id = h.file.id WHERE f.id =: fileId";
+    public static final String GET_COURSE_BY_FILE_ID = "SELECT c FROM courses c INNER JOIN lessons l ON c.id = l.course.id" +
+            " INNER JOIN homework h ON l.id = h.lesson.id INNER JOIN files f ON f.id = h.file.id WHERE f.id =: fileId";
 
     private static final String GET_ALL_USERS_IN_COURSE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id " +
             "INNER JOIN users u on u.id = e.user.id WHERE c.id =: courseId";
@@ -43,13 +44,13 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     private static final String EXIST_COURSE_BY_NAME_QUERY = "SELECT COUNT(c) FROM courses c WHERE c.name = :name";
 
-    private static final String ASSIGN_USER_TO_COURSE = "INSERT INTO enrollments (user_id, course_id) VALUES (:instructorId, :courseId )";
-
     private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status, start_date =:startDate WHERE id =:id";
 
-    private static final String GET_USERS_IN_COURSE_BY_ROLE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id INNER JOIN users u on u.id = e.user.id WHERE c.id =: id AND u.role =: role";
+    private static final String GET_USERS_IN_COURSE_BY_ROLE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id" +
+            " INNER JOIN users u on u.id = e.user.id WHERE c.id =: id AND u.role =: role";
 
-    private static final String GET_ALL_LESSONS_IN_COURSE = "SELECT l FROM courses c INNER JOIN lessons l on c.id = l.course.id WHERE c.id = :id";
+    private static final String GET_ALL_LESSONS_IN_COURSE = "SELECT l FROM courses c INNER JOIN lessons l on c.id = l.course.id" +
+            " WHERE c.id = :id";
 
     private static final String GET_COURSES_BY_START_DATE = "SELECT c FROM courses c WHERE c.startDate = :startDate";
 
@@ -102,15 +103,6 @@ public class CourseRepositoryImpl implements CourseRepository {
         return getEntityManager().createQuery(GET_COURSES_BY_START_DATE, Course.class)
                 .setParameter("startDate", currentDate)
                 .getResultList();
-    }
-
-    @Override
-    public void assignInstructor(Long courseId, Long instructorId) {
-        getEntityManager()
-                .createNativeQuery(ASSIGN_USER_TO_COURSE)
-                .setParameter("courseId", courseId)
-                .setParameter("instructorId", instructorId)
-                .executeUpdate();
     }
 
     @Override

@@ -5,6 +5,7 @@ import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.UpdateLessonDTO;
 import edu.sombra.coursemanagementsystem.service.LessonService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,13 +28,13 @@ public class LessonController {
 
     @PostMapping("/create")
     public ResponseEntity<LessonResponseDTO> create(@RequestBody CreateLessonDTO lessonDTO) {
-        return ResponseEntity.ok(lessonService.save(lessonDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.save(lessonDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         lessonService.deleteLesson(id);
-        return ResponseEntity.ok("Lesson deleted successfully");
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")

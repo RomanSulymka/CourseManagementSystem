@@ -94,14 +94,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void validateInstructor(User instructor, RoleEnum role) {
-        if (instructor.getRole() != role) {
-            log.error(USER_SHOULD_HAVE_THE_ROLE + role.name());
-            throw new AccessDeniedException(USER_SHOULD_HAVE_THE_ROLE + role.name());
-        }
-    }
-
-    @Override
     public UserResponseDTO createUser(CreateUserDTO userDTO) {
         try {
             validateUser(userDTO);
@@ -169,7 +161,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String deleteUser(Long id) {
+    public void deleteUser(Long id) {
         try {
             User user = userRepository.findById(id)
                     .orElseThrow(() -> {
@@ -178,7 +170,6 @@ public class UserServiceImpl implements UserService {
                     });
             userRepository.delete(user);
             log.info(USER_DELETED_SUCCESSFULLY);
-            return USER_DELETED_SUCCESSFULLY;
         } catch (EntityNotFoundException ex) {
             log.error(ex.getMessage());
             throw new EntityDeletionException(FAILED_TO_DELETE_USER, ex);
@@ -203,7 +194,7 @@ public class UserServiceImpl implements UserService {
                     log.error(USER_NOT_FOUND + instructorId);
                     return new EntityNotFoundException(USER_NOT_FOUND_WITH_ID + instructorId);
                 });
-        validateInstructor(instructor, RoleEnum.INSTRUCTOR);
+        BaseUtil.validateInstructor(instructor, RoleEnum.INSTRUCTOR);
         return true;
     }
 

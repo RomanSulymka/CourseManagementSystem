@@ -29,7 +29,6 @@ import java.util.List;
 @Service
 public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     private static final String FEEDBACK_SAVED_SUCCESSFULLY = "Feedback saved successfully";
-    private static final String COURSE_FEEDBACK_DELETED_SUCCESSFULLY = "Course Feedback deleted successfully";
     private static final String INSTRUCTOR_NOT_ASSIGNED = "Instructor is not assigned for this course";
     public static final String FEEDBACK_IS_NOT_VISIBLE_FOR_THIS_USER = "Course feedback is not visible for this user!";
 
@@ -110,11 +109,10 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
     }
 
     @Override
-    public String delete(Long id) {
+    public void delete(Long id) {
         CourseFeedback feedback = courseFeedbackRepository.findById(id)
                 .orElseThrow(EntityNotFoundException::new);
         courseFeedbackRepository.delete(feedback);
-        return COURSE_FEEDBACK_DELETED_SUCCESSFULLY;
     }
 
     public CourseFeedback createFeedback(CourseFeedbackDTO courseFeedbackDTO, User instructor) {

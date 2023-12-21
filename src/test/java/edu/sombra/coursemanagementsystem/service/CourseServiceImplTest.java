@@ -40,6 +40,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -60,6 +61,8 @@ class CourseServiceImplTest {
     private CourseServiceImpl courseService;
     @Mock
     private CourseRepository courseRepository;
+    @Mock
+    private EnrollmentService enrollmentService;
     @Mock
     private CourseMarkRepository courseMarkRepository;
     @Mock
@@ -83,8 +86,8 @@ class CourseServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        courseService = new CourseServiceImpl(courseRepository, courseFeedbackRepository, courseMarkRepository, userService, userRepository,
-                homeworkRepository, lessonService, userMapper, courseMapper, courseMarkMapper, lessonMapper);
+        courseService = new CourseServiceImpl(courseRepository, courseFeedbackRepository, courseMarkRepository, userService,
+                enrollmentService,userRepository, homeworkRepository, lessonService, userMapper, courseMapper, courseMarkMapper, lessonMapper);
     }
 
     private static Stream<Arguments> lessonListProvider() {
@@ -241,26 +244,10 @@ class CourseServiceImplTest {
         );
     }
 
-    private CourseMark createSampleCourseMark() {
-        return CourseMark.builder().build();
-    }
-
     private Homework createSampleHomework() {
         return Homework.builder()
                 .id(1L)
                 .build();
-    }
-
-    private LessonsByCourseDTO createSampleLessonsByCourseDTO() {
-        return LessonsByCourseDTO.builder().build();
-    }
-
-    private LessonDTO createSampleLessonDTO() {
-        return LessonDTO.builder().build();
-    }
-
-    private CourseFeedback createSampleCourseFeedback() {
-        return CourseFeedback.builder().build();
     }
 
     @ParameterizedTest
@@ -325,7 +312,6 @@ class CourseServiceImplTest {
             savedCourse.setId(1L);
             return savedCourse;
         });
-        when(userRepository.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
         when(courseMapper.mapToResponseDTO(course)).thenReturn(responseDTO);
 
         CourseResponseDTO courseResponseDTO = assertDoesNotThrow(() -> courseService.create(courseDTO));
@@ -333,7 +319,7 @@ class CourseServiceImplTest {
         assertNotNull(courseResponseDTO);
         assertEquals(1L, courseResponseDTO.getCourseId());
         verify(courseRepository, times(1)).save(any());
-        verify(courseRepository, times(1)).assignInstructor(eq(1L), eq(1L));
+        verify(enrollmentService, times(1)).assignInstructor(courseDTO.getName(), user.getEmail());
         verify(lessonService, times(1)).generateAndAssignLessons(eq(courseDTO.getNumberOfLessons()), any());
     }
 
@@ -366,7 +352,9 @@ class CourseServiceImplTest {
             savedCourse.setId(1L);
             return savedCourse;
         });
-        when(userRepository.findUserByEmail(courseDTO.getInstructorEmail())).thenReturn(user);
+        doThrow(new AccessDeniedException("User role should be: INSTRUCTOR"))
+                .when(enrollmentService)
+                .assignInstructor(courseDTO.getName(), courseDTO.getInstructorEmail());
 
         assertThrows(CourseCreationException.class, () -> courseService.create(courseDTO));
     }
@@ -390,7 +378,6 @@ class CourseServiceImplTest {
         when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
         assertThrows(CourseCreationException.class, () -> courseService.create(courseDTO));
         verify(courseRepository, never()).save(any());
-        verify(courseRepository, never()).assignInstructor(anyLong(), anyLong());
         verify(lessonService, never()).generateAndAssignLessons(anyLong(), any());
     }
 
@@ -500,9 +487,7 @@ class CourseServiceImplTest {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(existingCourse));
 
-        boolean result = assertDoesNotThrow(() -> courseService.delete(courseId));
-
-        assertTrue(result);
+        assertDoesNotThrow(() -> courseService.delete(courseId));
 
         verify(courseRepository, times(1)).findById(courseId);
         verify(courseRepository, times(1)).delete(existingCourse);
@@ -817,12 +802,12 @@ class CourseServiceImplTest {
         when(courseRepository.isUserAssignedToCourse(studentId, courseId)).thenReturn(true);
         when(courseRepository.findById(courseId)).thenReturn(createSampleCourse(courseId));
         when(courseRepository.findAllLessonsByCourseAssignedToUserId(studentId, courseId)).thenReturn(Optional.of(createSampleLessons()));
-        when(courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)).thenReturn(Optional.of(createSampleCourseMark()));
-        when(courseFeedbackRepository.findFeedback(studentId, courseId)).thenReturn(Optional.ofNullable(createSampleCourseFeedback()));
-        when(lessonMapper.toDTO(any(), any())).thenReturn(createSampleLessonDTO());
+        when(courseMarkRepository.findCourseMarkByUserIdAndCourseId(studentId, courseId)).thenReturn(Optional.of(mock(CourseMark.class)));
+        when(courseFeedbackRepository.findFeedback(studentId, courseId)).thenReturn(Optional.ofNullable(mock(CourseFeedback.class)));
+        when(lessonMapper.toDTO(any(), any())).thenReturn(mock(LessonDTO.class));
         when(homeworkRepository.findByUserAndLessonId(eq(studentId), any())).thenReturn(Optional.ofNullable(createSampleHomework()));
 
-        when(courseMapper.toDTO(any(), any(), any(), any())).thenReturn(createSampleLessonsByCourseDTO());
+        when(courseMapper.toDTO(any(), any(), any(), any())).thenReturn(mock(LessonsByCourseDTO.class));
 
         LessonsByCourseDTO resultDTO = courseService.findAllLessonsByCourseAssignedToUserId(studentId, courseId);
 

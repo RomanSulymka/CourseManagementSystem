@@ -192,15 +192,14 @@ class ScenarioAdminE2ETest {
     }
 
     private void deleteLessonById(List<LessonResponseDTO> lessonsResponse) {
-        ResponseEntity<String> deleteLessonResponse = restTemplate.exchange(
+        ResponseEntity<Void> deleteLessonResponse = restTemplate.exchange(
                 buildUrl("/api/v1/lesson/{id}", lessonsResponse.get(1).getId()),
                 HttpMethod.DELETE,
                 new HttpEntity<>(adminHeaders),
-                String.class
+                Void.class
         );
 
-        assertEquals(HttpStatus.OK, deleteLessonResponse.getStatusCode());
-        assertEquals("Lesson deleted successfully", deleteLessonResponse.getBody());
+        assertEquals(HttpStatus.NO_CONTENT, deleteLessonResponse.getStatusCode());
     }
 
     private LessonResponseDTO changeLessonName(List<LessonResponseDTO> lessonsResponse, String adminJwtToken) {
@@ -343,7 +342,7 @@ class ScenarioAdminE2ETest {
                 registerDTO,
                 AuthenticationResponse.class
         );
-        assertEquals(HttpStatus.OK, registerUserResponseEntity.getStatusCode());
+        assertEquals(HttpStatus.CREATED, registerUserResponseEntity.getStatusCode());
     }
 
     private CourseResponseDTO createCourse(String adminJwtToken) {
@@ -365,7 +364,7 @@ class ScenarioAdminE2ETest {
                 createCourseRequestEntity,
                 CourseResponseDTO.class
         );
-        assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
+        assertEquals(HttpStatus.CREATED, createdCourseResponse.getStatusCode());
         assertEquals(createCourseDTO.getName(), createdCourseResponse.getBody().getCourseName());
         assertNotNull(createdCourseResponse.getBody());
         return createdCourseResponse.getBody();

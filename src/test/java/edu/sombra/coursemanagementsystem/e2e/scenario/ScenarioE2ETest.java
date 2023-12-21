@@ -314,7 +314,7 @@ class ScenarioE2ETest {
                 CourseResponseDTO.class
         );
 
-        assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
+        assertEquals(HttpStatus.CREATED, createdCourseResponse.getStatusCode());
         assertNotNull(createdCourseResponse.getBody());
         return createdCourseResponse.getBody();
     }
@@ -338,7 +338,7 @@ class ScenarioE2ETest {
                 UserResponseDTO.class
         );
 
-        assertEquals(HttpStatus.OK, createdUserResponse.getStatusCode());
+        assertEquals(HttpStatus.CREATED, createdUserResponse.getStatusCode());
         assertNotNull(createdUserResponse.getBody());
         return createdUserResponse.getBody();
     }
