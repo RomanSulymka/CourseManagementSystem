@@ -74,7 +74,6 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-#          ssh -i ~/.ssh/key.pem ec2-user@ec2-52-3-252-203.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
                     docker pull romansulymka/course-management-system:v1
                     docker-compose down app
                     docker-compose up -d
