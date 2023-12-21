@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.dto.feedback.CourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.service.CourseFeedbackService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +29,7 @@ public class CourseFeedbackController {
     @PostMapping
     public ResponseEntity<GetCourseFeedbackDTO> addFeedback(@RequestBody CourseFeedbackDTO courseFeedbackDTO,
                                               @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(courseFeedbackService.create(courseFeedbackDTO, userDetails.getUsername()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(courseFeedbackService.create(courseFeedbackDTO, userDetails.getUsername()));
     }
 
     @PutMapping

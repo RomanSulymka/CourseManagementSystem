@@ -37,7 +37,6 @@ jobs:
 
       - name: Run migration and build with Maven
         run: |
-          ls $HOME/.ssh
           ./mvnw flyway:migrate
           ./mvnw clean install
         env:
@@ -66,28 +65,27 @@ jobs:
       - name: Push Docker image
         run: docker push romansulymka/course-management-system:v1
 
-      - name: Prepare SSH
-        run: |
-          ls $HOME/.ssh
-          mkdir -p ~/.ssh
-          touch ~/.ssh/known_hosts
-
-      - name: Verify SSH host key
-        run: |
-          ssh-keygen -R ec2-52-91-61-185.compute-1.amazonaws.com
-          ssh-keyscan -H ec2-52-91-61-185.compute-1.amazonaws.com >> ~/.ssh/known_hosts
-
-      - name: Set private key permissions
-        run: chmod 400 KEY_PEM_PAIR.pem
-
-      - name: Deploy to EC2
-        run: |
-          ssh -i "KEY_PEM_PAIR.pem" ec2-user@ec2-52-91-61-185.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
-          docker pull romansulymka/course-management-system:v1
-          docker-compose down app
-          docker-compose up -d
-          docker ps
-          ENDSSH
+#      - name: Prepare SSH
+#        run: |
+#          mkdir -p ~/.ssh
+#          touch ~/.ssh/known_hosts
+#
+#      - name: Verify SSH host key
+#        run: |
+#          ssh-keygen -R ec2-52-91-61-185.compute-1.amazonaws.com
+#          ssh-keyscan -H ec2-52-91-61-185.compute-1.amazonaws.com >> ~/.ssh/known_hosts
+#
+#      - name: Set private key permissions
+#        run: chmod 400 KEY_PEM_PAIR.pem
+#
+#      - name: Deploy to EC2
+#        run: |
+#          ssh -i "KEY_PEM_PAIR.pem" ec2-user@ec2-52-91-61-185.compute-1.amazonaws.com 'bash -s' << 'ENDSSH'
+#          docker pull romansulymka/course-management-system:v1
+#          docker-compose down app
+#          docker-compose up -d
+#          docker ps
+#          ENDSSH
 
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v2

@@ -11,6 +11,7 @@ import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
 import edu.sombra.coursemanagementsystem.service.CourseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,7 +34,7 @@ public class CourseController {
 
     @PostMapping("/create")
     public ResponseEntity<CourseResponseDTO> createCourse(@RequestBody CourseDTO courseDTO) {
-        return ResponseEntity.ok(courseService.create(courseDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(courseService.create(courseDTO));
     }
 
     @PutMapping("/edit")
@@ -75,7 +76,7 @@ public class CourseController {
 
     @PostMapping("/instructor/users")
     public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@RequestBody CourseAssignedToUserDTO
-                                                                                                             courseAssignedToUserDTO) {
+                                                                                                         courseAssignedToUserDTO) {
         return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(courseAssignedToUserDTO.getUserId(), courseAssignedToUserDTO.getCourseId()));
     }
 
@@ -88,7 +89,7 @@ public class CourseController {
 
     @PostMapping("/finish")
     public ResponseEntity<CourseMarkResponseDTO> finishCourse(@RequestBody CourseAssignedToUserDTO
-                                                                          courseAssignedToUserDTO) {
+                                                                      courseAssignedToUserDTO) {
         return ResponseEntity.ok(courseService.finishCourse(courseAssignedToUserDTO.getUserId(), courseAssignedToUserDTO.getUserId()));
     }
 }

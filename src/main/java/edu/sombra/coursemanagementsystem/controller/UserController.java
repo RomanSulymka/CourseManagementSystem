@@ -7,6 +7,7 @@ import edu.sombra.coursemanagementsystem.dto.user.UserDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserResponseDTO;
 import edu.sombra.coursemanagementsystem.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,7 +30,7 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<UserResponseDTO> create(@RequestBody CreateUserDTO userDTO) {
-        return ResponseEntity.ok(userService.createUser(userDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDTO));
     }
 
     @PutMapping("/update")

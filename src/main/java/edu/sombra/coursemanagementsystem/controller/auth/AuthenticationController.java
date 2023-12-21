@@ -7,6 +7,7 @@ import edu.sombra.coursemanagementsystem.service.auth.AuthenticateService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +29,7 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> registerUser(@RequestBody RegisterDTO registerDTO){
-        return ResponseEntity.ok(authenticateService.register(registerDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authenticateService.register(registerDTO));
     }
 
     @PostMapping("/refresh-token")

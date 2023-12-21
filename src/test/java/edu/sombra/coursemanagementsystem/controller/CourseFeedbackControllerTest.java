@@ -57,7 +57,7 @@ class CourseFeedbackControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(feedbackDTO)));
 
-        result.andExpect(status().isOk())
+        result.andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.feedbackText").value(getCourseFeedbackDTO.getFeedbackText()))
                 .andExpect(jsonPath("$.id").value(getCourseFeedbackDTO.getId()));

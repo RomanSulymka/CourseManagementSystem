@@ -67,7 +67,7 @@ class CourseControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(courseDTO)));
 
-        result.andExpect(status().isOk());
+        result.andExpect(status().isCreated());
 
         verify(courseService, times(1)).create(courseDTO);
     }

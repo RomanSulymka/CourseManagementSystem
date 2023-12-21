@@ -342,7 +342,7 @@ class ScenarioAdminE2ETest {
                 registerDTO,
                 AuthenticationResponse.class
         );
-        assertEquals(HttpStatus.OK, registerUserResponseEntity.getStatusCode());
+        assertEquals(HttpStatus.CREATED, registerUserResponseEntity.getStatusCode());
     }
 
     private CourseResponseDTO createCourse(String adminJwtToken) {
@@ -364,7 +364,7 @@ class ScenarioAdminE2ETest {
                 createCourseRequestEntity,
                 CourseResponseDTO.class
         );
-        assertEquals(HttpStatus.OK, createdCourseResponse.getStatusCode());
+        assertEquals(HttpStatus.CREATED, createdCourseResponse.getStatusCode());
         assertEquals(createCourseDTO.getName(), createdCourseResponse.getBody().getCourseName());
         assertNotNull(createdCourseResponse.getBody());
         return createdCourseResponse.getBody();
