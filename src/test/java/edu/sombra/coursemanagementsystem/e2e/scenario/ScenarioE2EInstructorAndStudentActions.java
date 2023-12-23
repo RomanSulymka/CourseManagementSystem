@@ -4,6 +4,7 @@ import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationDTO;
 import edu.sombra.coursemanagementsystem.dto.auth.AuthenticationResponse;
 import edu.sombra.coursemanagementsystem.dto.auth.RegisterDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseActionDTO;
+import edu.sombra.coursemanagementsystem.dto.course.CourseAssignedToUserDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.CourseResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
@@ -12,6 +13,7 @@ import edu.sombra.coursemanagementsystem.dto.enrollment.EnrollmentResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.feedback.CourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.dto.feedback.GetCourseFeedbackDTO;
 import edu.sombra.coursemanagementsystem.dto.file.FileResponseDTO;
+import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkByLessonDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.GetHomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.homework.HomeworkDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
@@ -106,11 +108,11 @@ class ScenarioE2EInstructorAndStudentActions {
         List<LessonResponseDTO> lessonsInCourse = findAllLessonsByCourseId(enrollmentResponseDTO, studentJwtToken);
 
         //find all homework by studentId and courseId
-        GetHomeworkDTO homework1DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(0).getId(), foundStudentResponse.getId(), studentJwtToken);
-        GetHomeworkDTO homework2DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(1).getId(), foundStudentResponse.getId(), studentJwtToken);
-        GetHomeworkDTO homework3DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(2).getId(), foundStudentResponse.getId(), studentJwtToken);
-        GetHomeworkDTO homework4DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(3).getId(), foundStudentResponse.getId(), studentJwtToken);
-        GetHomeworkDTO homework5DTO = findHomeworkByStudentAndCourse(lessonsInCourse.get(4).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework1DTO = findHomeworkByStudentAndLesson(lessonsInCourse.get(0).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework2DTO = findHomeworkByStudentAndLesson(lessonsInCourse.get(1).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework3DTO = findHomeworkByStudentAndLesson(lessonsInCourse.get(2).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework4DTO = findHomeworkByStudentAndLesson(lessonsInCourse.get(3).getId(), foundStudentResponse.getId(), studentJwtToken);
+        GetHomeworkDTO homework5DTO = findHomeworkByStudentAndLesson(lessonsInCourse.get(4).getId(), foundStudentResponse.getId(), studentJwtToken);
 
         //Upload homework
         FileResponseDTO uploadedHomework1 = uploadHomework(studentJwtToken, foundStudentResponse, homework1DTO);
@@ -195,10 +197,14 @@ class ScenarioE2EInstructorAndStudentActions {
     }
 
     private LessonsByCourseDTO getLessonsWithTotalMarks(UserResponseDTO foundStudentResponse, CourseResponseDTO createdCourse) {
-        HttpEntity<Void> studentsOnCoursesRequestEntity = new HttpEntity<>(instructorHeaders);
+        CourseAssignedToUserDTO dto = CourseAssignedToUserDTO.builder()
+                .courseId(createdCourse.getCourseId())
+                .userId(foundStudentResponse.getId())
+                .build();
+        HttpEntity<CourseAssignedToUserDTO> studentsOnCoursesRequestEntity = new HttpEntity<>(dto, instructorHeaders);
         ResponseEntity<LessonsByCourseDTO> getListOfLessonsOnCourseResponseEntity = restTemplate.exchange(
-                buildUrl("/api/v1/course/student/lessons/{studentId}/{courseId}", foundStudentResponse.getId(), createdCourse.getCourseId()),
-                HttpMethod.GET,
+                buildUrl("/api/v1/course/student/lessons"),
+                HttpMethod.POST,
                 studentsOnCoursesRequestEntity,
                 LessonsByCourseDTO.class
         );
@@ -265,13 +271,17 @@ class ScenarioE2EInstructorAndStudentActions {
         return uploadHomeworkResponseEntity.getBody();
     }
 
-    private GetHomeworkDTO findHomeworkByStudentAndCourse(Long lessonId, Long studentId, String bearerToken) {
+    private GetHomeworkDTO findHomeworkByStudentAndLesson(Long lessonId, Long studentId, String bearerToken) {
+        GetHomeworkByLessonDTO getHomeworkByLessonDTO = GetHomeworkByLessonDTO.builder()
+                .lessonId(lessonId)
+                .build();
+
         studentHeaders.setBearerAuth(bearerToken);
         studentHeaders.setAccept(List.of(MediaType.APPLICATION_JSON));
         ResponseEntity<GetHomeworkDTO> homeworkByStudentAndCourseResponse = restTemplate.exchange(
-                buildUrl("/api/v1/homework/{lessonId}/{userId}", lessonId, studentId),
-                HttpMethod.GET,
-                new HttpEntity<>(studentHeaders),
+                buildUrl("/api/v1/homework"),
+                HttpMethod.POST,
+                new HttpEntity<>(getHomeworkByLessonDTO, studentHeaders),
                 GetHomeworkDTO.class
         );
         assertEquals(HttpStatus.OK, homeworkByStudentAndCourseResponse.getStatusCode());
@@ -329,10 +339,13 @@ class ScenarioE2EInstructorAndStudentActions {
     }
 
     private UserResponseDTO findUserByEmail(RegisterDTO registerStudentDTO) {
+        UserDTO userDTO = UserDTO.builder()
+                .email(registerStudentDTO.getEmail())
+                .build();
         ResponseEntity<UserResponseDTO> applyForCourseResponse = restTemplate.exchange(
-                buildUrl("/api/v1/user/email/{email}", registerStudentDTO.getEmail()),
-                HttpMethod.GET,
-                new HttpEntity<>(adminHeaders),
+                buildUrl("/api/v1/user/email"),
+                HttpMethod.POST,
+                new HttpEntity<>(userDTO, adminHeaders),
                 UserResponseDTO.class
         );
         assertEquals(HttpStatus.OK, applyForCourseResponse.getStatusCode());
