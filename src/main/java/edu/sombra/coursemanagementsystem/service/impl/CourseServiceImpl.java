@@ -15,6 +15,7 @@ import edu.sombra.coursemanagementsystem.entity.Homework;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
 import edu.sombra.coursemanagementsystem.enums.CourseStatus;
+import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.exception.CourseAlreadyExistsException;
 import edu.sombra.coursemanagementsystem.exception.CourseCreationException;
 import edu.sombra.coursemanagementsystem.exception.CourseException;
@@ -260,8 +261,10 @@ public class CourseServiceImpl implements CourseService {
     public List<UserAssignedToCourseDTO> findStudentsAssignedToCourseByInstructorId(Long instructorId, Long courseId) {
         userService.isUserInstructor(instructorId);
         isUserAssignedToCourse(instructorId, courseId);
-        List<User> user = courseRepository.findUsersInCourse(courseId);
-        return userMapper.mapUsersToDTO(user);
+        List<User> users = courseRepository.findUsersInCourse(courseId).stream()
+                .filter(student -> student.getRole().equals(RoleEnum.STUDENT))
+                .toList();
+        return userMapper.mapUsersToDTO(users);
     }
 
     @Override
