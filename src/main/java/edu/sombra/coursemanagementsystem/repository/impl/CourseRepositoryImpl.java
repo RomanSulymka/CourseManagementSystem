@@ -94,9 +94,13 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public Optional<Course> findCourseByHomeworkId(Long homeworkId) {
-        return Optional.ofNullable(getEntityManager().createQuery(GET_COURSE_BY_HOMEWORK_ID, Course.class)
-                .setParameter("id", homeworkId)
-                .getSingleResult());
+        try {
+            return Optional.ofNullable(getEntityManager().createQuery(GET_COURSE_BY_HOMEWORK_ID, Course.class)
+                    .setParameter("id", homeworkId)
+                    .getSingleResult());
+        } catch (Exception e) {
+            throw new RuntimeException("Error while finding course by homework ID", e);
+        }
     }
 
     @Override
