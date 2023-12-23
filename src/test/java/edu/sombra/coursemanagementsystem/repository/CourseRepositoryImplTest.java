@@ -11,7 +11,6 @@ import edu.sombra.coursemanagementsystem.repository.impl.CourseRepositoryImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.stereotype.Repository;
@@ -21,16 +20,14 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest(includeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Repository.class))
 class CourseRepositoryImplTest {
 
     @Autowired
     private CourseRepositoryImpl courseRepository;
-
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Autowired
     private EnrollmentRepository enrollmentRepository;
@@ -76,29 +73,6 @@ class CourseRepositoryImplTest {
         boolean doesExist = courseRepository.exist(existingCourseName);
 
         assertTrue(doesExist, "Course should exist");
-    }
-
-    @Test
-    @Transactional
-    void testUpdateStatus() {
-        Course course = Course.builder()
-                .name("Test Course")
-                .startDate(LocalDate.now())
-                .status(CourseStatus.STOP)
-                .build();
-
-        courseRepository.save(course);
-
-        courseRepository.updateStatus(course.getId(), CourseStatus.STARTED);
-
-        entityManager.flush();
-
-        entityManager.clear();
-
-        Course updatedCourse = courseRepository.findById(course.getId()).orElse(null);
-
-        assertNotNull(updatedCourse, "Updated course should not be null");
-        assertEquals(CourseStatus.STARTED, updatedCourse.getStatus(), "Course status should be updated");
     }
 
     @Test

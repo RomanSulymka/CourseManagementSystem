@@ -3,7 +3,6 @@ package edu.sombra.coursemanagementsystem.repository.impl;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
-import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import jakarta.persistence.EntityManager;
@@ -44,8 +43,6 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     private static final String EXIST_COURSE_BY_NAME_QUERY = "SELECT COUNT(c) FROM courses c WHERE c.name = :name";
 
-    private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status, start_date =:startDate WHERE id =:id";
-
     private static final String GET_USERS_IN_COURSE_BY_ROLE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id" +
             " INNER JOIN users u on u.id = e.user.id WHERE c.id =: id AND u.role =: role";
 
@@ -71,16 +68,6 @@ public class CourseRepositoryImpl implements CourseRepository {
                 .setParameter("name", name)
                 .getSingleResult();
         return count != null && count > 0;
-    }
-
-    @Override
-    public void updateStatus(Long id, CourseStatus status) {
-        getEntityManager()
-                .createNativeQuery(UPDATE_COURSE_STATUS)
-                .setParameter("status", status.toString())
-                .setParameter("startDate", LocalDate.now())
-                .setParameter("id", id)
-                .executeUpdate();
     }
 
     @Override

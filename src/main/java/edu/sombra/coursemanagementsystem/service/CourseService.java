@@ -7,7 +7,6 @@ import edu.sombra.coursemanagementsystem.dto.course.LessonsByCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.course.UpdateCourseDTO;
 import edu.sombra.coursemanagementsystem.dto.lesson.LessonResponseDTO;
 import edu.sombra.coursemanagementsystem.dto.user.UserAssignedToCourseDTO;
-import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 
 import java.util.List;
 
@@ -23,8 +22,6 @@ public interface CourseService {
     void delete(Long id);
 
     List<CourseResponseDTO> findAllCourses();
-
-    CourseResponseDTO updateStatus(Long id, CourseStatus status);
 
     List<LessonResponseDTO> findAllLessonsByCourse(Long id);
 
