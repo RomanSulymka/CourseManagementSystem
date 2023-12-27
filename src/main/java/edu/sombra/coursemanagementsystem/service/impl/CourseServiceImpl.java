@@ -58,10 +58,8 @@ public class CourseServiceImpl implements CourseService {
     public static final String COURSE_HAS_NOT_ENOUGH_LESSONS = "Course has not enough lessons";
     public static final String COURSE_NOT_FOUND_WITH_ID = "Course not found with id: ";
     public static final String COURSE_NOT_FOUND_WITH_NAME = "Course not found with name: ";
-    public static final String COURSE_SHOULD_HAVE_AT_LEAST_1_INSTRUCTOR = "Course {} should have at least 1 Instructor";
-    public static final String COURSE_WITH_ID_CHANGED_STATUS_TO_SUCCESSFULLY = "Course with id: {} changed status to {} successfully";
     public static final String INCORRECT_ACTION_PARAMETER = "Incorrect action parameter!";
-    public static final String INSTRUCTOR_IS_NOT_ASSIGNED_TO_THIS_COURSE = "Instructor is not assigned to this course";
+    public static final String USER_IS_NOT_ASSIGNED_TO_THIS_COURSE = "User is not assigned to this course";
 
     private final CourseRepository courseRepository;
     private final CourseFeedbackRepository courseFeedbackRepository;
@@ -292,7 +290,7 @@ public class CourseServiceImpl implements CourseService {
             return courseMapper.toDTO(course, courseMark, feedback, lessonDTO);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new IllegalArgumentException("Homework not found with these parameters!");
+            throw new IllegalArgumentException(e.getMessage());
         }
     }
 
@@ -329,8 +327,8 @@ public class CourseServiceImpl implements CourseService {
     private void isUserAssignedToCourse(Long studentId, Long courseId) {
         boolean isAssigned = courseRepository.isUserAssignedToCourse(studentId, courseId);
         if (!isAssigned) {
-            log.error(INSTRUCTOR_IS_NOT_ASSIGNED_TO_THIS_COURSE, studentId, courseId);
-            throw new EntityNotFoundException(INSTRUCTOR_IS_NOT_ASSIGNED_TO_THIS_COURSE);
+            log.error(USER_IS_NOT_ASSIGNED_TO_THIS_COURSE, studentId, courseId);
+            throw new EntityNotFoundException(USER_IS_NOT_ASSIGNED_TO_THIS_COURSE);
         }
     }
 }
