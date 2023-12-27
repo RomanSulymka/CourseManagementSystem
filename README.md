@@ -110,12 +110,12 @@ docker ps
 
 8. To access the API use this domain: 
 ```
-ec2-52-91-61-185.compute-1.amazonaws.com
+ec2-54-145-240-14.compute-1.amazonaws.com
 ```
 
 9. To authenticate in the system open this link:
 ```
-ec2-52-91-61-185.compute-1.amazonaws.com/api/v1/auth/authenticate
+ec2-54-145-240-14.compute-1.amazonaws.com/api/v1/auth/authenticate
 ```
 Authentication credentials:
 
