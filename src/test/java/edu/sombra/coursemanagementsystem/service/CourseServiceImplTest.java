@@ -331,12 +331,6 @@ class CourseServiceImplTest {
                 .instructorEmail("student@example")
                 .build();
 
-        User user = User.builder()
-                .id(1L)
-                .role(RoleEnum.STUDENT)
-                .email("student@example")
-                .build();
-
         when(courseMapper.fromCourseDTO(courseDTO)).thenReturn(course);
         when(courseRepository.exist(courseDTO.getName())).thenReturn(false);
         when(courseRepository.save(any())).thenAnswer(invocation -> {
