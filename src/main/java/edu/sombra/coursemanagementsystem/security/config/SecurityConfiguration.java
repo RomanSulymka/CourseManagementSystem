@@ -57,7 +57,6 @@ public class SecurityConfiguration {
                                 // Enrollment
                                 .requestMatchers("/api/v1/enrollment/instructor").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/enrollment/{id}").hasRole("ADMIN")
-                                .requestMatchers("/api/v1/enrollment/by-name").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/enrollment").hasRole("ADMIN")
                                 .requestMatchers("/api/v1/enrollment/user/apply").hasAnyRole("ADMIN", "STUDENT")
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/enrollment/{id}").hasAnyRole("ADMIN")

@@ -77,7 +77,8 @@ public class CourseController {
     @PostMapping("/instructor/users")
     public ResponseEntity<List<UserAssignedToCourseDTO>> findUsersAssignedToCourseByInstructorId(@RequestBody CourseAssignedToUserDTO
                                                                                                          courseAssignedToUserDTO) {
-        return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(courseAssignedToUserDTO.getUserId(), courseAssignedToUserDTO.getCourseId()));
+        return ResponseEntity.ok(courseService.findStudentsAssignedToCourseByInstructorId(courseAssignedToUserDTO.getUserId(),
+                courseAssignedToUserDTO.getCourseId()));
     }
 
     @PostMapping("/student/lessons")

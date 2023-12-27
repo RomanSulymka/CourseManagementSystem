@@ -53,14 +53,9 @@ class EnrollmentServiceImplTest {
     @Mock
     private EnrollmentRepository enrollmentRepository;
     @Mock
-    private CourseService courseService;
-    @Mock
     private CourseMapper courseMapper;
     @Mock
     private CourseRepository courseRepository;
-    @Mock
-    private UserService userService;
-
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -71,7 +66,7 @@ class EnrollmentServiceImplTest {
     @BeforeEach
     void setUp() {
         enrollmentService = new EnrollmentServiceImpl(enrollmentRepository, courseMapper, courseRepository,
-                userService, userRepository, homeworkRepository, enrollmentMapper);
+                userRepository, homeworkRepository, enrollmentMapper);
     }
 
     private static Stream<Arguments> provideTestDataForAssignInstructor() {
@@ -242,13 +237,13 @@ class EnrollmentServiceImplTest {
                         .build())
                 .user(User.builder()
                         .id(1L)
-                        .email("XXXXXXXXXXXXXX")
+                        .email("user@email.com")
                         .role(RoleEnum.INSTRUCTOR)
                         .build())
                 .build();
 
         EnrollmentGetDTO enrollmentGetDTO = EnrollmentGetDTO.builder()
-                .userEmail("XXXXXXXXXXXXXX")
+                .userEmail("user@email.com")
                 .courseName("Course 1")
                 .role(RoleEnum.INSTRUCTOR)
                 .build();
@@ -466,11 +461,6 @@ class EnrollmentServiceImplTest {
                 .id(userId)
                 .build();
 
-        CourseResponseDTO courseResponseDTO = CourseResponseDTO.builder()
-                .courseId(mockCourse.getId())
-                .courseName("Test course")
-                .build();
-
         when(courseRepository.findCourseByHomeworkId(homeworkId)).thenReturn(Optional.of(mockCourse));
         when(userRepository.findById(userId)).thenReturn(Optional.ofNullable(mockUser));
         when(enrollmentRepository.isUserAssignedToCourse(mockCourse, mockUser)).thenReturn(true);
@@ -489,11 +479,6 @@ class EnrollmentServiceImplTest {
                 .build();
         User mockUser = User.builder()
                 .id(userId)
-                .build();
-
-        CourseResponseDTO courseResponseDTO = CourseResponseDTO.builder()
-                .courseId(mockCourse.getId())
-                .courseName("Test course")
                 .build();
 
         when(courseRepository.findCourseByHomeworkId(homeworkId)).thenReturn(Optional.of(mockCourse));

@@ -22,13 +22,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
 @Service
 public class CourseFeedbackServiceImpl implements CourseFeedbackService {
-    private static final String FEEDBACK_SAVED_SUCCESSFULLY = "Feedback saved successfully";
     private static final String INSTRUCTOR_NOT_ASSIGNED = "Instructor is not assigned for this course";
     public static final String FEEDBACK_IS_NOT_VISIBLE_FOR_THIS_USER = "Course feedback is not visible for this user!";
 
@@ -41,14 +41,22 @@ public class CourseFeedbackServiceImpl implements CourseFeedbackService {
 
     public GetCourseFeedbackDTO create(CourseFeedbackDTO courseFeedbackDTO, String instructorEmail) {
         try {
-            User instructor = userRepository.findUserByEmail(instructorEmail);
-            CourseFeedback feedback = createFeedback(courseFeedbackDTO, instructor);
-            log.info(FEEDBACK_SAVED_SUCCESSFULLY);
-            return courseFeedbackMapper.mapToDTO(feedback);
+            if (!isFeedbackExist(courseFeedbackDTO.getStudentId(), courseFeedbackDTO.getCourseId())) {
+                User instructor = userRepository.findUserByEmail(instructorEmail);
+                CourseFeedback feedback = createFeedback(courseFeedbackDTO, instructor);
+                log.info("Feedback saved successfully");
+                return courseFeedbackMapper.mapToDTO(feedback);
+            }
+            throw new IllegalArgumentException("Feedback already exist!");
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new IllegalArgumentException("Failed to create feedback");
+            throw new IllegalArgumentException("Failed to create feedback: " + e.getMessage());
         }
+    }
+
+    private boolean isFeedbackExist(Long studentId, Long courseId) {
+        Optional<CourseFeedback> feedbackOptional = courseFeedbackRepository.findFeedback(studentId, courseId);
+        return feedbackOptional.isPresent();
     }
 
     @Override

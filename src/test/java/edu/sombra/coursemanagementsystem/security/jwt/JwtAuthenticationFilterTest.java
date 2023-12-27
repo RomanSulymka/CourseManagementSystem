@@ -44,7 +44,7 @@ class JwtAuthenticationFilterTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
 
-        when(request.getServletPath()).thenReturn("/api/v1/some-endpoint");
+        when(request.getServletPath()).thenReturn("/api/v1/endpoint");
         when(request.getHeader("Authorization")).thenReturn("Bearer validToken");
         when(jwtService.extractUsername("validToken")).thenReturn("user@example.com");
 

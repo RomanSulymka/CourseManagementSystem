@@ -3,7 +3,6 @@ package edu.sombra.coursemanagementsystem.repository.impl;
 import edu.sombra.coursemanagementsystem.entity.Course;
 import edu.sombra.coursemanagementsystem.entity.Lesson;
 import edu.sombra.coursemanagementsystem.entity.User;
-import edu.sombra.coursemanagementsystem.enums.CourseStatus;
 import edu.sombra.coursemanagementsystem.enums.RoleEnum;
 import edu.sombra.coursemanagementsystem.repository.CourseRepository;
 import jakarta.persistence.EntityManager;
@@ -44,8 +43,6 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     private static final String EXIST_COURSE_BY_NAME_QUERY = "SELECT COUNT(c) FROM courses c WHERE c.name = :name";
 
-    private static final String UPDATE_COURSE_STATUS = "UPDATE courses SET status =:status, start_date =:startDate WHERE id =:id";
-
     private static final String GET_USERS_IN_COURSE_BY_ROLE = "SELECT u FROM courses c INNER JOIN enrollments e on c.id = e.course.id" +
             " INNER JOIN users u on u.id = e.user.id WHERE c.id =: id AND u.role =: role";
 
@@ -74,16 +71,6 @@ public class CourseRepositoryImpl implements CourseRepository {
     }
 
     @Override
-    public void updateStatus(Long id, CourseStatus status) {
-        getEntityManager()
-                .createNativeQuery(UPDATE_COURSE_STATUS)
-                .setParameter("status", status.toString())
-                .setParameter("startDate", LocalDate.now())
-                .setParameter("id", id)
-                .executeUpdate();
-    }
-
-    @Override
     public List<User> findUsersInCourseByRole(Long id, RoleEnum roleEnum) {
         return getEntityManager().createQuery(GET_USERS_IN_COURSE_BY_ROLE, User.class)
                 .setParameter("id", id)
@@ -107,9 +94,13 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public Optional<Course> findCourseByHomeworkId(Long homeworkId) {
-        return Optional.ofNullable(getEntityManager().createQuery(GET_COURSE_BY_HOMEWORK_ID, Course.class)
-                .setParameter("id", homeworkId)
-                .getSingleResult());
+        try {
+            return Optional.ofNullable(getEntityManager().createQuery(GET_COURSE_BY_HOMEWORK_ID, Course.class)
+                    .setParameter("id", homeworkId)
+                    .getSingleResult());
+        } catch (Exception e) {
+            throw new RuntimeException("Error while finding course by homework ID", e);
+        }
     }
 
     @Override

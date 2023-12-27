@@ -168,6 +168,7 @@ class CourseFeedbackServiceImplTest {
                 .instructor(instructor)
                 .build();
 
+        when(courseFeedbackRepository.findFeedback(anyLong(), anyLong())).thenReturn(Optional.empty());
         when(courseRepository.isUserAssignedToCourse(instructor.getId(), courseFeedbackDTO.getCourseId()))
                 .thenReturn(true);
 
