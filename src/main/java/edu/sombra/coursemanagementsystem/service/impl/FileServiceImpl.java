@@ -37,6 +37,7 @@ public class FileServiceImpl implements FileService {
     public static final String FILE_WITH_ID_NOT_FOUND = "File with ID {} not found.";
     public static final String INVALID_INPUT_PARAMETERS = "Invalid input parameters";
     public static final String FILE_UPLOADED_SUCCESSFULLY_WITH_NAME = "File uploaded successfully with name {}";
+    public static final String ACCESS_DENIED_TO_THIS_FILE = "User hasn't access to this file!";
 
     private final FileRepository fileRepository;
     private final HomeworkRepository homeworkRepository;
@@ -103,17 +104,20 @@ public class FileServiceImpl implements FileService {
                 throw new NoResultException(FILE_NOT_FOUND);
             }
         } else {
-            throw new IllegalArgumentException("User hasn't access to this file!");
+            throw new IllegalArgumentException(ACCESS_DENIED_TO_THIS_FILE);
         }
     }
 
     private boolean canUserAccessFile(User user, Long fileId) {
         if (user.getRole().equals(RoleEnum.ADMIN)) {
             return true;
-        } else {
+        } else if (user.getRole().equals(RoleEnum.INSTRUCTOR)){
             Course course = courseRepository.findCourseByFileId(fileId).orElseThrow();
             return courseRepository.isUserAssignedToCourse(user.getId(), course.getId());
+        } else if (user.getRole().equals(RoleEnum.STUDENT)) {
+            return homeworkRepository.isUserUploadedHomework(fileId, user.getId());
         }
+        return false;
     }
 
     private ByteArrayResource createFileResource(File file) {
