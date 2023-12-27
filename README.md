@@ -152,7 +152,6 @@ Authentication credentials:
     | /api/v1/feedback/{id}                    | DELETE       | Access     | Access          | No Access     |
     | /api/v1/enrollment/instructor            | GET          | Access     | No Access       | No Access     |
     | /api/v1/enrollment/{id}                  | GET          | Access     | No Access       | No Access     |
-    | /api/v1/enrollment/by-name               | GET          | Access     | No Access       | No Access     |
     | /api/v1/enrollment                       | PUT          | Access     | No Access       | No Access     |
     | /api/v1/enrollment/user/apply            | POST         | Access     | Access          | Access        |
     | /api/v1/enrollment/{id}                  | DELETE       | Access     | No Access       | No Access     |
